@@ -2,7 +2,6 @@
 const nextConfig = {
   reactCompiler: true,
   devIndicators: false,
-  allowedDevOrigins: ["192.168.29.177"],
   images: {
     loader: "custom",
     loaderFile: "./src/lib/cloudinaryLoader.js",
