@@ -28,6 +28,9 @@ export const metadata = {
       { url: "/icons/icon-16.png", sizes: "16x16" },
       { url: "/icons/icon-32.png", sizes: "32x32" },
     ],
+    apple: [
+      { url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 export const viewport = {

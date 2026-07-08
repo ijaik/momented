@@ -35,6 +35,7 @@ export default function manifest() {
         src: "/icons/icon-180.png",
         sizes: "180x180",
         type: "image/png",
+        purpose: "any maskable",
       },
     ],
     shortcuts: [
