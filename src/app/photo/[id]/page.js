@@ -176,9 +176,9 @@ export async function generateMetadata({ params }) {
     .select("*")
     .eq("id", id)
     .single();
-  if (!photo) return { title: "Photo Not Found | Momented" };
+  if (!photo) return { title: "Photo Not Found" };
   return {
-    title: `${photo.title} | Momented`,
+    title: `${photo.title}`,
     description:
       photo.description ||
       `View ${photo.title}, shot on ${photo.camera_model || "camera"}.`,
