@@ -38,7 +38,6 @@ export default async function PhotoDetail({ params }) {
       day: "numeric",
     });
   }
-
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -49,7 +48,7 @@ export default async function PhotoDetail({ params }) {
           &larr; Back to Photos
         </Link>
         <div className="flex flex-col lg:flex-row gap-12">
-          <div className="w-full lg:w-2/3 flex items-start justify-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden p-4 border border-zinc-200 dark:border-zinc-800">
+          <div className="w-full lg:w-2/3 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden p-4 border border-zinc-200 dark:border-zinc-800">
             <Image
               src={photo.cloudinary_url}
               alt={photo.title}
