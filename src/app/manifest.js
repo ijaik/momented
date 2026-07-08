@@ -20,19 +20,19 @@ export default function manifest() {
     categories: ["photo", "lifestyle", "portfolio", "entertainment"],
     icons: [
       {
-        src: "/icons/icon-192.png",
+        src: "/icons/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any maskable",
       },
       {
-        src: "/icons/icon-512.png",
+        src: "/icons/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any maskable",
       },
       {
-        src: "/icons/icon-180.png",
+        src: "/icons/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png",
         purpose: "any maskable",
@@ -45,7 +45,11 @@ export default function manifest() {
         description: "Collections of momented",
         url: "/collections",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          {
+            src: "/icons/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
         ],
       },
       {
@@ -54,7 +58,11 @@ export default function manifest() {
         description: "Thoughts behind the momented",
         url: "/stories",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          {
+            src: "/icons/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
         ],
       },
       {
@@ -63,7 +71,11 @@ export default function manifest() {
         description: "Learn more about the creator",
         url: "/me",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          {
+            src: "/icons/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
         ],
       },
     ],

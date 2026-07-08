@@ -25,11 +25,15 @@ export const metadata = {
   icons: {
     icon: [
       { url: "/icons/favicon.ico" },
-      { url: "/icons/icon-16.png", sizes: "16x16" },
-      { url: "/icons/icon-32.png", sizes: "32x32" },
+      { url: "/icons/favicon-16x16.png", sizes: "16x16" },
+      { url: "/icons/favicon-32x32.png", sizes: "32x32" },
     ],
     apple: [
-      { url: "/icons/icon-180.png", sizes: "180x180", type: "image/png" },
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
     ],
   },
 };
