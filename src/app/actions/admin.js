@@ -8,6 +8,19 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+async function syncPhotoRelations(db, column, entityId, photoIds) {
+  await db
+    .from("photos")
+    .update({ [column]: null })
+    .eq(column, entityId);
+  if (photoIds && photoIds.length > 0) {
+    const { error } = await db
+      .from("photos")
+      .update({ [column]: entityId })
+      .in("id", photoIds);
+    if (error) throw new Error(error.message);
+  }
+}
 export async function getPhotosAction() {
   const db = await getAdminDb();
   const { data, error } = await db
@@ -57,50 +70,44 @@ export async function getCollectionsAction() {
 }
 export async function createCollectionAction(formData) {
   const db = await getAdminDb();
-  const photoIds = formData.getAll("photo_ids");
-  const coverPhotoId = formData.get("cover_photo_id");
   const { data, error } = await db
     .from("collections")
     .insert([
       {
         title: formData.get("title"),
         description: formData.get("description"),
-        cover_photo_id: coverPhotoId || null,
+        cover_photo_id: formData.get("cover_photo_id") || null,
       },
     ])
     .select()
     .single();
   if (error) throw new Error(error.message);
-  if (photoIds.length > 0) {
-    const { error: updateError } = await db
-      .from("photos")
-      .update({ collection_id: data.id })
-      .in("id", photoIds);
-    if (updateError) throw new Error(updateError.message);
-  }
+  await syncPhotoRelations(
+    db,
+    "collection_id",
+    data.id,
+    formData.getAll("photo_ids"),
+  );
   revalidatePath("/", "layout");
   return { success: true };
 }
 export async function editCollectionAction(id, formData) {
   const db = await getAdminDb();
-  const photoIds = formData.getAll("photo_ids");
-  const coverPhotoId = formData.get("cover_photo_id");
   const { error } = await db
     .from("collections")
     .update({
       title: formData.get("title"),
       description: formData.get("description"),
-      cover_photo_id: coverPhotoId || null,
+      cover_photo_id: formData.get("cover_photo_id") || null,
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  await db
-    .from("photos")
-    .update({ collection_id: null })
-    .eq("collection_id", id);
-  if (photoIds.length > 0) {
-    await db.from("photos").update({ collection_id: id }).in("id", photoIds);
-  }
+  await syncPhotoRelations(
+    db,
+    "collection_id",
+    id,
+    formData.getAll("photo_ids"),
+  );
   revalidatePath("/", "layout");
   return { success: true };
 }
@@ -122,47 +129,39 @@ export async function getStoriesAction() {
 }
 export async function createStoryAction(formData) {
   const db = await getAdminDb();
-  const photoIds = formData.getAll("photo_ids");
-  const coverPhotoId = formData.get("cover_photo_id");
   const { data, error } = await db
     .from("stories")
     .insert([
       {
         title: formData.get("title"),
         content: formData.get("content"),
-        cover_photo_id: coverPhotoId || null,
+        cover_photo_id: formData.get("cover_photo_id") || null,
       },
     ])
     .select()
     .single();
   if (error) throw new Error(error.message);
-  if (photoIds.length > 0) {
-    const { error: updateError } = await db
-      .from("photos")
-      .update({ story_id: data.id })
-      .in("id", photoIds);
-    if (updateError) throw new Error(updateError.message);
-  }
+  await syncPhotoRelations(
+    db,
+    "story_id",
+    data.id,
+    formData.getAll("photo_ids"),
+  );
   revalidatePath("/", "layout");
   return { success: true };
 }
 export async function editStoryAction(id, formData) {
   const db = await getAdminDb();
-  const photoIds = formData.getAll("photo_ids");
-  const coverPhotoId = formData.get("cover_photo_id");
   const { error } = await db
     .from("stories")
     .update({
       title: formData.get("title"),
       content: formData.get("content"),
-      cover_photo_id: coverPhotoId || null,
+      cover_photo_id: formData.get("cover_photo_id") || null,
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  await db.from("photos").update({ story_id: null }).eq("story_id", id);
-  if (photoIds.length > 0) {
-    await db.from("photos").update({ story_id: id }).in("id", photoIds);
-  }
+  await syncPhotoRelations(db, "story_id", id, formData.getAll("photo_ids"));
   revalidatePath("/", "layout");
   return { success: true };
 }

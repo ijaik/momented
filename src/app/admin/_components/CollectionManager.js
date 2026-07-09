@@ -5,6 +5,11 @@ import {
   deleteCollectionAction,
   editCollectionAction,
 } from "@/app/actions/admin";
+import {
+  FormInput,
+  FormTextarea,
+  SubmitButton,
+} from "@/components/ui/AdminForms";
 import PhotoChecklist from "./PhotoChecklist";
 export default function CollectionManager({
   collections,
@@ -64,27 +69,25 @@ export default function CollectionManager({
           onSubmit={handleCreate}
           className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col gap-5"
         >
-          <input
+          <FormInput
             type="text"
             name="title"
             required
             placeholder="Collection Title"
-            className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white text-lg font-semibold"
+            className="text-lg font-semibold"
           />
-          <textarea
+          <FormTextarea
             name="description"
             rows="3"
             placeholder="Theme / Description"
-            className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
           />
           <PhotoChecklist photos={allPhotos} />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 mt-2 transition-colors"
-          >
-            {isLoading ? "Saving..." : "Create Collection"}
-          </button>
+          <SubmitButton
+            isLoading={isLoading}
+            loadingText="Saving..."
+            text="Create Collection"
+            className="bg-blue-600 hover:bg-blue-700 text-white mt-2"
+          />
         </form>
       )}
       <div className="flex flex-col gap-6">
@@ -98,18 +101,17 @@ export default function CollectionManager({
                   onSubmit={(e) => handleEdit(e, col.id)}
                   className="flex flex-col gap-4"
                 >
-                  <input
+                  <FormInput
                     type="text"
                     name="title"
                     defaultValue={col.title}
                     required
-                    className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white text-lg font-semibold"
+                    className="text-lg font-semibold"
                   />
-                  <textarea
+                  <FormTextarea
                     name="description"
                     defaultValue={col.description}
                     rows="3"
-                    className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
                   />
                   <PhotoChecklist
                     photos={allPhotos}
@@ -117,13 +119,12 @@ export default function CollectionManager({
                     initialCoverId={col.cover_photo_id}
                   />
                   <div className="flex gap-3 mt-4">
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium disabled:opacity-50"
-                    >
-                      Save Collection
-                    </button>
+                    <SubmitButton
+                      isLoading={isLoading}
+                      loadingText="Saving..."
+                      text="Save Collection"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    />
                     <button
                       type="button"
                       onClick={() => setEditingColId(null)}

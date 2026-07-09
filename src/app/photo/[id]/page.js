@@ -2,6 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
 import { supabase } from "@/lib/supabase";
+
+const InfoItem = ({ label, value }) =>
+  value
+    ? <div>
+        <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
+          {label}
+        </span>
+        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          {value}
+        </span>
+      </div>
+    : null;
 export default async function PhotoDetail({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
@@ -86,74 +98,13 @@ export default async function PhotoDetail({ params }) {
                 Info
               </h3>
               <div className="grid grid-cols-2 gap-y-5 gap-x-4 text-sm">
-                <div>
-                  <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                    Date
-                  </span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                    {displayDate}
-                  </span>
-                </div>
-                {!!photo.camera_model && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      Camera
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.camera_model}
-                    </span>
-                  </div>
-                )}
-                {!!photo.focal_length && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      Focal Length
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.focal_length}
-                    </span>
-                  </div>
-                )}
-                {!!photo.aperture && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      Aperture
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.aperture}
-                    </span>
-                  </div>
-                )}
-                {!!photo.shutter_speed && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      Shutter Speed
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.shutter_speed}
-                    </span>
-                  </div>
-                )}
-                {photo.iso != null && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      ISO
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.iso}
-                    </span>
-                  </div>
-                )}
-                {!!photo.artist && (
-                  <div>
-                    <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-                      Photographed by
-                    </span>
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {photo.artist}
-                    </span>
-                  </div>
-                )}
+                <InfoItem label="Date" value={displayDate} />
+                <InfoItem label="Camera" value={photo.camera_model} />
+                <InfoItem label="Focal Length" value={photo.focal_length} />
+                <InfoItem label="Aperture" value={photo.aperture} />
+                <InfoItem label="Shutter Speed" value={photo.shutter_speed} />
+                <InfoItem label="ISO" value={photo.iso} />
+                <InfoItem label="Photographed by" value={photo.artist} />
               </div>
             </div>
             <div>

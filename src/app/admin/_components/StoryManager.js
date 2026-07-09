@@ -5,6 +5,11 @@ import {
   deleteStoryAction,
   editStoryAction,
 } from "@/app/actions/admin";
+import {
+  FormInput,
+  FormTextarea,
+  SubmitButton,
+} from "@/components/ui/AdminForms";
 import PhotoChecklist from "./PhotoChecklist";
 export default function StoryManager({ stories, allPhotos, reloadData }) {
   const [isCreating, setIsCreating] = useState(false);
@@ -58,28 +63,26 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
           onSubmit={handleCreate}
           className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col gap-5"
         >
-          <input
+          <FormInput
             type="text"
             name="title"
             required
             placeholder="Story Title"
-            className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white text-lg font-semibold"
+            className="text-lg font-semibold"
           />
-          <textarea
+          <FormTextarea
             name="content"
             required
             rows="8"
             placeholder="Write the narrative here..."
-            className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
           />
           <PhotoChecklist photos={allPhotos} />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium disabled:opacity-50 mt-2 transition-colors"
-          >
-            {isLoading ? "Publishing..." : "Publish Story"}
-          </button>
+          <SubmitButton
+            isLoading={isLoading}
+            loadingText="Publishing..."
+            text="Publish Story"
+            className="bg-blue-600 hover:bg-blue-700 text-white mt-2"
+          />
         </form>
       )}
       <div className="flex flex-col gap-6">
@@ -93,19 +96,18 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
                   onSubmit={(e) => handleEdit(e, story.id)}
                   className="flex flex-col gap-4"
                 >
-                  <input
+                  <FormInput
                     type="text"
                     name="title"
                     defaultValue={story.title}
                     required
-                    className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white text-lg font-semibold"
+                    className="text-lg font-semibold"
                   />
-                  <textarea
+                  <FormTextarea
                     name="content"
                     defaultValue={story.content}
                     required
                     rows="8"
-                    className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
                   />
                   <PhotoChecklist
                     photos={allPhotos}
@@ -113,13 +115,12 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
                     initialCoverId={story.cover_photo_id}
                   />
                   <div className="flex gap-3 mt-4">
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium disabled:opacity-50"
-                    >
-                      Save Story
-                    </button>
+                    <SubmitButton
+                      isLoading={isLoading}
+                      loadingText="Saving..."
+                      text="Save Story"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    />
                     <button
                       type="button"
                       onClick={() => setEditingStoryId(null)}

@@ -5,6 +5,12 @@ import {
   getCloudinarySignatureAction,
   savePhotoToDbAction,
 } from "@/app/actions/upload";
+import {
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  SubmitButton,
+} from "@/components/ui/AdminForms";
 export default function PhotoManager({
   photos,
   collections,
@@ -26,8 +32,7 @@ export default function PhotoManager({
     setStatus("Preparing upload...");
     try {
       const form = event.currentTarget;
-      const fileInput = form.elements.photo;
-      const file = fileInput.files[0];
+      const file = form.elements.photo.files[0];
       if (!file) throw new Error("Please select a photo to upload.");
       if (file.size > 15 * 1024 * 1024)
         throw new Error("File is too large. Maximum size is 15MB.");
@@ -42,17 +47,9 @@ export default function PhotoManager({
       formData.append("image_metadata", "true");
       const uploadRes = await fetch(
         `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
+        { method: "POST", body: formData },
       );
-      if (!uploadRes.ok) {
-        const errData = await uploadRes.json();
-        throw new Error(
-          errData.error?.message || "Failed to upload to Cloudinary",
-        );
-      }
+      if (!uploadRes.ok) throw new Error("Failed to upload to Cloudinary");
       const uploadData = await uploadRes.json();
       setStatus("Saving photo data...");
       await savePhotoToDbAction({
@@ -109,62 +106,46 @@ export default function PhotoManager({
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
               Upload Photo
             </h1>
-            <input
-              type="text"
-              name="title"
-              required
-              placeholder="Photo Title"
-              className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
-            />
-            <input
-              type="text"
+            <FormInput name="title" required placeholder="Photo Title" />
+            <FormInput
               name="artist"
               defaultValue="Jai"
               placeholder="Photographer Name"
-              className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
             />
-            <select
-              name="collection_id"
-              className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
-            >
+            <FormSelect name="collection_id">
               <option value="">-- No Collection --</option>
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.title}
                 </option>
               ))}
-            </select>
-            <select
-              name="story_id"
-              className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
-            >
+            </FormSelect>
+            <FormSelect name="story_id">
               <option value="">-- No Story --</option>
               {stories.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}
                 </option>
               ))}
-            </select>
-            <textarea
+            </FormSelect>
+            <FormTextarea
               name="description"
               rows="3"
               placeholder="Photo Caption (Optional)"
-              className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
             />
             <input
               type="file"
               name="photo"
               accept="image/*"
               required
-              className="text-sm cursor-pointer"
+              className="text-sm cursor-pointer border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg"
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-black dark:bg-white text-white dark:text-black py-3 rounded-lg font-medium disabled:opacity-50"
-            >
-              {isLoading ? "Uploading..." : "Upload Photo"}
-            </button>
+            <SubmitButton
+              isLoading={isLoading}
+              loadingText="Uploading..."
+              text="Upload Photo"
+              className="bg-black dark:bg-white text-white dark:text-black w-full"
+            />
           </form>
           {status && (
             <div className="mt-4 p-3 text-center border rounded-lg text-sm font-medium">
@@ -189,15 +170,13 @@ export default function PhotoManager({
             <div className="flex-1 w-full">
               {editingPhotoId === photo.id
                 ? <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
+                    <FormInput
                       value={editForm.title}
                       onChange={(e) =>
                         setEditForm({ ...editForm, title: e.target.value })
                       }
-                      className="border border-zinc-300 dark:border-zinc-700 p-2 rounded w-full bg-transparent text-zinc-900 dark:text-white"
                     />
-                    <textarea
+                    <FormTextarea
                       value={editForm.description}
                       onChange={(e) =>
                         setEditForm({
@@ -206,10 +185,9 @@ export default function PhotoManager({
                         })
                       }
                       rows="2"
-                      className="border border-zinc-300 dark:border-zinc-700 p-2 rounded w-full bg-transparent text-zinc-900 dark:text-white"
                     />
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <select
+                      <FormSelect
                         value={editForm.collection_id}
                         onChange={(e) =>
                           setEditForm({
@@ -217,7 +195,7 @@ export default function PhotoManager({
                             collection_id: e.target.value,
                           })
                         }
-                        className="border border-zinc-300 dark:border-zinc-700 p-2 rounded w-full sm:w-1/2 bg-transparent text-zinc-900 dark:text-white"
+                        className="w-full sm:w-1/2"
                       >
                         <option value="">-- No Collection --</option>
                         {collections.map((c) => (
@@ -225,13 +203,13 @@ export default function PhotoManager({
                             {c.title}
                           </option>
                         ))}
-                      </select>
-                      <select
+                      </FormSelect>
+                      <FormSelect
                         value={editForm.story_id}
                         onChange={(e) =>
                           setEditForm({ ...editForm, story_id: e.target.value })
                         }
-                        className="border border-zinc-300 dark:border-zinc-700 p-2 rounded w-full sm:w-1/2 bg-transparent text-zinc-900 dark:text-white"
+                        className="w-full sm:w-1/2"
                       >
                         <option value="">-- No Story --</option>
                         {stories.map((s) => (
@@ -239,7 +217,7 @@ export default function PhotoManager({
                             {s.title}
                           </option>
                         ))}
-                      </select>
+                      </FormSelect>
                     </div>
                     <div className="flex gap-2 mt-2">
                       <button
