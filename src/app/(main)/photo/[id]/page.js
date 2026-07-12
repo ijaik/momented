@@ -18,7 +18,7 @@ export default async function PhotoDetail({ params }) {
   const { data: photo } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, collection_id, story_id, collections(title), stories(title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, collection_id, story_id, collections!collection_id(title), stories!story_id(title)",
     )
     .eq("id", id)
     .single();
