@@ -2,23 +2,24 @@ import Image from "next/image";
 import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
 import { supabase } from "@/lib/supabase";
-
 const InfoItem = ({ label, value }) =>
-  value
-    ? <div>
-        <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-          {label}
-        </span>
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {value}
-        </span>
-      </div>
-    : null;
+  value ? (
+    <div>
+      <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
+        {label}
+      </span>
+      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+        {value}
+      </span>
+    </div>
+  ) : null;
 export default async function PhotoDetail({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
     .from("photos")
-    .select("*, collections!collection_id(title), stories!story_id(title)")
+    .select(
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, collection_id, story_id, collections(title), stories(title)",
+    )
     .eq("id", id)
     .single();
   if (!photo) {
@@ -124,7 +125,7 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
     .from("photos")
-    .select("*")
+    .select("title, description, camera_model, cloudinary_url, width, height")
     .eq("id", id)
     .single();
   if (!photo) return { title: "Photo Not Found" };

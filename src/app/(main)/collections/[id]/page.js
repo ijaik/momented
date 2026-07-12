@@ -3,14 +3,14 @@ import PhotoCard from "@/components/PhotoCard";
 import { supabase } from "@/lib/supabase";
 export default async function SingleCollectionPage({ params }) {
   const { id } = await params;
-  const { data: collection } = await supabase
+    const { data: collection } = await supabase
     .from("collections")
-    .select("*")
+    .select("title, description")
     .eq("id", id)
     .single();
   const { data: photos } = await supabase
     .from("photos")
-    .select("*")
+    .select("id, title, cloudinary_url, width, height, camera_model")
     .eq("collection_id", id)
     .order("created_at", { ascending: false });
   if (!collection) {

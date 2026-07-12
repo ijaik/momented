@@ -3,14 +3,14 @@ import PhotoCard from "@/components/PhotoCard";
 import { supabase } from "@/lib/supabase";
 export default async function SingleStoryPage({ params }) {
   const { id } = await params;
-  const { data: story } = await supabase
+    const { data: story } = await supabase
     .from("stories")
-    .select("*")
+    .select("title, created_at, content")
     .eq("id", id)
     .single();
   const { data: photos } = await supabase
     .from("photos")
-    .select("*")
+    .select("id, title, cloudinary_url, width, height, camera_model")
     .eq("story_id", id)
     .order("created_at", { ascending: true });
   if (!story) {

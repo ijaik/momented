@@ -5,7 +5,6 @@ import { useState } from "react";
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  if (pathname.startsWith("/admin")) return null;
   const links = [
     { name: "Photos", href: "/" },
     { name: "Collections", href: "/collections" },

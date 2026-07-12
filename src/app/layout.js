@@ -1,7 +1,5 @@
 import { Leckerli_One } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-
 const leckerli = Leckerli_One({
   weight: "400",
   subsets: ["latin"],
@@ -47,12 +45,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${leckerli.variable}`}>
       <body className="min-h-screen overflow-x-hidden flex flex-col bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50">
-        <Navbar />
         <div className="grow">{children}</div>
-        <footer className="py-10 text-center text-sm text-zinc-500 border-t border-zinc-200 dark:border-zinc-900 mt-20">
-          <span className="font-leckerli tracking-tight">Momented</span> with 🩶
-          by Jai.
-        </footer>
       </body>
     </html>
   );

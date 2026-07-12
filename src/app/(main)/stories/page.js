@@ -5,7 +5,9 @@ export const metadata = { title: "Stories" };
 export default async function StoriesPage() {
   const { data: stories, error } = await supabase
     .from("stories")
-    .select("*, photos!story_id(id, cloudinary_url)")
+    .select(
+      "id, title, cover_photo_id, created_at, photos!story_id(id, cloudinary_url)",
+    )
     .order("created_at", { ascending: false });
   if (error)
     return <div className="p-10 text-center">Failed to load stories.</div>;

@@ -5,7 +5,7 @@ export const metadata = { title: "Collections" };
 export default async function CollectionsPage() {
   const { data: collections, error } = await supabase
     .from("collections")
-    .select("*, photos!collection_id(id, cloudinary_url)")
+    .select("id, title, cover_photo_id, created_at, photos!collection_id(id, cloudinary_url)")
     .order("created_at", { ascending: false });
   if (error)
     return <div className="p-10 text-center">Failed to load collections.</div>;

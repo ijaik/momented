@@ -11,7 +11,7 @@ import {
   SubmitButton,
 } from "@/components/ui/AdminForms";
 import PhotoChecklist from "./PhotoChecklist";
-export default function StoryManager({ stories, allPhotos, reloadData }) {
+export default function StoryManager({ stories, allPhotos }) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingStoryId, setEditingStoryId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,6 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
       if (result.success) {
         event.target.reset();
         setIsCreating(false);
-        await reloadData();
       }
     } catch (_error) {
       alert("Failed to create story.");
@@ -37,7 +36,6 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
     try {
       await editStoryAction(id, new FormData(event.currentTarget));
       setEditingStoryId(null);
-      await reloadData();
     } catch (_error) {
       alert("Failed to update story.");
     } finally {
@@ -91,85 +89,85 @@ export default function StoryManager({ stories, allPhotos, reloadData }) {
             key={story.id}
             className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm"
           >
-            {editingStoryId === story.id
-              ? <form
-                  onSubmit={(e) => handleEdit(e, story.id)}
-                  className="flex flex-col gap-4"
-                >
-                  <FormInput
-                    type="text"
-                    name="title"
-                    defaultValue={story.title}
-                    required
-                    className="text-lg font-semibold"
+            {editingStoryId === story.id ? (
+              <form
+                onSubmit={(e) => handleEdit(e, story.id)}
+                className="flex flex-col gap-4"
+              >
+                <FormInput
+                  type="text"
+                  name="title"
+                  defaultValue={story.title}
+                  required
+                  className="text-lg font-semibold"
+                />
+                <FormTextarea
+                  name="content"
+                  defaultValue={story.content}
+                  required
+                  rows="8"
+                />
+                <PhotoChecklist
+                  photos={allPhotos}
+                  linkedPhotos={story.photos}
+                  initialCoverId={story.cover_photo_id}
+                />
+                <div className="flex gap-3 mt-4">
+                  <SubmitButton
+                    isLoading={isLoading}
+                    loadingText="Saving..."
+                    text="Save Story"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   />
-                  <FormTextarea
-                    name="content"
-                    defaultValue={story.content}
-                    required
-                    rows="8"
-                  />
-                  <PhotoChecklist
-                    photos={allPhotos}
-                    linkedPhotos={story.photos}
-                    initialCoverId={story.cover_photo_id}
-                  />
-                  <div className="flex gap-3 mt-4">
-                    <SubmitButton
-                      isLoading={isLoading}
-                      loadingText="Saving..."
-                      text="Save Story"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setEditingStoryId(null)}
-                      className="bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-2 rounded-lg font-medium"
-                    >
-                      Cancel
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingStoryId(null)}
+                    className="bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-2 rounded-lg font-medium"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <h3 className="font-bold text-2xl text-zinc-900 dark:text-white">
+                  {story.title}
+                </h3>
+                <p className="text-zinc-600 dark:text-zinc-400 mt-4 line-clamp-3 leading-relaxed">
+                  {story.content}
+                </p>
+                {story.photos && story.photos.length > 0 && (
+                  <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
+                    {story.photos.map((p) => (
+                      <Image
+                        key={p.id}
+                        src={p.cloudinary_url}
+                        alt={p.title}
+                        width={80}
+                        height={80}
+                        className="w-16 h-16 object-cover rounded-md shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                      />
+                    ))}
                   </div>
-                </form>
-              : <>
-                  <h3 className="font-bold text-2xl text-zinc-900 dark:text-white">
-                    {story.title}
-                  </h3>
-                  <p className="text-zinc-600 dark:text-zinc-400 mt-4 line-clamp-3 leading-relaxed">
-                    {story.content}
-                  </p>
-                  {story.photos && story.photos.length > 0 && (
-                    <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
-                      {story.photos.map((p) => (
-                        <Image
-                          key={p.id}
-                          src={p.cloudinary_url}
-                          alt={p.title}
-                          width={80}
-                          height={80}
-                          className="w-16 h-16 object-cover rounded-md shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                        />
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-4 mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                    <button
-                      type="button"
-                      onClick={() => setEditingStoryId(story.id)}
-                      className="text-sm font-semibold text-blue-600 dark:text-blue-400"
-                    >
-                      Edit Story
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        deleteStoryAction(story.id).then(reloadData)
-                      }
-                      className="text-sm font-semibold text-red-600 dark:text-red-400"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </>}
+                )}
+                <div className="flex gap-4 mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                  <button
+                    type="button"
+                    onClick={() => setEditingStoryId(story.id)}
+                    className="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                  >
+                    Edit Story
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteStoryAction(story.id)}
+                    className="text-sm font-semibold text-red-600 dark:text-red-400"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

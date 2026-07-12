@@ -11,12 +11,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
-export default function PhotoManager({
-  photos,
-  collections,
-  stories,
-  reloadData,
-}) {
+export default function PhotoManager({ photos, collections, stories }) {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [editingPhotoId, setEditingPhotoId] = useState(null);
@@ -66,7 +61,6 @@ export default function PhotoManager({
       });
       setStatus("Photo Uploaded Successfully!");
       form.reset();
-      await reloadData();
     } catch (error) {
       setStatus(`Error: ${error.message}`);
     } finally {
@@ -93,7 +87,6 @@ export default function PhotoManager({
         editForm.story_id,
       );
       setEditingPhotoId(null);
-      await reloadData();
     } catch (_error) {
       alert("Failed to save photo changes.");
     }
@@ -166,103 +159,103 @@ export default function PhotoManager({
               width={200}
               height={200}
               className="w-full sm:w-32 h-32 object-cover rounded-lg"
+              priority
             />
             <div className="flex-1 w-full">
-              {editingPhotoId === photo.id
-                ? <div className="flex flex-col gap-2">
-                    <FormInput
-                      value={editForm.title}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, title: e.target.value })
-                      }
-                    />
-                    <FormTextarea
-                      value={editForm.description}
+              {editingPhotoId === photo.id ? (
+                <div className="flex flex-col gap-2">
+                  <FormInput
+                    value={editForm.title}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, title: e.target.value })
+                    }
+                  />
+                  <FormTextarea
+                    value={editForm.description}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        description: e.target.value,
+                      })
+                    }
+                    rows="2"
+                  />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <FormSelect
+                      value={editForm.collection_id}
                       onChange={(e) =>
                         setEditForm({
                           ...editForm,
-                          description: e.target.value,
+                          collection_id: e.target.value,
                         })
                       }
-                      rows="2"
-                    />
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <FormSelect
-                        value={editForm.collection_id}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            collection_id: e.target.value,
-                          })
-                        }
-                        className="w-full sm:w-1/2"
-                      >
-                        <option value="">-- No Collection --</option>
-                        {collections.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.title}
-                          </option>
-                        ))}
-                      </FormSelect>
-                      <FormSelect
-                        value={editForm.story_id}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, story_id: e.target.value })
-                        }
-                        className="w-full sm:w-1/2"
-                      >
-                        <option value="">-- No Story --</option>
-                        {stories.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.title}
-                          </option>
-                        ))}
-                      </FormSelect>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => saveEdit(photo.id)}
-                        className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium"
-                      >
-                        Save
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingPhotoId(null)}
-                        className="bg-zinc-200 dark:bg-zinc-800 px-4 py-1.5 rounded text-sm font-medium"
-                      >
-                        Cancel
-                      </button>
-                    </div>
+                      className="w-full sm:w-1/2"
+                    >
+                      <option value="">-- No Collection --</option>
+                      {collections.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.title}
+                        </option>
+                      ))}
+                    </FormSelect>
+                    <FormSelect
+                      value={editForm.story_id}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, story_id: e.target.value })
+                      }
+                      className="w-full sm:w-1/2"
+                    >
+                      <option value="">-- No Story --</option>
+                      {stories.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.title}
+                        </option>
+                      ))}
+                    </FormSelect>
                   </div>
-                : <div>
-                    <h3 className="font-bold text-lg">{photo.title}</h3>
-                    <p className="text-sm text-zinc-500 mt-1 line-clamp-1">
-                      {photo.description}
-                    </p>
-                    <div className="flex gap-3 mt-4">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(photo)}
-                        className="text-sm font-medium text-blue-600 dark:text-blue-400"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          deletePhotoAction(
-                            photo.id,
-                            photo.cloudinary_public_id,
-                          ).then(reloadData)
-                        }
-                        className="text-sm font-medium text-red-600 dark:text-red-400"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>}
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(photo.id)}
+                      className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium"
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPhotoId(null)}
+                      className="bg-zinc-200 dark:bg-zinc-800 px-4 py-1.5 rounded text-sm font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="font-bold text-lg">{photo.title}</h3>
+                  <p className="text-sm text-zinc-500 mt-1 line-clamp-1">
+                    {photo.description}
+                  </p>
+                  <div className="flex gap-3 mt-4">
+                    <button
+                      type="button"
+                      onClick={() => startEdit(photo)}
+                      className="text-sm font-medium text-blue-600 dark:text-blue-400"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        deletePhotoAction(photo.id, photo.cloudinary_public_id)
+                      }
+                      className="text-sm font-medium text-red-600 dark:text-red-400"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}

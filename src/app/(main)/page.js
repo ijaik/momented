@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 export default async function Home() {
   const { data: photos, error } = await supabase
     .from("photos")
-    .select("*")
+    .select("id, title, cloudinary_url, width, height, camera_model")
     .order("created_at", { ascending: false });
   if (error) return <div className="p-10 text-center">Failed to load.</div>;
   return (
