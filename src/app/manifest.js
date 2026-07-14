@@ -23,19 +23,16 @@ export default function manifest() {
         src: "/icons/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
-        purpose: "any maskable",
       },
       {
         src: "/icons/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
-        purpose: "any maskable",
       },
       {
         src: "/icons/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png",
-        purpose: "any maskable",
       },
     ],
     shortcuts: [
@@ -77,6 +74,22 @@ export default function manifest() {
             type: "image/png",
           },
         ],
+      },
+    ],
+    screenshots: [
+      {
+        src: "/screenshots/mobile.png",
+        sizes: "720x1280",
+        type: "image/png",
+        form_factor: "narrow",
+        label: "Mobile view of the photo feed",
+      },
+      {
+        src: "/screenshots/desktop.png",
+        sizes: "1280x720",
+        type: "image/png",
+        form_factor: "wide",
+        label: "Desktop view of the photo feed",
       },
     ],
   };
