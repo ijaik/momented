@@ -39,30 +39,30 @@ Formatting/Linting: Biome
 git clone https://github.com/ijaik/momented.git
 cd momented
 
-
 2. Install dependencies
 
 bun install
 
-
 3. Set up Environment Variables
 
-Create a .env.local file in the root directory and add the following keys. You will need accounts with Supabase and Cloudinary.
+Create a .env.local file in the root directory and add the following keys. You will need accounts with Supabase and Cloudinary to power the CMS and database.
 
 # Supabase
+
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
 SUPABASE_SECRET_KEY=your_supabase_service_role_key
 
 # Cloudinary
+
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
 # Admin Authentication
+
 ADMIN_PASSWORD_HASH=your_bcrypt_hashed_password
 ADMIN_SESSION_SECRET=a_long_random_secure_string_for_jwt
-
 
 (Note: Generate ADMIN_PASSWORD_HASH by hashing your desired admin password using bcrypt).
 
@@ -70,13 +70,14 @@ ADMIN_SESSION_SECRET=a_long_random_secure_string_for_jwt
 
 bun run dev
 
-
-Open http://localhost:3000 with your browser to see the result. To access the CMS, navigate to /admin/login.
+Open http://localhost:3000 with your browser to see the live result. To access the admin panel, navigate to /admin/login.
 
 📄 License
 
-Codebase: The source code in this repository is licensed under the MIT License. You are free to use, modify, and distribute the code to build your own projects.
+This repository is dual-licensed to accommodate both open-source software development and open-sharing of photography assets.
 
-Photography & Content: All original photography and written narratives are licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0).
+Codebase: The source code in this repository is licensed under the MIT License. You are free to copy, modify, distribute, and use the code to build your own portfolio or projects.
 
-Art is meant to be shared. You are free to download, share, and adapt the photography for any purpose, even commercially, provided you give appropriate credit to the original creator.
+Photography & Content: All original photography, written stories, and creative descriptions are licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+Art is meant to be shared. You are free to download, copy, share, and adapt the photography for any purpose, even commercially, provided you give appropriate credit to the original creator.
