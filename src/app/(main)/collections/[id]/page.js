@@ -3,7 +3,7 @@ import PhotoCard from "@/components/PhotoCard";
 import { supabase } from "@/lib/supabase";
 export default async function SingleCollectionPage({ params }) {
   const { id } = await params;
-    const { data: collection } = await supabase
+  const { data: collection } = await supabase
     .from("collections")
     .select("title, description")
     .eq("id", id)

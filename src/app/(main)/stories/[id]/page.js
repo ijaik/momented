@@ -3,7 +3,7 @@ import PhotoCard from "@/components/PhotoCard";
 import { supabase } from "@/lib/supabase";
 export default async function SingleStoryPage({ params }) {
   const { id } = await params;
-    const { data: story } = await supabase
+  const { data: story } = await supabase
     .from("stories")
     .select("title, created_at, content")
     .eq("id", id)

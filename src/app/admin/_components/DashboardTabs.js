@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/app/actions/auth";
+
 const PhotoManager = dynamic(() => import("./PhotoManager"), {
   loading: () => (
     <p className="font-medium p-6 text-zinc-500">Loading Photos...</p>

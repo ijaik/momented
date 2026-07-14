@@ -12,7 +12,7 @@ export default function Navbar() {
     { name: "Me", href: "/me" },
   ];
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/70 dark:bg-black/70 border-b border-zinc-200 dark:border-zinc-900 transition-all">
+    <nav className="fixed top-0 z-50 w-full backdrop-blur-xl bg-white/70 dark:bg-black/70 border-b border-zinc-200 dark:border-zinc-900 transition-all">
       <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
         <Link
           href="/"
