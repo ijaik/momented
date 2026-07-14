@@ -94,5 +94,5 @@ Create a `.env.local` file in the root directory. You will need active accounts 
 
 This repository is dual-licensed to accommodate both open-source software development and the open sharing of photography assets.
 
-- **💻 Codebase:** The source code in this repository is licensed under the MIT License.[cite: 2, 4] You are free to use, modify, and distribute the code to build your own projects.
-- **🖼️ Photography & Content:** All original photography, content, and written narratives are licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0).[cite: 3, 4] You are free to download, share, and adapt the photography for any purpose, even commercially, provided you give appropriate credit to the original creator.
+- **💻 Codebase:** The source code in this repository is licensed under the MIT License. You are free to use, modify, and distribute the code to build your own projects.
+- **🖼️ Photography & Content:** All original photography, content, and written narratives are licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). You are free to download, share, and adapt the photography for any purpose, even commercially, provided you give appropriate credit to the original creator.
