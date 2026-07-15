@@ -20,19 +20,28 @@ export default function manifest() {
     categories: ["photo", "lifestyle", "portfolio", "entertainment"],
     icons: [
       {
+        src: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "monochrome maskable",
+      },
+      {
+        src: "/icons/android-chrome-144x144.png",
+        sizes: "144x144",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
         src: "/icons/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
+        purpose: "monochrome maskable",
       },
       {
         src: "/icons/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
-      },
-      {
-        src: "/icons/apple-touch-icon.png",
-        sizes: "180x180",
-        type: "image/png",
+        purpose: "monochrome maskable",
       },
     ],
     shortcuts: [
@@ -46,6 +55,7 @@ export default function manifest() {
             src: "/icons/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "monochrome maskable",
           },
         ],
       },
@@ -59,6 +69,7 @@ export default function manifest() {
             src: "/icons/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "monochrome maskable",
           },
         ],
       },
@@ -72,6 +83,7 @@ export default function manifest() {
             src: "/icons/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
+            purpose: "monochrome maskable",
           },
         ],
       },
