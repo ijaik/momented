@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <h1>📷 Momented</h1>
+  <h1><img src="/public/icons/favicon-32x32.png" alt="Momented Logo" /> Momented</h1>
   <p>
     <b>A minimalist photo journal exploring light, shadow, and the moments in between.</b>
   </p>

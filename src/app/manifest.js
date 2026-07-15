@@ -1,91 +1,72 @@
+const icon = [
+  {
+    src: "/icons/icon-192.png",
+    sizes: "192x192",
+    type: "image/png",
+    purpose: "any",
+  },
+  {
+    src: "/icons/icon-512.png",
+    sizes: "512x512",
+    type: "image/png",
+    purpose: "any",
+  },
+  {
+    src: "/icons/icon-monochrome-192.png",
+    sizes: "192x192",
+    type: "image/png",
+    purpose: "monochrome maskable",
+  },
+  {
+    src: "/icons/icon-monochrome-512.png",
+    sizes: "512x512",
+    type: "image/png",
+    purpose: "monochrome maskable",
+  },
+];
 export default function manifest() {
   return {
+    id: "/",
+    start_url: "/",
+    scope: "/",
     name: "Momented | Captured Moment",
     short_name: "Momented",
     description:
       "A momented journal by Jai, exploring light, shadow, and moments in between.",
-    start_url: "/",
-    id: "/",
-    scope: "/",
+    lang: "en-US",
+    dir: "ltr",
     display: "standalone",
     display_override: ["window-controls-overlay", "standalone"],
+    orientation: "portrait",
     launch_handler: {
       client_mode: ["navigate-existing", "auto"],
     },
-    orientation: "portrait",
-    lang: "en-US",
-    dir: "ltr",
-    background_color: "#ffffff",
+    background_color: "#fafafa",
     theme_color: "#ffffff",
+    prefer_related_applications: false,
     categories: ["photo", "lifestyle", "portfolio", "entertainment"],
-    icons: [
-      {
-        src: "/icons/apple-touch-icon.png",
-        sizes: "180x180",
-        type: "image/png",
-        purpose: "monochrome maskable",
-      },
-      {
-        src: "/icons/android-chrome-144x144.png",
-        sizes: "144x144",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "/icons/android-chrome-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "monochrome maskable",
-      },
-      {
-        src: "/icons/android-chrome-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "monochrome maskable",
-      },
-    ],
+    icons: icon,
     shortcuts: [
       {
         name: "View Collections",
         short_name: "Collections",
-        description: "Collections of momented",
+        description: "Browse curated photo collections.",
         url: "/collections",
-        icons: [
-          {
-            src: "/icons/android-chrome-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "monochrome maskable",
-          },
-        ],
+        icons: icon,
       },
       {
         name: "Read Stories",
         short_name: "Stories",
-        description: "Thoughts behind the momented",
+        description: "Read the stories behind each captured moment.",
         url: "/stories",
-        icons: [
-          {
-            src: "/icons/android-chrome-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "monochrome maskable",
-          },
-        ],
+        icons: icon,
       },
       {
         name: "About Jai",
         short_name: "About",
-        description: "Learn more about the creator",
+        description: "Learn more about the creator.",
         url: "/me",
-        icons: [
-          {
-            src: "/icons/android-chrome-192x192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "monochrome maskable",
-          },
-        ],
+        icons: icon,
       },
     ],
     screenshots: [
@@ -94,14 +75,14 @@ export default function manifest() {
         sizes: "720x1280",
         type: "image/png",
         form_factor: "narrow",
-        label: "Mobile view of the photo feed",
+        label: "Momented on mobile",
       },
       {
         src: "/screenshots/desktop.png",
         sizes: "1280x720",
         type: "image/png",
         form_factor: "wide",
-        label: "Desktop view of the photo feed",
+        label: "Momented on desktop",
       },
     ],
   };
