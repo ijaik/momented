@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { deletePhotoAction, editPhotoAction } from "@/app/actions/admin";
 import {
   getCloudinarySignatureAction,
@@ -12,84 +12,73 @@ import {
   SubmitButton,
 } from "@/components/ui/AdminForms";
 export default function PhotoManager({ photos, collections, stories }) {
-  const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [editingPhotoId, setEditingPhotoId] = useState(null);
-  const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    collection_id: "",
-    story_id: "",
-  });
+  const [isPending, startTransition] = useTransition();
   async function handleUpload(event) {
     event.preventDefault();
-    setIsLoading(true);
     setStatus("Preparing upload...");
-    try {
-      const form = event.currentTarget;
-      const file = form.elements.photo.files[0];
-      if (!file) throw new Error("Please select a photo to upload.");
-      if (file.size > 15 * 1024 * 1024)
-        throw new Error("File is too large. Maximum size is 15MB.");
-      const signData = await getCloudinarySignatureAction();
-      setStatus("Uploading to Cloudinary...");
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("api_key", signData.apiKey);
-      formData.append("timestamp", signData.timestamp);
-      formData.append("signature", signData.signature);
-      formData.append("folder", signData.folder);
-      formData.append("image_metadata", "true");
-      const uploadRes = await fetch(
-        `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
-        { method: "POST", body: formData },
-      );
-      if (!uploadRes.ok) throw new Error("Failed to upload to Cloudinary");
-      const uploadData = await uploadRes.json();
-      setStatus("Saving photo data...");
-      await savePhotoToDbAction({
-        title: form.elements.title.value,
-        description: form.elements.description.value,
-        artistInput: form.elements.artist.value,
-        collectionId: form.elements.collection_id.value,
-        storyId: form.elements.story_id.value,
-        secure_url: uploadData.secure_url,
-        public_id: uploadData.public_id,
-        width: uploadData.width,
-        height: uploadData.height,
-        image_metadata: uploadData.image_metadata,
-      });
-      setStatus("Photo Uploaded Successfully!");
-      form.reset();
-    } catch (error) {
-      setStatus(`Error: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-      setTimeout(() => setStatus(""), 3000);
-    }
-  }
-  function startEdit(photo) {
-    setEditingPhotoId(photo.id);
-    setEditForm({
-      title: photo.title,
-      description: photo.description || "",
-      collection_id: photo.collection_id || "",
-      story_id: photo.story_id || "",
+    const form = event.currentTarget;
+    startTransition(async () => {
+      try {
+        const file = form.elements.photo.files[0];
+        if (!file) throw new Error("Please select a photo to upload.");
+        if (file.size > 15 * 1024 * 1024)
+          throw new Error("File too large (Max 15MB).");
+        const signData = await getCloudinarySignatureAction();
+        setStatus("Uploading to Cloudinary...");
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", signData.apiKey);
+        formData.append("timestamp", signData.timestamp);
+        formData.append("signature", signData.signature);
+        formData.append("folder", signData.folder);
+        formData.append("image_metadata", "true");
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
+          { method: "POST", body: formData },
+        );
+        if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
+        const uploadData = await uploadRes.json();
+        setStatus("Saving photo data...");
+        await savePhotoToDbAction({
+          title: form.elements.title.value,
+          description: form.elements.description.value,
+          artistInput: form.elements.artist.value,
+          collectionId: form.elements.collection_id.value,
+          storyId: form.elements.story_id.value,
+          secure_url: uploadData.secure_url,
+          public_id: uploadData.public_id,
+          width: uploadData.width,
+          height: uploadData.height,
+          image_metadata: uploadData.image_metadata,
+        });
+        setStatus("Photo Uploaded Successfully!");
+        form.reset();
+      } catch (error) {
+        setStatus(`Error: ${error.message}`);
+      } finally {
+        setTimeout(() => setStatus(""), 3000);
+      }
     });
   }
-  async function saveEdit(id) {
-    try {
-      await editPhotoAction(
-        id,
-        editForm.title,
-        editForm.description,
-        editForm.collection_id,
-        editForm.story_id,
-      );
-      setEditingPhotoId(null);
-    } catch (_error) {
-      alert("Failed to save photo changes.");
-    }
+  function saveEdit(event, id) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
+      try {
+        await editPhotoAction(
+          id,
+          formData.get("title"),
+          formData.get("description"),
+          formData.get("collection_id"),
+          formData.get("story_id"),
+        );
+        setEditingPhotoId(null);
+      } catch {
+        alert("Failed to save changes.");
+      }
+    });
   }
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
@@ -134,7 +123,7 @@ export default function PhotoManager({ photos, collections, stories }) {
               className="text-sm cursor-pointer border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg"
             />
             <SubmitButton
-              isLoading={isLoading}
+              isLoading={isPending}
               loadingText="Uploading..."
               text="Upload Photo"
               className="bg-black dark:bg-white text-white dark:text-black w-full"
@@ -163,32 +152,24 @@ export default function PhotoManager({ photos, collections, stories }) {
             />
             <div className="flex-1 w-full">
               {editingPhotoId === photo.id
-                ? <div className="flex flex-col gap-2">
+                ? <form
+                    onSubmit={(e) => saveEdit(e, photo.id)}
+                    className="flex flex-col gap-2"
+                  >
                     <FormInput
-                      value={editForm.title}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, title: e.target.value })
-                      }
+                      name="title"
+                      defaultValue={photo.title}
+                      required
                     />
                     <FormTextarea
-                      value={editForm.description}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          description: e.target.value,
-                        })
-                      }
+                      name="description"
+                      defaultValue={photo.description}
                       rows="2"
                     />
                     <div className="flex flex-col sm:flex-row gap-2">
                       <FormSelect
-                        value={editForm.collection_id}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            collection_id: e.target.value,
-                          })
-                        }
+                        name="collection_id"
+                        defaultValue={photo.collection_id || ""}
                         className="w-full sm:w-1/2"
                       >
                         <option value="">-- No Collection --</option>
@@ -199,10 +180,8 @@ export default function PhotoManager({ photos, collections, stories }) {
                         ))}
                       </FormSelect>
                       <FormSelect
-                        value={editForm.story_id}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, story_id: e.target.value })
-                        }
+                        name="story_id"
+                        defaultValue={photo.story_id || ""}
                         className="w-full sm:w-1/2"
                       >
                         <option value="">-- No Story --</option>
@@ -214,13 +193,12 @@ export default function PhotoManager({ photos, collections, stories }) {
                       </FormSelect>
                     </div>
                     <div className="flex gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() => saveEdit(photo.id)}
+                      <SubmitButton
+                        isLoading={isPending}
+                        text="Save"
+                        loadingText="Saving..."
                         className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium"
-                      >
-                        Save
-                      </button>
+                      />
                       <button
                         type="button"
                         onClick={() => setEditingPhotoId(null)}
@@ -229,7 +207,7 @@ export default function PhotoManager({ photos, collections, stories }) {
                         Cancel
                       </button>
                     </div>
-                  </div>
+                  </form>
                 : <div>
                     <h3 className="font-bold text-lg">{photo.title}</h3>
                     <p className="text-sm text-zinc-500 mt-1 line-clamp-1">
@@ -238,7 +216,7 @@ export default function PhotoManager({ photos, collections, stories }) {
                     <div className="flex gap-3 mt-4">
                       <button
                         type="button"
-                        onClick={() => startEdit(photo)}
+                        onClick={() => setEditingPhotoId(photo.id)}
                         className="text-sm font-medium text-blue-600 dark:text-blue-400"
                       >
                         Edit
