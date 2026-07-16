@@ -32,7 +32,7 @@ export default async function SingleCollectionPage({ params }) {
             {collection.title}
           </h1>
           {collection.description && (
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed">
+            <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed whitespace-pre-wrap">
               {collection.description}
             </p>
           )}

@@ -69,7 +69,7 @@ export default async function PhotoDetail({ params }) {
                   {photo.title}
                 </h1>
                 {!!photo.description && (
-                  <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed">
+                  <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
                     {photo.description}
                   </p>
                 )}
