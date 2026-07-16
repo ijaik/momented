@@ -53,7 +53,7 @@ export default function manifest() {
     launch_handler: {
       client_mode: ["navigate-existing", "auto"],
     },
-    background_color: "#fafafa",
+    background_color: "#ffffff",
     theme_color: "#ffffff",
     prefer_related_applications: false,
     categories: ["photo", "lifestyle", "portfolio", "entertainment"],
