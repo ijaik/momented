@@ -10,11 +10,11 @@ export default function MePage() {
             Hi, I'm Jai.
           </h1>
           <p className="text-xl md:text-3xl font-medium text-zinc-500 dark:text-zinc-400 tracking-tight">
-            I am a{" "}
+            I am{" "}
             <del className="decoration-zinc-300 dark:decoration-zinc-700 decoration-[3px]">
-              photographer
-            </del>
-            . I am an observer.
+              a photographer
+            </del>{" "}
+            an observer.
           </p>
         </header>
         <article className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 text-lg md:text-xl text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
