@@ -13,8 +13,8 @@ export default async function Home() {
           Photos
         </h1>
         <p className="text-[25px] text-zinc-400 dark:text-zinc-600">
-          One <span className="font-leckerli tracking-tight">Momented</span> at
-          a time.
+          <span className="font-leckerli tracking-tight">Momented</span> at a
+          time.
         </p>
       </header>
       <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">

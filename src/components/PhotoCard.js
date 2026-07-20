@@ -4,7 +4,7 @@ export default function PhotoCard({ photo, index = 10 }) {
   return (
     <Link
       href={`/photo/${photo.id}`}
-      className="block break-inside-avoid relative group rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500"
+      className="block break-inside-avoid relative group rounded-[10px] overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500"
     >
       <Image
         src={photo.cloudinary_url}
