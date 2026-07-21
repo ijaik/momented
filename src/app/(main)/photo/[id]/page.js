@@ -52,15 +52,17 @@ export default async function PhotoDetail({ params }) {
           &larr; Back to Photos
         </Link>
         <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
-          <div className="w-full lg:w-2/3 h-fit lg:sticky lg:top-28 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900/50 rounded-[10px] overflow-hidden p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-            <Image
-              src={photo.cloudinary_url}
-              alt={photo.title}
-              width={photo.width}
-              height={photo.height}
-              className="w-full h-auto object-contain max-h-[85vh]"
-              priority
-            />
+          <div className="w-full lg:w-2/3 h-fit lg:sticky lg:top-28">
+            <div className="w-full bg-zinc-100 dark:bg-zinc-900/50 p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <Image
+                src={photo.cloudinary_url}
+                alt={photo.title}
+                width={photo.width}
+                height={photo.height}
+                className="w-full h-auto block"
+                priority
+              />
+            </div>
           </div>
           <div className="w-full lg:w-1/3 flex flex-col gap-6">
             <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm flex flex-col gap-5">

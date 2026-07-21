@@ -40,7 +40,7 @@ export default function DownloadButton({
       >
         {isDownloading ? "Downloading..." : "Download High-Res"}
       </button>
-      <div className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">
+      <div className="text-zinc-500 dark:text-zinc-400 text-sm text-center font-medium">
         {downloadCount} {downloadCount === 1 ? "Download" : "Downloads"}
       </div>
     </div>
