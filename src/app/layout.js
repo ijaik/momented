@@ -44,7 +44,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${leckerli.variable}`}>
-      <body className="min-h-screen overflow-x-hidden flex flex-col bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50">
+      <body className="min-h-screen overflow-x-hidden flex flex-col bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 selection:bg-zinc-900 dark:selection:bg-white selection:text-white dark:selection:text-black">
         <div className="grow">{children}</div>
       </body>
     </html>
