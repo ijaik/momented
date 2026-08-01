@@ -74,10 +74,10 @@ export default function manifest() {
         icons: icon,
       },
       {
-        name: "About Jai",
+        name: "About Momented",
         short_name: "About",
-        description: "Learn more about the creator.",
-        url: "/me",
+        description: "Learn more about the momented.",
+        url: "/about",
         icons: icon,
       },
     ],

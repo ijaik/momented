@@ -6,7 +6,7 @@
   </p>
   <p>
     <a href="https://github.com/ijaik/momented/blob/main/LICENSE"><img src="https://img.shields.io/badge/Code_License-MIT-blue.svg?style=for-the-badge" alt="MIT License" /></a>
-    <a href="https://github.com/ijaik/momented/blob/main/LICENSE-MEDIA"><img src="https://img.shields.io/badge/Content_License-CC_BY_4.0-purple.svg?style=for-the-badge" alt="CC BY 4.0 License" /></a>
+    <a href="https://github.com/ijaik/momented/blob/main/LICENSE-MEDIA"><img src="https://img.shields.io/badge/Content_License-CC0_1.0-purple.svg?style=for-the-badge" alt="CC0 1.0 License" /></a>
     <img src="https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js" alt="Next.js" />
     <img src="https://img.shields.io/badge/Tailwind-v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
   </p>
@@ -95,4 +95,4 @@ Create a `.env.local` file in the root directory. You will need active accounts 
 This repository is dual-licensed to accommodate both open-source software development and the open sharing of photography assets.
 
 - **💻 Codebase:** The source code in this repository is licensed under the MIT License. You are free to use, modify, and distribute the code to build your own projects.
-- **🖼️ Photography & Content:** All original photography, content, and written narratives are licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0). You are free to download, share, and adapt the photography for any purpose, even commercially, provided you give appropriate credit to the original creator.
+- **🖼️ Photography & Content:** All original photography, content, and written narratives are dedicated to the public domain under **CC0 1.0 Universal**. The photographs can speak for themselves. You are free to download, share, and adapt the photography for any purpose, even commercially, without asking permission. If you mention where they came from, I'm grateful, but it is never legally required.
