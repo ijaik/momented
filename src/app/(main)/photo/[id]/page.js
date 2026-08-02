@@ -148,28 +148,28 @@ export async function generateMetadata({ params }) {
   const description =
     photo.description ||
     `View ${photo.title}, shot on ${photo.camera_model || "camera"}.`;
-  let socialImageUrl = photo.cloudinary_url?.includes("/upload/")
-    ? photo.cloudinary_url.replace(
-        "/upload/",
-        "/upload/c_fill,w_800,h_418,q_60,f_jpg/",
-      )
-    : photo.cloudinary_url;
-  if (socialImageUrl && !socialImageUrl.startsWith("http")) {
-    socialImageUrl = `https://${socialImageUrl.replace(/^\/\//, "")}`;
+  const pageUrl = `https://momented.vercel.app/photo/${id}`;
+  let imageUrl = photo.cloudinary_url;
+  if (imageUrl?.includes("/upload/")) {
+    imageUrl = imageUrl.replace("/upload/", "/upload/f_jpg,q_auto/");
   }
   return {
+    metadataBase: new URL("https://momented.vercel.app"),
     title,
     description,
     openGraph: {
       title,
       description,
+      url: pageUrl,
+      siteName: "Momented",
       type: "website",
       images: [
         {
-          url: socialImageUrl,
-          secureUrl: socialImageUrl,
-          width: 800,
-          height: 418,
+          url: imageUrl,
+          secureUrl: imageUrl,
+          type: "image/jpeg",
+          width: photo.width || 1200,
+          height: photo.height || 630,
           alt: title,
         },
       ],
@@ -178,7 +178,7 @@ export async function generateMetadata({ params }) {
       card: "summary_large_image",
       title,
       description,
-      images: [socialImageUrl],
+      images: [imageUrl],
     },
   };
 }
