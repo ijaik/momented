@@ -1,8 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
+import ShareButton from "@/components/ShareButton";
 import { supabase } from "@/lib/supabase";
 
+const getDisplayDate = (createdAt, takenAt) => {
+  if (takenAt) {
+    const formattedExif = takenAt.replace(
+      /^(\d{4}):(\d{2}):(\d{2})/,
+      "$1-$2-$3",
+    );
+    return new Date(formattedExif).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  return new Date(createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 const InfoItem = ({ label, value }) =>
   value
     ? <div>
@@ -26,22 +45,8 @@ export default async function PhotoDetail({ params }) {
   if (!photo) {
     return <div className="p-20 text-center text-xl">Photo not found.</div>;
   }
-  let displayDate = new Date(photo.created_at).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  if (photo.taken_at) {
-    const formattedExif = photo.taken_at.replace(
-      /^(\d{4}):(\d{2}):(\d{2})/,
-      "$1-$2-$3",
-    );
-    displayDate = new Date(formattedExif).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
+  const displayDate = getDisplayDate(photo.created_at, photo.taken_at);
+  const downloadCount = photo.downloads || 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -109,13 +114,20 @@ export default async function PhotoDetail({ params }) {
                 <InfoItem label="Shutter Speed" value={photo.shutter_speed} />
                 <InfoItem label="ISO" value={photo.iso} />
                 <InfoItem label="Photographed by" value={photo.artist} />
+                <InfoItem
+                  label={downloadCount === 1 ? "Download" : "Downloads"}
+                  value={downloadCount.toString()}
+                />
               </div>
             </div>
-            <div>
+            <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6 flex flex-col gap-3">
               <DownloadButton
                 photoId={photo.id}
                 cloudinaryUrl={photo.cloudinary_url}
-                initialCount={photo.downloads}
+              />
+              <ShareButton
+                title={photo.title}
+                imageUrl={photo.cloudinary_url}
               />
             </div>
           </div>
