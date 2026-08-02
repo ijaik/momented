@@ -145,13 +145,16 @@ export async function generateMetadata({ params }) {
     .single();
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title
-    ? `${photo.title} — Beautiful Photography on Momented`
-    : "Stunning Photography Gallery — Momented";
+    ? `${photo.title} | Momented`
+    : "Photography Gallery | Momented";
   const description = photo.description
     ? `${photo.description} Captured on ${photo.camera_model || "camera"}. View this and more high-quality photography on Momented.`
     : `Explore this incredible photograph "${photo.title}", beautifully captured on ${photo.camera_model || "camera"}. Discover the full collection on Momented.`;
   const pageUrl = `https://momented.vercel.app/photo/${id}`;
-  const imageUrl = photo.cloudinary_url;
+  let imageUrl = photo.cloudinary_url;
+  if (imageUrl?.includes("/upload/")) {
+    imageUrl = imageUrl.replace("/upload/", "/upload/t_social_share/");
+  }
   return {
     metadataBase: new URL("https://momented.vercel.app"),
     title,
@@ -167,8 +170,8 @@ export async function generateMetadata({ params }) {
           url: imageUrl,
           secureUrl: imageUrl,
           type: "image/jpeg",
-          width: photo.width || 1200,
-          height: photo.height || 630,
+          width: 1200,
+          height: 630,
           alt: title,
         },
       ],
