@@ -62,14 +62,21 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
       clearTimeout(copyTimerRef.current);
     };
   }, [close]);
-  async function getShareFile() {
+  const getShareFile = useCallback(async () => {
     if (!imageUrl) return null;
     if (shareFileRef.current === undefined) {
       const file = await imageUrlToFile(imageUrl);
       if (file) shareFileRef.current = file;
     }
     return shareFileRef.current ?? null;
-  }
+  }, [imageUrl]);
+  useEffect(() => {
+    if (imageUrl && supportsNativeShare) {
+      getShareFile().catch((err) => {
+        console.warn("Pre-fetch for share file failed:", err);
+      });
+    }
+  }, [imageUrl, supportsNativeShare, getShareFile]);
   async function copyLink() {
     try {
       await copyText(shareUrl);
