@@ -12,13 +12,14 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
   const copyTimerRef = useRef(null);
   const focusablesRef = useRef([]);
   const shareFileRef = useRef(undefined);
+  const sharePromiseRef = useRef(null);
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return url || "";
     return new URL(url || window.location.href, window.location.origin).href;
   }, [url]);
   const shareText = title
-    ? `Check out "${title}" on Momented`
-    : "Check out Momented";
+    ? `Check out "${title}" on Momented\n\nVisit the link for full resolution & downloads.`
+    : "Check out Momented\n\nVisit the link for full resolution & downloads.";
   const supportsNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
   const close = useCallback(() => {
@@ -64,11 +65,16 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
   }, [close]);
   const getShareFile = useCallback(async () => {
     if (!imageUrl) return null;
-    if (shareFileRef.current === undefined) {
+    if (shareFileRef.current !== undefined) return shareFileRef.current;
+    if (sharePromiseRef.current) {
+      return sharePromiseRef.current;
+    }
+    sharePromiseRef.current = (async () => {
       const file = await imageUrlToFile(imageUrl);
       if (file) shareFileRef.current = file;
-    }
-    return shareFileRef.current ?? null;
+      return shareFileRef.current ?? null;
+    })();
+    return sharePromiseRef.current;
   }, [imageUrl]);
   useEffect(() => {
     if (imageUrl && supportsNativeShare) {
@@ -193,8 +199,7 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
                 {isSharing ? "Preparing…" : "Share the photo"}
               </button>
               <p className="mt-2 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
-                Sends the actual image via WhatsApp, Instagram, Telegram and
-                more.
+                Sends a quick preview image.
               </p>
             </div>
           )}

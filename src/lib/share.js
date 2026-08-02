@@ -1,13 +1,17 @@
 export function toJpegUrl(imageUrl) {
   if (!imageUrl.includes("/upload/")) return imageUrl;
-  const uploadIndex = imageUrl.indexOf("/upload/") + "/upload/".length;
-  const rest = imageUrl.slice(uploadIndex);
-  const segment = rest.match(/^[^/]*/)[0];
-  const hasFlag = segment.split(",").some((p) => p.startsWith("f_"));
-  if (!hasFlag) {
-    return `${imageUrl.slice(0, uploadIndex)}f_jpg/${rest}`;
+  const parts = imageUrl.split("/upload/");
+  const base = `${parts[0]}/upload/`;
+  let rest = parts[1];
+  const firstSegment = rest.split("/")[0];
+  if (
+    firstSegment.includes(",") ||
+    firstSegment.startsWith("f_") ||
+    firstSegment.startsWith("c_")
+  ) {
+    rest = rest.substring(firstSegment.length + 1);
   }
-  return `${imageUrl.slice(0, uploadIndex)}${segment.replace(/f_[a-z0-9_]+/, "f_jpg")}${rest.slice(segment.length)}`;
+  return `${base}c_limit,w_1600,q_auto,f_jpg/${rest}`;
 }
 export async function imageUrlToFile(imageUrl) {
   const jpegUrl = toJpegUrl(imageUrl);
