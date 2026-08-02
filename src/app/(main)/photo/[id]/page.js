@@ -144,22 +144,37 @@ export async function generateMetadata({ params }) {
     .eq("id", id)
     .single();
   if (!photo) return { title: "Photo Not Found" };
+  const title = photo.title || "Momented Photo";
+  const description =
+    photo.description ||
+    `View ${photo.title}, shot on ${photo.camera_model || "camera"}.`;
+  const socialImageUrl = photo.cloudinary_url?.includes("/upload/")
+    ? photo.cloudinary_url.replace(
+        "/upload/",
+        "/upload/c_fill,w_1200,h_630,q_auto,f_jpg/",
+      )
+    : photo.cloudinary_url;
   return {
-    title: `${photo.title}`,
-    description:
-      photo.description ||
-      `View ${photo.title}, shot on ${photo.camera_model || "camera"}.`,
+    title,
+    description,
     openGraph: {
-      title: photo.title,
-      description: photo.description || `A photograph by Jai.`,
+      title,
+      description,
+      type: "website",
       images: [
         {
-          url: photo.cloudinary_url,
-          width: photo.width,
-          height: photo.height,
-          alt: photo.title,
+          url: socialImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
         },
       ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [socialImageUrl],
     },
   };
 }
