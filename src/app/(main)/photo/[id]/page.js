@@ -148,12 +148,15 @@ export async function generateMetadata({ params }) {
   const description =
     photo.description ||
     `View ${photo.title}, shot on ${photo.camera_model || "camera"}.`;
-  const socialImageUrl = photo.cloudinary_url?.includes("/upload/")
+  let socialImageUrl = photo.cloudinary_url?.includes("/upload/")
     ? photo.cloudinary_url.replace(
         "/upload/",
-        "/upload/c_fill,w_1200,h_630,q_auto,f_jpg/",
+        "/upload/c_fill,w_800,h_418,q_60,f_jpg/",
       )
     : photo.cloudinary_url;
+  if (socialImageUrl && !socialImageUrl.startsWith("http")) {
+    socialImageUrl = `https://${socialImageUrl.replace(/^\/\//, "")}`;
+  }
   return {
     title,
     description,
@@ -164,8 +167,9 @@ export async function generateMetadata({ params }) {
       images: [
         {
           url: socialImageUrl,
-          width: 1200,
-          height: 630,
+          secureUrl: socialImageUrl,
+          width: 800,
+          height: 418,
           alt: title,
         },
       ],
