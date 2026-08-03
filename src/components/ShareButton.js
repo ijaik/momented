@@ -6,6 +6,7 @@ import { Icons } from "@/components/ui/Icons";
 const ShareDialog = dynamic(() => import("./ShareDialog"), { ssr: false });
 export default function ShareButton({
   title = "",
+  photoId,
   url,
   imageUrl,
   variant = "default",
@@ -40,6 +41,7 @@ export default function ShareButton({
       {isOpen && (
         <ShareDialog
           title={title}
+          photoId={photoId}
           url={url}
           imageUrl={imageUrl}
           onClose={close}

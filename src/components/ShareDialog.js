@@ -1,9 +1,18 @@
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icons } from "@/components/ui/Icons";
 import { copyText, imageUrlToFile } from "@/lib/share";
-export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
+import { supabase } from "@/lib/supabase";
+export default function ShareDialog({
+  title = "",
+  photoId,
+  url,
+  imageUrl,
+  onClose,
+}) {
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState(null);
@@ -63,6 +72,18 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
       clearTimeout(copyTimerRef.current);
     };
   }, [close]);
+  const trackShare = async () => {
+    if (!photoId) return;
+    try {
+      const { error } = await supabase.rpc("increment_shares", {
+        row_id: photoId,
+      });
+      if (error) console.error("Supabase share error:", error);
+      else router.refresh();
+    } catch (err) {
+      console.error("Failed to track share:", err);
+    }
+  };
   const getShareFile = useCallback(async () => {
     if (!imageUrl) return null;
     if (shareFileRef.current !== undefined) return shareFileRef.current;
@@ -99,24 +120,21 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
     let shared = false;
     try {
       const file = await getShareFile();
+      const shareMessage = `${shareText}\n\nView full high-resolution photo: ${shareUrl}`;
       const standardData = {
         title: title || "Momented",
-        text: shareText,
+        text: shareMessage,
         url: shareUrl,
       };
       try {
         if (file && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({
-            text: `${shareText}\n\n${shareUrl}`,
-            files: [file],
-          });
+          await navigator.share({ text: shareMessage, files: [file] });
         } else {
           await navigator.share(standardData);
         }
         shared = true;
       } catch (shareError) {
-        if (shareError?.name === "AbortError") {
-        } else {
+        if (shareError?.name !== "AbortError") {
           try {
             await navigator.share(standardData);
             shared = true;
@@ -131,7 +149,10 @@ export default function ShareDialog({ title = "", url, imageUrl, onClose }) {
       setError("Couldn't prepare the photo — copy the link instead.");
     } finally {
       setIsSharing(false);
-      if (shared) close();
+      if (shared) {
+        await trackShare();
+        close();
+      }
     }
   }
   return (

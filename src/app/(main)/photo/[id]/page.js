@@ -38,15 +38,15 @@ export default async function PhotoDetail({ params }) {
   const { data: photo } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, collection_id, story_id, collections!collection_id(title), stories!story_id(title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collection_id, story_id, collections!collection_id(title), stories!story_id(title)",
     )
     .eq("id", id)
     .single();
-  if (!photo) {
+  if (!photo)
     return <div className="p-20 text-center text-xl">Photo not found.</div>;
-  }
   const displayDate = getDisplayDate(photo.created_at, photo.taken_at);
   const downloadCount = photo.downloads || 0;
+  const shareCount = photo.shares || 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -118,6 +118,10 @@ export default async function PhotoDetail({ params }) {
                   label={downloadCount === 1 ? "Download" : "Downloads"}
                   value={downloadCount.toString()}
                 />
+                <InfoItem
+                  label={shareCount === 1 ? "Share" : "Shares"}
+                  value={shareCount.toString()}
+                />
               </div>
             </div>
             <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6 flex flex-col gap-3">
@@ -127,6 +131,7 @@ export default async function PhotoDetail({ params }) {
               />
               <ShareButton
                 title={photo.title}
+                photoId={photo.id}
                 imageUrl={photo.cloudinary_url}
               />
             </div>

@@ -33,6 +33,7 @@ export default function PhotoCard({ photo, index = 10 }) {
       <ShareButton
         variant="icon"
         title={photo.title}
+        photoId={photo.id}
         url={`/photo/${photo.id}`}
         imageUrl={photo.cloudinary_url}
         className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 translate-y-2 group-hover:translate-y-0 focus-visible:translate-y-0 transition-all duration-300"
