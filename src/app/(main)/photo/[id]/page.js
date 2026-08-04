@@ -1,38 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
+import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
+import BackButton from "@/components/ui/BackButton";
+import { formatDisplayDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
-
-const getDisplayDate = (createdAt, takenAt) => {
-  if (takenAt) {
-    const formattedExif = takenAt.replace(
-      /^(\d{4}):(\d{2}):(\d{2})/,
-      "$1-$2-$3",
-    );
-    return new Date(formattedExif).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
-  return new Date(createdAt).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-};
-const InfoItem = ({ label, value }) =>
-  value
-    ? <div>
-        <span className="block text-zinc-500 text-[11px] uppercase tracking-wider font-semibold mb-1">
-          {label}
-        </span>
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
-          {value}
-        </span>
-      </div>
-    : null;
 export default async function PhotoDetail({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
@@ -44,18 +16,13 @@ export default async function PhotoDetail({ params }) {
     .single();
   if (!photo)
     return <div className="p-20 text-center text-xl">Photo not found.</div>;
-  const displayDate = getDisplayDate(photo.created_at, photo.taken_at);
+  const displayDate = formatDisplayDate(photo.created_at, photo.taken_at);
   const downloadCount = photo.downloads || 0;
   const shareCount = photo.shares || 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm font-semibold tracking-wide text-zinc-500 hover:text-zinc-900 dark:hover:text-white mb-8 transition-colors uppercase"
-        >
-          &larr; Back to Photos
-        </Link>
+        <BackButton href="/" label="Back to Photos" />
         <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
           <div className="w-full lg:w-2/3 h-fit lg:sticky lg:top-28">
             <div className="w-full bg-zinc-100 dark:bg-zinc-900/50 p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
@@ -84,20 +51,10 @@ export default async function PhotoDetail({ params }) {
               {(!!photo.collections || !!photo.stories) && (
                 <div className="flex flex-wrap gap-2 pt-5 border-t border-zinc-100 dark:border-zinc-800/60">
                   {!!photo.collections && (
-                    <Link
+                    <BackButton
                       href={`/collections/${photo.collection_id}`}
-                      className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border border-blue-200 dark:border-blue-800/60 transition-colors"
-                    >
-                      Collection: {photo.collections.title}
-                    </Link>
-                  )}
-                  {!!photo.stories && (
-                    <Link
-                      href={`/stories/${photo.story_id}`}
-                      className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-400 text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider border border-purple-200 dark:border-purple-800/60 transition-colors"
-                    >
-                      Story: {photo.stories.title}
-                    </Link>
+                      label={`Collection: ${photo.collections.title}`}
+                    />
                   )}
                 </div>
               )}

@@ -1,13 +1,9 @@
 "use server";
-import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
+import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
 
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const revalidateAll = () => revalidatePath("/", "layout");
 async function syncPhotoRelations(db, column, entityId, photoIds) {
   await db
     .from("photos")
@@ -35,7 +31,7 @@ export async function deletePhotoAction(id, publicId) {
   await cloudinary.uploader.destroy(publicId);
   const { error } = await db.from("photos").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function editPhotoAction(
@@ -56,7 +52,7 @@ export async function editPhotoAction(
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function getCollectionsAction() {
@@ -88,7 +84,7 @@ export async function createCollectionAction(formData) {
     data.id,
     formData.getAll("photo_ids"),
   );
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function editCollectionAction(id, formData) {
@@ -108,14 +104,14 @@ export async function editCollectionAction(id, formData) {
     id,
     formData.getAll("photo_ids"),
   );
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function deleteCollectionAction(id) {
   const db = await getAdminDb();
   const { error } = await db.from("collections").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function getStoriesAction() {
@@ -147,7 +143,7 @@ export async function createStoryAction(formData) {
     data.id,
     formData.getAll("photo_ids"),
   );
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function editStoryAction(id, formData) {
@@ -162,13 +158,38 @@ export async function editStoryAction(id, formData) {
     .eq("id", id);
   if (error) throw new Error(error.message);
   await syncPhotoRelations(db, "story_id", id, formData.getAll("photo_ids"));
-  revalidatePath("/", "layout");
+  revalidateAll();
   return { success: true };
 }
 export async function deleteStoryAction(id) {
   const db = await getAdminDb();
   const { error } = await db.from("stories").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/", "layout");
+  revalidateAll();
+  return { success: true };
+}
+export async function getCalendarCollectionsAction() {
+  const db = await getAdminDb();
+  const { data, error } = await db
+    .from("calendar_collections")
+    .select(
+      "*, photos!calendar_collections_cover_photo_id_fkey(id, cloudinary_url)",
+    )
+    .order("id", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function editCalendarCollectionAction(id, formData) {
+  const db = await getAdminDb();
+  const { error } = await db
+    .from("calendar_collections")
+    .update({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      cover_photo_id: formData.get("cover_photo_id") || null,
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidateAll();
   return { success: true };
 }

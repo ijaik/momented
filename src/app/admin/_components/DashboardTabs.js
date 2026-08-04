@@ -19,7 +19,17 @@ const StoryManager = dynamic(() => import("./StoryManager"), {
     <p className="font-medium p-6 text-zinc-500">Loading Stories...</p>
   ),
 });
-export default function DashboardTabs({ photos, collections, stories }) {
+const CalendarManager = dynamic(() => import("./CalendarManager"), {
+  loading: () => (
+    <p className="font-medium p-6 text-zinc-500">Loading Calendar...</p>
+  ),
+});
+export default function DashboardTabs({
+  photos,
+  collections,
+  stories,
+  calendars,
+}) {
   const [activeTab, setActiveTab] = useState("photos");
   const router = useRouter();
   async function handleLogout() {
@@ -31,7 +41,7 @@ export default function DashboardTabs({ photos, collections, stories }) {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 mb-10 pb-4 overflow-x-auto">
           <div className="flex gap-4">
-            {["photos", "collections", "stories"].map((tab) => (
+            {["photos", "collections", "calendar", "stories"].map((tab) => (
               <button
                 type="button"
                 key={tab}
@@ -63,6 +73,9 @@ export default function DashboardTabs({ photos, collections, stories }) {
         )}
         {activeTab === "collections" && (
           <CollectionManager collections={collections} allPhotos={photos} />
+        )}
+        {activeTab === "calendar" && (
+          <CalendarManager calendars={calendars} allPhotos={photos} />
         )}
         {activeTab === "stories" && (
           <StoryManager stories={stories} allPhotos={photos} />

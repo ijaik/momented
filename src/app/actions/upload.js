@@ -1,13 +1,7 @@
 "use server";
-import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
+import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 export async function getCloudinarySignatureAction() {
   await getAdminDb();
   const timestamp = Math.round(Date.now() / 1000);

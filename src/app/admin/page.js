@@ -1,4 +1,5 @@
 import {
+  getCalendarCollectionsAction,
   getCollectionsAction,
   getPhotosAction,
   getStoriesAction,
@@ -6,16 +7,18 @@ import {
 import DashboardTabs from "./_components/DashboardTabs";
 export const dynamic = "force-dynamic";
 export default async function AdminDashboard() {
-  const [photos, collections, stories] = await Promise.all([
+  const [photos, collections, stories, calendars] = await Promise.all([
     getPhotosAction(),
     getCollectionsAction(),
     getStoriesAction(),
+    getCalendarCollectionsAction(),
   ]);
   return (
     <DashboardTabs
       photos={photos}
       collections={collections}
       stories={stories}
+      calendars={calendars}
     />
   );
 }
