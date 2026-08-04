@@ -1,3 +1,4 @@
+import { Icons } from "@/components/ui/Icons";
 export const metadata = {
   title: "About",
 };
@@ -56,11 +57,8 @@ export default function MePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-24 md:gap-32">
             <section className="group relative">
               <div className="absolute -left-4 top-0 h-full w-px bg-linear-to-b from-transparent via-zinc-300 to-transparent dark:via-zinc-700 transition-all duration-500 group-hover:via-zinc-900 dark:group-hover:via-white" />
-
               <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 text-[10px]">
-                  ✦
-                </span>
+                <Icons.Sparkle className="w-3 h-3" />
                 The Concept
               </h2>
               <div className="space-y-6">
@@ -85,9 +83,7 @@ export default function MePage() {
             <section className="group relative">
               <div className="absolute -left-4 top-0 h-full w-px bg-linear-to-b from-transparent via-zinc-300 to-transparent dark:via-zinc-700 transition-all duration-500 group-hover:via-zinc-900 dark:group-hover:via-white" />
               <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 text-[10px]">
-                  ✦
-                </span>
+                <Icons.Sparkle className="w-3 h-3" />
                 The Purpose
               </h2>
               <div className="space-y-6">
@@ -100,9 +96,7 @@ export default function MePage() {
           </div>
           <section className="relative">
             <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-900 dark:bg-white text-zinc-50 dark:text-zinc-900 text-[10px]">
-                ✦
-              </span>
+              <Icons.Sparkle className="w-3 h-3" />
               The License
             </h2>
             <div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-linear-to-br from-white/80 to-zinc-50/40 dark:from-white/4 dark:to-white/1 backdrop-blur p-8 md:p-14 transition-all duration-500 hover:border-zinc-300 dark:hover:border-zinc-700">
@@ -132,9 +126,7 @@ export default function MePage() {
             className="group flex items-center gap-3 text-sm font-bold tracking-widest text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"
           >
             GitHub
-            <span className="inline-flex h-9 w-9 items-center justify-center bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full transition-all duration-300 group-hover:rotate-45 group-hover:bg-zinc-900 group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-zinc-900">
-              ↗
-            </span>
+            <Icons.ArrowUpRight className="w-4 h-4" />
           </a>
         </div>
       </div>

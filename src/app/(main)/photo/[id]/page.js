@@ -3,6 +3,7 @@ import DownloadButton from "@/components/DownloadButton";
 import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/ui/BackButton";
+import { Icons } from "@/components/ui/Icons";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 export default async function PhotoDetail({ params }) {
@@ -37,32 +38,20 @@ export default async function PhotoDetail({ params }) {
             </div>
           </div>
           <div className="w-full lg:w-1/3 flex flex-col gap-6">
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm flex flex-col gap-5">
-              <div className="flex flex-col gap-3">
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50">
-                  {photo.title}
-                </h1>
-                {!!photo.description && (
-                  <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
-                    {photo.description}
-                  </p>
-                )}
-              </div>
-              {(!!photo.collections || !!photo.stories) && (
-                <div className="flex flex-wrap gap-2 pt-5 border-t border-zinc-100 dark:border-zinc-800/60">
-                  {!!photo.collections && (
-                    <BackButton
-                      href={`/collections/${photo.collection_id}`}
-                      label={`Collection: ${photo.collections.title}`}
-                    />
-                  )}
-                </div>
+            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm flex flex-col gap-3">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 wrap-break-words">
+                {photo.title}
+              </h1>
+              {!!photo.description && (
+                <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
+                  {photo.description}
+                </p>
               )}
             </div>
             <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-5">
-                Info
-              </h3>
+              <div className="mb-6">
+                <Icons.Info className="w-5 h-5 text-zinc-400" />
+              </div>
               <div className="grid grid-cols-2 gap-y-5 gap-x-4 text-sm">
                 <InfoItem label="Date" value={displayDate} />
                 <InfoItem label="Camera" value={photo.camera_model} />
@@ -71,25 +60,19 @@ export default async function PhotoDetail({ params }) {
                 <InfoItem label="Shutter Speed" value={photo.shutter_speed} />
                 <InfoItem label="ISO" value={photo.iso} />
                 <InfoItem label="Photographed by" value={photo.artist} />
-                <InfoItem
-                  label={downloadCount === 1 ? "Download" : "Downloads"}
-                  value={downloadCount.toString()}
-                />
-                <InfoItem
-                  label={shareCount === 1 ? "Share" : "Shares"}
-                  value={shareCount.toString()}
-                />
               </div>
             </div>
             <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6 flex flex-col gap-3">
               <DownloadButton
                 photoId={photo.id}
                 cloudinaryUrl={photo.cloudinary_url}
+                downloadCount={downloadCount}
               />
               <ShareButton
                 title={photo.title}
                 photoId={photo.id}
                 imageUrl={photo.cloudinary_url}
+                shareCount={shareCount}
               />
             </div>
           </div>

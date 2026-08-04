@@ -2,7 +2,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { incrementDownload } from "@/app/actions/download";
-export default function DownloadButton({ photoId, cloudinaryUrl }) {
+import { Icons } from "@/components/ui/Icons";
+export default function DownloadButton({
+  photoId,
+  cloudinaryUrl,
+  downloadCount = 0,
+}) {
   const router = useRouter();
   const [isDownloading, setIsDownloading] = useState(false);
   async function handleDownload() {
@@ -32,9 +37,15 @@ export default function DownloadButton({ photoId, cloudinaryUrl }) {
       type="button"
       onClick={handleDownload}
       disabled={isDownloading}
-      className="w-full bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
+      className="w-full flex items-center justify-between bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 px-6 py-3.5 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-colors disabled:opacity-50"
     >
-      {isDownloading ? "Downloading..." : "Download High-Res"}
+      <div className="flex items-center gap-2.5">
+        <Icons.Download className="w-5 h-5" />
+        <span>{isDownloading ? "Downloading..." : "High-Res"}</span>
+      </div>
+      <span className="text-xs px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-semibold">
+        {downloadCount}
+      </span>
     </button>
   );
 }

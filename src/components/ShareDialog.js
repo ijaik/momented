@@ -239,9 +239,8 @@ export default function ShareDialog({
               }`}
             >
               {copied
-                ? <Icons.Check className="w-4 h-4" />
-                : <Icons.Link className="w-4 h-4" />}
-              {copied ? "Copied!" : "Copy"}
+                ? <Icons.Copied className="w-4 h-4" />
+                : <Icons.Copy className="w-4 h-4" />}
             </button>
           </div>
           {error && (
