@@ -1,12 +1,16 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { siteConfig } from "@/config/site";
+import { verifyAdminSession } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
 export async function getCloudinarySignatureAction() {
-  await getAdminDb();
+  await verifyAdminSession();
   const timestamp = Math.round(Date.now() / 1000);
   const folder =
-    process.env.NODE_ENV === "development" ? "momented-dev" : "momented-prod";
+    process.env.NODE_ENV === "development"
+      ? siteConfig.cloudinary.folderDev
+      : siteConfig.cloudinary.folderProd;
   const paramsToSign = {
     timestamp,
     folder,
@@ -21,10 +25,11 @@ export async function getCloudinarySignatureAction() {
     folder,
     signature,
     apiKey: process.env.CLOUDINARY_API_KEY,
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    cloudName: siteConfig.cloudinary.cloudName,
   };
 }
 export async function savePhotoToDbAction(data) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const meta = data.image_metadata || {};
   const rawFocal = meta.FocalLength || "";
@@ -51,7 +56,7 @@ export async function savePhotoToDbAction(data) {
       aperture: meta.FNumber ? `f/${meta.FNumber}` : null,
       shutter_speed: meta.ExposureTime ? `${meta.ExposureTime}s` : null,
       iso: cleanIso,
-      artist: data.artistInput || exifArtist || null,
+      artist: data.artistInput || exifArtist || siteConfig.author.name,
       taken_at: meta.DateTimeOriginal || null,
     },
   ]);

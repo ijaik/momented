@@ -1,8 +1,9 @@
 import { Icons } from "@/components/ui/Icons";
+import { siteConfig } from "@/config/site";
 export const metadata = {
   title: "About",
 };
-export default function MePage() {
+export default function AboutPage() {
   return (
     <main className="min-h-screen py-24 md:py-40 relative overflow-hidden">
       <div className="relative max-w-5xl mx-auto px-6 md:px-10">
@@ -10,7 +11,7 @@ export default function MePage() {
           <h1 className="text-[56px] md:text-[104px] font-extrabold tracking-tighter text-zinc-900 dark:text-white leading-[0.95] mb-10">
             Hi, I'm{" "}
             <span className="relative inline-block">
-              Jai
+              {siteConfig.author.name}
               <svg
                 className="absolute -bottom-2 left-0 w-full"
                 viewBox="0 0 120 12"
@@ -34,7 +35,7 @@ export default function MePage() {
           <div className="space-y-3">
             <p className="text-xl md:text-3xl font-medium text-zinc-900 dark:text-zinc-200 tracking-tight">
               I am{" "}
-              <del className="text-zinc-300 dark:text-zinc-700 decoration-zinc-300 dark:decoration-zinc-700 decoration-2">
+              <del className="text-zinc-300 dark:text-zinc-700 decoration-2">
                 a photographer
               </del>{" "}
               <span className="text-zinc-900 dark:text-white">
@@ -43,7 +44,7 @@ export default function MePage() {
             </p>
             <p className="text-xl md:text-3xl font-medium text-zinc-900 dark:text-zinc-200 tracking-tight">
               I am a{" "}
-              <del className="text-zinc-300 dark:text-zinc-700 decoration-zinc-300 dark:decoration-zinc-700 decoration-2">
+              <del className="text-zinc-300 dark:text-zinc-700 decoration-2">
                 writer
               </del>{" "}
               <span className="text-zinc-900 dark:text-white">narrator.</span>
@@ -64,7 +65,7 @@ export default function MePage() {
               <div className="space-y-6">
                 <p>
                   <span className="text-zinc-900 dark:text-white font-leckerli tracking-tight text-3xl md:text-4xl block mb-2">
-                    Momented
+                    {siteConfig.name}
                   </span>
                   <span className="text-zinc-400 dark:text-zinc-500 text-base">
                     — a word I use for a captured moment.
@@ -73,7 +74,7 @@ export default function MePage() {
                 <p className="border-l-2 border-zinc-300 dark:border-zinc-700 pl-5 italic text-base md:text-lg text-zinc-600 dark:text-zinc-400">
                   Through{" "}
                   <span className="not-italic font-semibold text-zinc-900 dark:text-white">
-                    Momented
+                    {siteConfig.name}
                   </span>{" "}
                   I preserve the quiet conversations between light, shadow, and
                   time.
@@ -99,18 +100,9 @@ export default function MePage() {
               <Icons.Sparkle className="w-3 h-3" />
               The License
             </h2>
-            <div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-linear-to-br from-white/80 to-zinc-50/40 dark:from-white/4 dark:to-white/1 backdrop-blur p-8 md:p-14 transition-all duration-500 hover:border-zinc-300 dark:hover:border-zinc-700">
-              <span className="pointer-events-none absolute top-4 right-4 text-zinc-200 dark:text-zinc-800 text-xs">
-                ©
-              </span>
+            <div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-linear-to-br from-white/80 to-zinc-50/40 dark:from-white/4 dark:to-white/1 backdrop-blur p-8 md:p-14">
               <p className="relative text-xl md:text-2xl font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed">
-                The photographs can speak for themselves. <br />
-                If you mention where they came from,{" "}
-                <span className="relative whitespace-nowrap font-semibold text-zinc-900 dark:text-white">
-                  I'm grateful
-                  <span className="absolute -bottom-0.5 left-0 h-0.5 w-full bg-zinc-900 dark:bg-white/60" />
-                </span>
-                .
+                {siteConfig.license}
               </p>
             </div>
           </section>
@@ -120,7 +112,7 @@ export default function MePage() {
             Living in the in-between.
           </p>
           <a
-            href="https://github.com/ijaik"
+            href={siteConfig.author.github}
             target="_blank"
             rel="noreferrer"
             className="group flex items-center gap-3 text-sm font-bold tracking-widest text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"

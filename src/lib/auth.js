@@ -10,6 +10,13 @@ export async function verifyAdminSession() {
     await jwtVerify(token, secret);
     return true;
   } catch (_error) {
+    throw new Error("Invalid or expired session.");
+  }
+}
+export async function requireAdminOrRedirect() {
+  try {
+    await verifyAdminSession();
+  } catch (_error) {
     redirect("/admin/login");
   }
 }

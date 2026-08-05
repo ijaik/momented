@@ -4,6 +4,8 @@ import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/ui/BackButton";
 import { Icons } from "@/components/ui/Icons";
+import { siteConfig } from "@/config/site";
+import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 export default async function PhotoDetail({ params }) {
@@ -18,8 +20,6 @@ export default async function PhotoDetail({ params }) {
   if (!photo)
     return <div className="p-20 text-center text-xl">Photo not found.</div>;
   const displayDate = formatDisplayDate(photo.created_at, photo.taken_at);
-  const downloadCount = photo.downloads || 0;
-  const shareCount = photo.shares || 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -29,7 +29,7 @@ export default async function PhotoDetail({ params }) {
             <div className="w-full bg-zinc-100 dark:bg-zinc-900/50 p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
               <Image
                 src={photo.cloudinary_url}
-                alt={photo.title}
+                alt={photo.title || "Photographed Moment"}
                 width={photo.width}
                 height={photo.height}
                 className="w-full h-auto block"
@@ -40,7 +40,7 @@ export default async function PhotoDetail({ params }) {
           <div className="w-full lg:w-1/3 flex flex-col gap-6">
             <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm flex flex-col gap-3">
               <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 wrap-break-words">
-                {photo.title}
+                {photo.title || "Untitled"}
               </h1>
               {!!photo.description && (
                 <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
@@ -59,20 +59,23 @@ export default async function PhotoDetail({ params }) {
                 <InfoItem label="Aperture" value={photo.aperture} />
                 <InfoItem label="Shutter Speed" value={photo.shutter_speed} />
                 <InfoItem label="ISO" value={photo.iso} />
-                <InfoItem label="Photographed by" value={photo.artist} />
+                <InfoItem
+                  label="Photographed by"
+                  value={photo.artist || siteConfig.author.name}
+                />
               </div>
             </div>
             <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6 flex flex-col gap-3">
               <DownloadButton
                 photoId={photo.id}
                 cloudinaryUrl={photo.cloudinary_url}
-                downloadCount={downloadCount}
+                downloadCount={photo.downloads || 0}
               />
               <ShareButton
                 title={photo.title}
                 photoId={photo.id}
                 imageUrl={photo.cloudinary_url}
-                shareCount={shareCount}
+                shareCount={photo.shares || 0}
               />
             </div>
           </div>
@@ -85,36 +88,30 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
     .from("photos")
-    .select("title, description, camera_model, cloudinary_url, width, height")
+    .select("title, description, camera_model, cloudinary_url")
     .eq("id", id)
     .single();
   if (!photo) return { title: "Photo Not Found" };
-  const title = photo.title
-    ? `${photo.title} | Momented`
-    : "Photography Gallery | Momented";
+  const title = photo.title || "Photography Gallery";
+  const fullTitle = `${title} | ${siteConfig.name}`;
   const description = photo.description
-    ? `${photo.description} Captured on ${photo.camera_model || "camera"}. View this and more high-quality photography on Momented.`
-    : `Explore this incredible photograph "${photo.title}", beautifully captured on ${photo.camera_model || "camera"}. Discover the full collection on Momented.`;
-  const pageUrl = `https://momented.vercel.app/photo/${id}`;
-  let imageUrl = photo.cloudinary_url;
-  if (imageUrl?.includes("/upload/")) {
-    imageUrl = imageUrl.replace("/upload/", "/upload/t_social_share/");
-  }
+    ? `${photo.description} Captured on ${photo.camera_model || "camera"}.`
+    : `Explore "${photo.title || "this photograph"}" on ${siteConfig.name}.`;
+  const pageUrl = `${siteConfig.url}/photo/${id}`;
+  const imageUrl = getSocialShareImageUrl(photo.cloudinary_url);
   return {
-    metadataBase: new URL("https://momented.vercel.app"),
+    metadataBase: new URL(siteConfig.url),
     title,
     description,
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       url: pageUrl,
-      siteName: "Momented",
+      siteName: siteConfig.name,
       type: "website",
       images: [
         {
           url: imageUrl,
-          secureUrl: imageUrl,
-          type: "image/jpeg",
           width: 1200,
           height: 630,
           alt: title,
@@ -123,7 +120,7 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: fullTitle,
       description,
       images: [imageUrl],
     },

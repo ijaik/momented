@@ -2,7 +2,6 @@ import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 export async function proxy(request) {
   const path = request.nextUrl.pathname;
-  if (!path.startsWith("/admin")) return NextResponse.next();
   const token = request.cookies.get("admin_session")?.value;
   let isValid = false;
   if (token) {
@@ -32,5 +31,5 @@ export async function proxy(request) {
   return NextResponse.next();
 }
 export const config = {
-  matcher: "/admin/:path*",
+  matcher: ["/admin/:path*"],
 };

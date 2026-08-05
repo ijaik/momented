@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { verifyAdminSession } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
 
@@ -18,6 +19,7 @@ async function syncPhotoRelations(db, column, entityId, photoIds) {
   }
 }
 export async function getPhotosAction() {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("photos")
@@ -27,8 +29,9 @@ export async function getPhotosAction() {
   return data;
 }
 export async function deletePhotoAction(id, publicId) {
+  await verifyAdminSession();
   const db = await getAdminDb();
-  await cloudinary.uploader.destroy(publicId);
+  if (publicId) await cloudinary.uploader.destroy(publicId);
   const { error } = await db.from("photos").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidateAll();
@@ -41,6 +44,7 @@ export async function editPhotoAction(
   collectionId,
   storyId,
 ) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db
     .from("photos")
@@ -56,6 +60,7 @@ export async function editPhotoAction(
   return { success: true };
 }
 export async function getCollectionsAction() {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("collections")
@@ -65,6 +70,7 @@ export async function getCollectionsAction() {
   return data;
 }
 export async function createCollectionAction(formData) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("collections")
@@ -88,6 +94,7 @@ export async function createCollectionAction(formData) {
   return { success: true };
 }
 export async function editCollectionAction(id, formData) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db
     .from("collections")
@@ -108,6 +115,7 @@ export async function editCollectionAction(id, formData) {
   return { success: true };
 }
 export async function deleteCollectionAction(id) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db.from("collections").delete().eq("id", id);
   if (error) throw new Error(error.message);
@@ -115,6 +123,7 @@ export async function deleteCollectionAction(id) {
   return { success: true };
 }
 export async function getStoriesAction() {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("stories")
@@ -124,6 +133,7 @@ export async function getStoriesAction() {
   return data;
 }
 export async function createStoryAction(formData) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("stories")
@@ -147,6 +157,7 @@ export async function createStoryAction(formData) {
   return { success: true };
 }
 export async function editStoryAction(id, formData) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db
     .from("stories")
@@ -162,6 +173,7 @@ export async function editStoryAction(id, formData) {
   return { success: true };
 }
 export async function deleteStoryAction(id) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db.from("stories").delete().eq("id", id);
   if (error) throw new Error(error.message);
@@ -169,6 +181,7 @@ export async function deleteStoryAction(id) {
   return { success: true };
 }
 export async function getCalendarCollectionsAction() {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { data, error } = await db
     .from("calendar_collections")
@@ -180,6 +193,7 @@ export async function getCalendarCollectionsAction() {
   return data;
 }
 export async function editCalendarCollectionAction(id, formData) {
+  await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db
     .from("calendar_collections")

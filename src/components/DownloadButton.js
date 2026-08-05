@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { incrementDownload } from "@/app/actions/download";
 import { Icons } from "@/components/ui/Icons";
+import { getAttachmentDownloadUrl } from "@/lib/cloudinaryUtils";
 export default function DownloadButton({
   photoId,
   cloudinaryUrl,
@@ -15,10 +16,7 @@ export default function DownloadButton({
     try {
       await incrementDownload(photoId);
       router.refresh();
-      const downloadUrl = cloudinaryUrl.replace(
-        "/upload/",
-        "/upload/fl_attachment/",
-      );
+      const downloadUrl = getAttachmentDownloadUrl(cloudinaryUrl);
       const link = document.createElement("a");
       link.href = downloadUrl;
       link.setAttribute("download", "");
