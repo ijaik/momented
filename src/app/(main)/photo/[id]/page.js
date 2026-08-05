@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
 import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
@@ -6,20 +7,33 @@ import BackButton from "@/components/ui/BackButton";
 import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
-import { formatDisplayDate } from "@/lib/dateUtils";
+import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 export default async function PhotoDetail({ params }) {
   const { id } = await params;
   const { data: photo } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collection_id, story_id, collections!collection_id(title), stories!story_id(title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), stories!photo_stories(id, title)",
     )
     .eq("id", id)
     .single();
   if (!photo)
     return <div className="p-20 text-center text-xl">Photo not found.</div>;
   const displayDate = formatDisplayDate(photo.created_at, photo.taken_at);
+  const { month: monthIndex } = getPhotoDate(photo);
+  let calendarCollections = [];
+  if (monthIndex) {
+    const { data: calData } = await supabase
+      .from("calendar_collections")
+      .select("id, title")
+      .eq("id", monthIndex);
+    calendarCollections = calData || [];
+  }
+  const standardCollections = photo.collections || [];
+  const hasCollections =
+    standardCollections.length > 0 || calendarCollections.length > 0;
+  const hasStories = photo.stories && photo.stories.length > 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -46,6 +60,55 @@ export default async function PhotoDetail({ params }) {
                 <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
                   {photo.description}
                 </p>
+              )}
+              {(hasCollections || hasStories) && (
+                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-4">
+                  {hasCollections && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Collections
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {standardCollections.map((c) => (
+                          <Link
+                            key={`std-${c.id}`}
+                            href={`/collections/${c.id}`}
+                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            {c.title}
+                          </Link>
+                        ))}
+                        {calendarCollections.map((c) => (
+                          <Link
+                            key={`cal-${c.id}`}
+                            href={`/collections/calendar/${c.id}`}
+                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            {c.title}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {hasStories && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                        Stories
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {photo.stories.map((s) => (
+                          <Link
+                            key={s.id}
+                            href={`/stories/${s.id}`}
+                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            {s.title}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm">

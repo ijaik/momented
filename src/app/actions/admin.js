@@ -5,17 +5,21 @@ import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
 
 const revalidateAll = () => revalidatePath("/", "layout");
-async function syncPhotoRelations(db, column, entityId, photoIds) {
-  await db
-    .from("photos")
-    .update({ [column]: null })
-    .eq(column, entityId);
-  if (photoIds && photoIds.length > 0) {
-    const { error } = await db
-      .from("photos")
-      .update({ [column]: entityId })
-      .in("id", photoIds);
-    if (error) throw new Error(error.message);
+async function syncCollectionPhotos(db, collectionId, photoIds) {
+  await db.from("photo_collections").delete().eq("collection_id", collectionId);
+  if (photoIds?.length > 0) {
+    const inserts = photoIds.map((id) => ({
+      photo_id: id,
+      collection_id: collectionId,
+    }));
+    await db.from("photo_collections").insert(inserts);
+  }
+}
+async function syncStoryPhotos(db, storyId, photoIds) {
+  await db.from("photo_stories").delete().eq("story_id", storyId);
+  if (photoIds?.length > 0) {
+    const inserts = photoIds.map((id) => ({ photo_id: id, story_id: storyId }));
+    await db.from("photo_stories").insert(inserts);
   }
 }
 export async function getPhotosAction() {
@@ -23,7 +27,9 @@ export async function getPhotosAction() {
   const db = await getAdminDb();
   const { data, error } = await db
     .from("photos")
-    .select("*, collections!collection_id(title), stories!story_id(title)")
+    .select(
+      "*, collections!photo_collections(id, title), stories!photo_stories(id, title)",
+    )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -41,21 +47,30 @@ export async function editPhotoAction(
   id,
   title,
   description,
-  collectionId,
-  storyId,
+  collectionIds,
+  storyIds,
 ) {
   await verifyAdminSession();
   const db = await getAdminDb();
   const { error } = await db
     .from("photos")
-    .update({
-      title,
-      description,
-      collection_id: collectionId || null,
-      story_id: storyId || null,
-    })
+    .update({ title, description })
     .eq("id", id);
   if (error) throw new Error(error.message);
+  await db.from("photo_collections").delete().eq("photo_id", id);
+  if (collectionIds?.length) {
+    await db
+      .from("photo_collections")
+      .insert(
+        collectionIds.map((cId) => ({ photo_id: id, collection_id: cId })),
+      );
+  }
+  await db.from("photo_stories").delete().eq("photo_id", id);
+  if (storyIds?.length) {
+    await db
+      .from("photo_stories")
+      .insert(storyIds.map((sId) => ({ photo_id: id, story_id: sId })));
+  }
   revalidateAll();
   return { success: true };
 }
@@ -64,7 +79,7 @@ export async function getCollectionsAction() {
   const db = await getAdminDb();
   const { data, error } = await db
     .from("collections")
-    .select("*, photos!collection_id(id, cloudinary_url, title)")
+    .select("*, photos!photo_collections(id, cloudinary_url, title)")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -84,12 +99,7 @@ export async function createCollectionAction(formData) {
     .select()
     .single();
   if (error) throw new Error(error.message);
-  await syncPhotoRelations(
-    db,
-    "collection_id",
-    data.id,
-    formData.getAll("photo_ids"),
-  );
+  await syncCollectionPhotos(db, data.id, formData.getAll("photo_ids"));
   revalidateAll();
   return { success: true };
 }
@@ -105,12 +115,7 @@ export async function editCollectionAction(id, formData) {
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  await syncPhotoRelations(
-    db,
-    "collection_id",
-    id,
-    formData.getAll("photo_ids"),
-  );
+  await syncCollectionPhotos(db, id, formData.getAll("photo_ids"));
   revalidateAll();
   return { success: true };
 }
@@ -127,7 +132,7 @@ export async function getStoriesAction() {
   const db = await getAdminDb();
   const { data, error } = await db
     .from("stories")
-    .select("*, photos!story_id(id, cloudinary_url, title)")
+    .select("*, photos!photo_stories(id, cloudinary_url, title)")
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -147,12 +152,7 @@ export async function createStoryAction(formData) {
     .select()
     .single();
   if (error) throw new Error(error.message);
-  await syncPhotoRelations(
-    db,
-    "story_id",
-    data.id,
-    formData.getAll("photo_ids"),
-  );
+  await syncStoryPhotos(db, data.id, formData.getAll("photo_ids"));
   revalidateAll();
   return { success: true };
 }
@@ -168,7 +168,7 @@ export async function editStoryAction(id, formData) {
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  await syncPhotoRelations(db, "story_id", id, formData.getAll("photo_ids"));
+  await syncStoryPhotos(db, id, formData.getAll("photo_ids"));
   revalidateAll();
   return { success: true };
 }

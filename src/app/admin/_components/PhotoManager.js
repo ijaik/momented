@@ -19,6 +19,7 @@ export default function PhotoManager({ photos, collections, stories }) {
     event.preventDefault();
     setStatus("Preparing upload...");
     const form = event.currentTarget;
+    const formDataNative = new FormData(form);
     startTransition(async () => {
       try {
         const file = form.elements.photo.files[0];
@@ -45,8 +46,8 @@ export default function PhotoManager({ photos, collections, stories }) {
           title: form.elements.title.value,
           description: form.elements.description.value,
           artistInput: form.elements.artist.value,
-          collectionId: form.elements.collection_id.value,
-          storyId: form.elements.story_id.value,
+          collectionIds: formDataNative.getAll("collection_ids"),
+          storyIds: formDataNative.getAll("story_ids"),
           secure_url: uploadData.secure_url,
           public_id: uploadData.public_id,
           width: uploadData.width,
@@ -71,8 +72,8 @@ export default function PhotoManager({ photos, collections, stories }) {
           id,
           formData.get("title"),
           formData.get("description"),
-          formData.get("collection_id"),
-          formData.get("story_id"),
+          formData.getAll("collection_ids"),
+          formData.getAll("story_ids"),
         );
         setEditingPhotoId(null);
       } catch {
@@ -94,16 +95,19 @@ export default function PhotoManager({ photos, collections, stories }) {
               defaultValue="Jai"
               placeholder="Photographer Name"
             />
-            <FormSelect name="collection_id">
-              <option value="">-- No Collection --</option>
+            <FormSelect
+              name="collection_ids"
+              multiple
+              size={4}
+              className="h-28"
+            >
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.title}
                 </option>
               ))}
             </FormSelect>
-            <FormSelect name="story_id">
-              <option value="">-- No Story --</option>
+            <FormSelect name="story_ids" multiple size={4} className="h-28">
               {stories.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}
@@ -168,11 +172,12 @@ export default function PhotoManager({ photos, collections, stories }) {
                     />
                     <div className="flex flex-col sm:flex-row gap-2">
                       <FormSelect
-                        name="collection_id"
-                        defaultValue={photo.collection_id || ""}
-                        className="w-full sm:w-1/2"
+                        name="collection_ids"
+                        multiple
+                        size={4}
+                        defaultValue={photo.collections?.map((c) => c.id) || []}
+                        className="w-full sm:w-1/2 h-28"
                       >
-                        <option value="">-- No Collection --</option>
                         {collections.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.title}
@@ -180,11 +185,12 @@ export default function PhotoManager({ photos, collections, stories }) {
                         ))}
                       </FormSelect>
                       <FormSelect
-                        name="story_id"
-                        defaultValue={photo.story_id || ""}
-                        className="w-full sm:w-1/2"
+                        name="story_ids"
+                        multiple
+                        size={4}
+                        defaultValue={photo.stories?.map((s) => s.id) || []}
+                        className="w-full sm:w-1/2 h-28"
                       >
-                        <option value="">-- No Story --</option>
                         {stories.map((s) => (
                           <option key={s.id} value={s.id}>
                             {s.title}

@@ -11,8 +11,10 @@ export default async function SingleStoryPage({ params }) {
       .single(),
     supabase
       .from("photos")
-      .select("id, title, cloudinary_url, width, height, camera_model")
-      .eq("story_id", id)
+      .select(
+        "id, title, cloudinary_url, width, height, camera_model, photo_stories!inner(story_id)",
+      )
+      .eq("photo_stories.story_id", id)
       .order("created_at", { ascending: true }),
   ]);
   if (!story) {

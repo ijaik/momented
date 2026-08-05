@@ -11,8 +11,10 @@ export default async function SingleCollectionPage({ params }) {
       .single(),
     supabase
       .from("photos")
-      .select("id, title, cloudinary_url, width, height, camera_model")
-      .eq("collection_id", id)
+      .select(
+        "id, title, cloudinary_url, width, height, camera_model, photo_collections!inner(collection_id)",
+      )
+      .eq("photo_collections.collection_id", id)
       .order("created_at", { ascending: false }),
   ]);
   if (!collection) {

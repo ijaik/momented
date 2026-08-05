@@ -14,9 +14,7 @@ export default async function CollectionsPage({ searchParams }) {
   ] = await Promise.all([
     supabase
       .from("collections")
-      .select(
-        "id, title, cover_photo_id, created_at, photos!collection_id(id, cloudinary_url)",
-      )
+      .select("*, photos!photo_collections(id, cloudinary_url)")
       .order("created_at", { ascending: false }),
     supabase
       .from("calendar_collections")
