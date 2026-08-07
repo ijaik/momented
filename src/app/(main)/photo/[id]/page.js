@@ -37,7 +37,7 @@ export default async function PhotoDetail({ params }) {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton href="/" label="Back to Photos" />
+        <BackButton />
         <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
           <div className="w-full lg:w-2/3 h-fit lg:sticky lg:top-28">
             <div className="w-full bg-zinc-100 dark:bg-zinc-900/50 p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">

@@ -23,7 +23,7 @@ export default async function SingleStoryPage({ params }) {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton href="/stories" label="Back to Stories" />
+        <BackButton />
         <header className="mb-16">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6 leading-tight">
             {story.title}

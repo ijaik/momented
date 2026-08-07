@@ -1,33 +1,25 @@
 import Link from "next/link";
 import CoverCard from "@/components/ui/CoverCard";
 import PageHeader from "@/components/ui/PageHeader";
-import { formatCalendarCollections } from "@/lib/collectionUtils";
 import { supabase } from "@/lib/supabase";
 export const metadata = { title: "Collections" };
 export default async function CollectionsPage({ searchParams }) {
   const { tab } = await searchParams;
   const isCalendar = tab === "calendar";
-  const [
-    { data: curatedCollections },
-    { data: calendarData },
-    { data: allPhotos },
-  ] = await Promise.all([
-    supabase
-      .from("collections")
-      .select("*, photos!photo_collections(id, cloudinary_url)")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("calendar_collections")
-      .select("*")
-      .order("id", { ascending: true }),
-    supabase.from("photos").select("id, taken_at, created_at, cloudinary_url"),
-  ]);
-  const calendarCollections = formatCalendarCollections(
-    calendarData,
-    allPhotos,
-  );
-  const activeCalendarCollections = calendarCollections.filter(
-    (col) => col.photos.length > 0,
+  const [{ data: curatedCollections }, { data: calendarCollections }] =
+    await Promise.all([
+      supabase
+        .from("collections")
+        .select("*, photos!photo_collections(id, cloudinary_url)")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("calendar_collections")
+        .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
+        .order("id", { ascending: true }),
+    ]);
+
+  const activeCalendarCollections = (calendarCollections || []).filter(
+    (col) => col.photos && col.photos.length > 0,
   );
   const displayCollections = isCalendar
     ? activeCalendarCollections

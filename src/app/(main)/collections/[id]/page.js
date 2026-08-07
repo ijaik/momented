@@ -25,7 +25,7 @@ export default async function SingleCollectionPage({ params }) {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton href="/collections" label="Back to Collections" />
+        <BackButton />
         <header className="mb-16 md:mb-24 text-center md:text-left">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6">
             {collection.title}

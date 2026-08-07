@@ -185,9 +185,7 @@ export async function getCalendarCollectionsAction() {
   const db = await getAdminDb();
   const { data, error } = await db
     .from("calendar_collections")
-    .select(
-      "*, photos!calendar_collections_cover_photo_id_fkey(id, cloudinary_url)",
-    )
+    .select("*, photos!photo_calendar_collections(id, cloudinary_url, title)")
     .order("id", { ascending: true });
   if (error) throw new Error(error.message);
   return data;

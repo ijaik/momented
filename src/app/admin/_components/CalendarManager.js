@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useState, useTransition } from "react";
 import { editCalendarCollectionAction } from "@/app/actions/admin";
 import {
@@ -50,7 +51,7 @@ export default function CalendarManager({ calendars, allPhotos }) {
                   />
                   <PhotoChecklist
                     photos={allPhotos}
-                    linkedPhotos={[]}
+                    linkedPhotos={cal.photos || []}
                     initialCoverId={cal.cover_photo_id}
                   />
                   <div className="flex gap-3 mt-4">
@@ -76,6 +77,20 @@ export default function CalendarManager({ calendars, allPhotos }) {
                   <p className="text-sm text-zinc-500 mt-2">
                     {cal.description}
                   </p>
+                  {cal.photos && cal.photos.length > 0 && (
+                    <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                      {cal.photos.map((p) => (
+                        <Image
+                          key={p.id}
+                          src={p.cloudinary_url}
+                          alt={p.title || cal.title}
+                          width={80}
+                          height={80}
+                          className="w-16 h-16 object-cover rounded-md shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                        />
+                      ))}
+                    </div>
+                  )}
                   <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <button
                       type="button"

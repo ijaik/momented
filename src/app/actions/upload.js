@@ -49,6 +49,7 @@ export async function savePhotoToDbAction(data) {
   const cleanIso = rawIso ? parseInt(rawIso, 10) : null;
   const exifArtist =
     meta.Artist || meta.Copyright || meta.Creator || meta.Byline || null;
+  const takenAtDate = parseExifDate(meta.DateTimeOriginal);
   const { data: newPhoto, error: dbError } = await db
     .from("photos")
     .insert([
@@ -66,12 +67,20 @@ export async function savePhotoToDbAction(data) {
         shutter_speed: meta.ExposureTime ? `${meta.ExposureTime}s` : null,
         iso: cleanIso,
         artist: data.artistInput || exifArtist || siteConfig.author.name,
-        taken_at: parseExifDate(meta.DateTimeOriginal),
+        taken_at: takenAtDate,
       },
     ])
     .select()
     .single();
   if (dbError) throw new Error(`Database Error: ${dbError.message}`);
+  const photoDate = takenAtDate ? new Date(takenAtDate) : new Date();
+  const monthId = photoDate.getMonth() + 1;
+  await db.from("photo_calendar_collections").insert([
+    {
+      photo_id: newPhoto.id,
+      calendar_id: monthId,
+    },
+  ]);
   if (data.collectionIds?.length) {
     await db.from("photo_collections").insert(
       data.collectionIds.map((cId) => ({
@@ -81,11 +90,12 @@ export async function savePhotoToDbAction(data) {
     );
   }
   if (data.storyIds?.length) {
-    await db
-      .from("photo_stories")
-      .insert(
-        data.storyIds.map((sId) => ({ photo_id: newPhoto.id, story_id: sId })),
-      );
+    await db.from("photo_stories").insert(
+      data.storyIds.map((sId) => ({
+        photo_id: newPhoto.id,
+        story_id: sId,
+      })),
+    );
   }
   revalidatePath("/", "layout");
   return { success: true };
