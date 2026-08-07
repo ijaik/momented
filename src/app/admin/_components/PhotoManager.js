@@ -11,7 +11,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
-export default function PhotoManager({ photos, collections, stories }) {
+export default function PhotoManager({ photos, collections, rules, stories }) {
   const [status, setStatus] = useState("");
   const [editingPhotoId, setEditingPhotoId] = useState(null);
   const [isPending, startTransition] = useTransition();
@@ -47,6 +47,7 @@ export default function PhotoManager({ photos, collections, stories }) {
           description: form.elements.description.value,
           artistInput: form.elements.artist.value,
           collectionIds: formDataNative.getAll("collection_ids"),
+          ruleIds: formDataNative.getAll("rule_ids"),
           storyIds: formDataNative.getAll("story_ids"),
           secure_url: uploadData.secure_url,
           public_id: uploadData.public_id,
@@ -74,6 +75,7 @@ export default function PhotoManager({ photos, collections, stories }) {
           formData.get("description"),
           formData.getAll("collection_ids"),
           formData.getAll("story_ids"),
+          formData.getAll("rule_ids"),
         );
         setEditingPhotoId(null);
       } catch {
@@ -98,8 +100,8 @@ export default function PhotoManager({ photos, collections, stories }) {
             <FormSelect
               name="collection_ids"
               multiple
-              size={4}
-              className="h-28"
+              size={3}
+              className="h-24"
             >
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -107,7 +109,14 @@ export default function PhotoManager({ photos, collections, stories }) {
                 </option>
               ))}
             </FormSelect>
-            <FormSelect name="story_ids" multiple size={4} className="h-28">
+            <FormSelect name="rule_ids" multiple size={3} className="h-24">
+              {rules?.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.title}
+                </option>
+              ))}
+            </FormSelect>
+            <FormSelect name="story_ids" multiple size={3} className="h-24">
               {stories.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}

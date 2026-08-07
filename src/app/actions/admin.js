@@ -28,7 +28,7 @@ export async function getPhotosAction() {
   const { data, error } = await db
     .from("photos")
     .select(
-      "*, collections!photo_collections(id, title), stories!photo_stories(id, title)",
+      "*, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -49,6 +49,7 @@ export async function editPhotoAction(
   description,
   collectionIds,
   storyIds,
+  ruleIds,
 ) {
   await verifyAdminSession();
   const db = await getAdminDb();
@@ -64,6 +65,12 @@ export async function editPhotoAction(
       .insert(
         collectionIds.map((cId) => ({ photo_id: id, collection_id: cId })),
       );
+  }
+  await db.from("photo_rule_collections").delete().eq("photo_id", id);
+  if (ruleIds?.length) {
+    await db
+      .from("photo_rule_collections")
+      .insert(ruleIds.map((rId) => ({ photo_id: id, rule_id: rId })));
   }
   await db.from("photo_stories").delete().eq("photo_id", id);
   if (storyIds?.length) {
@@ -201,6 +208,69 @@ export async function editCalendarCollectionAction(id, formData) {
       cover_photo_id: formData.get("cover_photo_id") || null,
     })
     .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidateAll();
+  return { success: true };
+}
+async function syncRulePhotos(db, ruleId, photoIds) {
+  await db.from("photo_rule_collections").delete().eq("rule_id", ruleId);
+  if (photoIds?.length > 0) {
+    const inserts = photoIds.map((id) => ({
+      photo_id: id,
+      rule_id: ruleId,
+    }));
+    await db.from("photo_rule_collections").insert(inserts);
+  }
+}
+export async function getRuleCollectionsAction() {
+  await verifyAdminSession();
+  const db = await getAdminDb();
+  const { data, error } = await db
+    .from("rule_collections")
+    .select("*, photos!photo_rule_collections(id, cloudinary_url, title)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+}
+export async function createRuleCollectionAction(formData) {
+  await verifyAdminSession();
+  const db = await getAdminDb();
+  const { data, error } = await db
+    .from("rule_collections")
+    .insert([
+      {
+        title: formData.get("title"),
+        description: formData.get("description"),
+        cover_photo_id: formData.get("cover_photo_id") || null,
+      },
+    ])
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  await syncRulePhotos(db, data.id, formData.getAll("photo_ids"));
+  revalidateAll();
+  return { success: true };
+}
+export async function editRuleCollectionAction(id, formData) {
+  await verifyAdminSession();
+  const db = await getAdminDb();
+  const { error } = await db
+    .from("rule_collections")
+    .update({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      cover_photo_id: formData.get("cover_photo_id") || null,
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  await syncRulePhotos(db, id, formData.getAll("photo_ids"));
+  revalidateAll();
+  return { success: true };
+}
+export async function deleteRuleCollectionAction(id) {
+  await verifyAdminSession();
+  const db = await getAdminDb();
+  const { error } = await db.from("rule_collections").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidateAll();
   return { success: true };

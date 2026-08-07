@@ -4,29 +4,15 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/app/actions/auth";
 
-const PhotoManager = dynamic(() => import("./PhotoManager"), {
-  loading: () => (
-    <p className="font-medium p-6 text-zinc-500">Loading Photos...</p>
-  ),
-});
-const CollectionManager = dynamic(() => import("./CollectionManager"), {
-  loading: () => (
-    <p className="font-medium p-6 text-zinc-500">Loading Collections...</p>
-  ),
-});
-const StoryManager = dynamic(() => import("./StoryManager"), {
-  loading: () => (
-    <p className="font-medium p-6 text-zinc-500">Loading Stories...</p>
-  ),
-});
-const CalendarManager = dynamic(() => import("./CalendarManager"), {
-  loading: () => (
-    <p className="font-medium p-6 text-zinc-500">Loading Calendar...</p>
-  ),
-});
+const PhotoManager = dynamic(() => import("./PhotoManager"));
+const CollectionManager = dynamic(() => import("./CollectionManager"));
+const RuleManager = dynamic(() => import("./RuleManager"));
+const StoryManager = dynamic(() => import("./StoryManager"));
+const CalendarManager = dynamic(() => import("./CalendarManager"));
 export default function DashboardTabs({
   photos,
   collections,
+  rules,
   stories,
   calendars,
 }) {
@@ -41,20 +27,22 @@ export default function DashboardTabs({
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 mb-10 pb-4 overflow-x-auto">
           <div className="flex gap-4">
-            {["photos", "collections", "calendar", "stories"].map((tab) => (
-              <button
-                type="button"
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`text-lg font-bold capitalize px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
-                  activeTab === tab
-                    ? "bg-black text-white dark:bg-white dark:text-black"
-                    : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-900"
-                }`}
-              >
-                Manage {tab}
-              </button>
-            ))}
+            {["photos", "collections", "rules", "calendar", "stories"].map(
+              (tab) => (
+                <button
+                  type="button"
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`text-lg font-bold capitalize px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                    activeTab === tab
+                      ? "bg-black text-white dark:bg-white dark:text-black"
+                      : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-900"
+                  }`}
+                >
+                  Manage {tab}
+                </button>
+              ),
+            )}
           </div>
           <button
             type="button"
@@ -68,11 +56,15 @@ export default function DashboardTabs({
           <PhotoManager
             photos={photos}
             collections={collections}
+            rules={rules}
             stories={stories}
           />
         )}
         {activeTab === "collections" && (
           <CollectionManager collections={collections} allPhotos={photos} />
+        )}
+        {activeTab === "rules" && (
+          <RuleManager rules={rules} allPhotos={photos} />
         )}
         {activeTab === "calendar" && (
           <CalendarManager calendars={calendars} allPhotos={photos} />

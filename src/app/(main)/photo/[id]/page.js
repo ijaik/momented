@@ -14,7 +14,7 @@ export default async function PhotoDetail({ params }) {
   const { data: photo } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), stories!photo_stories(id, title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
     )
     .eq("id", id)
     .single();
@@ -31,8 +31,11 @@ export default async function PhotoDetail({ params }) {
     calendarCollections = calData || [];
   }
   const standardCollections = photo.collections || [];
+  const ruleCollections = photo.rules || [];
   const hasCollections =
-    standardCollections.length > 0 || calendarCollections.length > 0;
+    standardCollections.length > 0 ||
+    ruleCollections.length > 0 ||
+    calendarCollections.length > 0;
   const hasStories = photo.stories && photo.stories.length > 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
@@ -76,6 +79,15 @@ export default async function PhotoDetail({ params }) {
                             className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                           >
                             {c.title}
+                          </Link>
+                        ))}
+                        {ruleCollections.map((r) => (
+                          <Link
+                            key={`rule-${r.id}`}
+                            href={`/collections/rules/${r.id}`}
+                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            {r.title}
                           </Link>
                         ))}
                         {calendarCollections.map((c) => (

@@ -89,6 +89,14 @@ export async function savePhotoToDbAction(data) {
       })),
     );
   }
+  if (data.ruleIds?.length) {
+    await db.from("photo_rule_collections").insert(
+      data.ruleIds.map((rId) => ({
+        photo_id: newPhoto.id,
+        rule_id: rId,
+      })),
+    );
+  }
   if (data.storyIds?.length) {
     await db.from("photo_stories").insert(
       data.storyIds.map((sId) => ({
