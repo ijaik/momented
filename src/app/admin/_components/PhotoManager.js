@@ -24,8 +24,8 @@ export default function PhotoManager({ photos, collections, rules, stories }) {
       try {
         const file = form.elements.photo.files[0];
         if (!file) throw new Error("Please select a photo to upload.");
-        if (file.size > 15 * 1024 * 1024)
-          throw new Error("File too large (Max 15MB).");
+        if (file.size > 25 * 1024 * 1024)
+          throw new Error("File too large (Max 25MB).");
         const signData = await getCloudinarySignatureAction();
         setStatus("Uploading to Cloudinary...");
         const formData = new FormData();
