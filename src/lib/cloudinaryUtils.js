@@ -12,6 +12,3 @@ export function buildCloudinaryUrl(url, transformations = []) {
 export function getSocialShareImageUrl(url) {
   return buildCloudinaryUrl(url, ["t_social_share"]);
 }
-export function getAttachmentDownloadUrl(url) {
-  return buildCloudinaryUrl(url, ["fl_attachment"]);
-}

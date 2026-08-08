@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { incrementDownload } from "@/app/actions/download";
 import { Icons } from "@/components/ui/Icons";
-import { getAttachmentDownloadUrl } from "@/lib/cloudinaryUtils";
 export default function DownloadButton({
   photoId,
   cloudinaryUrl,
@@ -16,15 +15,19 @@ export default function DownloadButton({
     try {
       await incrementDownload(photoId);
       router.refresh();
-      const downloadUrl = getAttachmentDownloadUrl(cloudinaryUrl);
+      const response = await fetch(cloudinaryUrl);
+      if (!response.ok) throw new Error("Failed to fetch image data");
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.setAttribute("download", "");
+      link.href = objectUrl;
+      const filename = cloudinaryUrl.split("/").pop() || "momented-photo.jpg";
+      link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (error) {
-      console.error("Download failed:", error);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (_error) {
       alert("Failed to download image. Please try again.");
     } finally {
       setIsDownloading(false);

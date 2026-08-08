@@ -1,3 +1,4 @@
+import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import { deletePhotoAction, editPhotoAction } from "@/app/actions/admin";
@@ -24,12 +25,26 @@ export default function PhotoManager({ photos, collections, rules, stories }) {
       try {
         const file = form.elements.photo.files[0];
         if (!file) throw new Error("Please select a photo to upload.");
-        if (file.size > 25 * 1024 * 1024)
-          throw new Error("File too large (Max 25MB).");
+        let fileToUpload = file;
+        if (file.size > 10 * 1024 * 1024) {
+          setStatus("Compressing large photo...");
+          try {
+            const options = {
+              maxSizeMB: 10,
+              maxWidthOrHeight: 7680,
+              useWebWorker: true,
+              preserveExif: true,
+            };
+            fileToUpload = await imageCompression(file, options);
+          } catch (compressionError) {
+            console.error("Compression error:", compressionError);
+            throw new Error("Failed to compress image before uploading.");
+          }
+        }
         const signData = await getCloudinarySignatureAction();
         setStatus("Uploading to Cloudinary...");
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", fileToUpload);
         formData.append("api_key", signData.apiKey);
         formData.append("timestamp", signData.timestamp);
         formData.append("signature", signData.signature);
