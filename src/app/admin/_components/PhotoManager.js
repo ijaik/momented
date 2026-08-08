@@ -1,5 +1,6 @@
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
+import { dump, insert, load } from "piexifjs";
 import { useState, useTransition } from "react";
 import { deletePhotoAction, editPhotoAction } from "@/app/actions/admin";
 import {
@@ -12,6 +13,24 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
+
+const fileToDataURL = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+const dataURLtoFile = (dataurl, filename, mimeType) => {
+  const arr = dataurl.split(",");
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mimeType });
+};
 export default function PhotoManager({ photos, collections, rules, stories }) {
   const [status, setStatus] = useState("");
   const [editingPhotoId, setEditingPhotoId] = useState(null);
@@ -28,17 +47,49 @@ export default function PhotoManager({ photos, collections, rules, stories }) {
         let fileToUpload = file;
         if (file.size > 10 * 1024 * 1024) {
           setStatus("Compressing large photo...");
+          const options = {
+            maxSizeMB: 10,
+            maxWidthOrHeight: 7680,
+            useWebWorker: true,
+            preserveExif: true,
+          };
           try {
-            const options = {
-              maxSizeMB: 10,
-              maxWidthOrHeight: 7680,
-              useWebWorker: true,
-              preserveExif: true,
-            };
             fileToUpload = await imageCompression(file, options);
-          } catch (compressionError) {
-            console.error("Compression error:", compressionError);
-            throw new Error("Failed to compress image before uploading.");
+          } catch (_compressionError) {
+            console.warn(
+              "Native EXIF preservation failed, attempting manual EXIF injection...",
+            );
+            try {
+              options.preserveExif = false;
+              const compressedWithoutExif = await imageCompression(
+                file,
+                options,
+              );
+              if (file.type === "image/jpeg" || file.type === "image/jpg") {
+                const originalDataURL = await fileToDataURL(file);
+                const exifObj = load(originalDataURL);
+                const exifBytes = dump(exifObj);
+                const compressedDataURL = await fileToDataURL(
+                  compressedWithoutExif,
+                );
+                const finalDataURL = insert(exifBytes, compressedDataURL);
+                fileToUpload = dataURLtoFile(
+                  finalDataURL,
+                  file.name,
+                  file.type,
+                );
+              } else {
+                fileToUpload = compressedWithoutExif;
+              }
+            } catch (manualExifError) {
+              console.error(
+                "Manual EXIF preservation failed:",
+                manualExifError,
+              );
+              throw new Error(
+                "Failed to compress image and preserve EXIF data.",
+              );
+            }
           }
         }
         const signData = await getCloudinarySignatureAction();
