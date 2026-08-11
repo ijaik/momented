@@ -11,6 +11,17 @@ import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 import type { CollectionReference, PageProps, Photo } from "@/types";
+
+function CollectionTag({ href, title }: { href: string; title: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+    >
+      {title}
+    </Link>
+  );
+}
 export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
@@ -81,31 +92,25 @@ export default async function PhotoDetail({
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {standardCollections.map((c) => (
-                          <Link
+                          <CollectionTag
                             key={`std-${c.id}`}
                             href={`/collections/${c.id}`}
-                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                          >
-                            {c.title}
-                          </Link>
+                            title={c.title}
+                          />
                         ))}
                         {ruleCollections.map((r) => (
-                          <Link
+                          <CollectionTag
                             key={`rule-${r.id}`}
                             href={`/collections/rules/${r.id}`}
-                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                          >
-                            {r.title}
-                          </Link>
+                            title={r.title}
+                          />
                         ))}
                         {calendarCollections.map((c) => (
-                          <Link
+                          <CollectionTag
                             key={`cal-${c.id}`}
                             href={`/collections/calendar/${c.id}`}
-                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                          >
-                            {c.title}
-                          </Link>
+                            title={c.title}
+                          />
                         ))}
                       </div>
                     </div>
@@ -117,13 +122,11 @@ export default async function PhotoDetail({
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {typedPhoto.stories?.map((s) => (
-                          <Link
+                          <CollectionTag
                             key={s.id}
                             href={`/stories/${s.id}`}
-                            className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                          >
-                            {s.title}
-                          </Link>
+                            title={s.title}
+                          />
                         ))}
                       </div>
                     </div>

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import {
   type ReactNode,
   type SubmitEvent,
@@ -12,6 +11,7 @@ import {
   SubmitButton,
 } from "@/components/ui/AdminForms";
 import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
+import PhotoThumbnails from "./PhotoThumbnails";
 export interface BaseItem {
   id: string | number;
   title: string;
@@ -177,20 +177,11 @@ export default function ItemManager<T extends BaseItem>({
                   {item.title}
                 </h3>
                 {renderContent(item)}
-                {item.photos && item.photos.length > 0 && (
-                  <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
-                    {item.photos.map((p) => (
-                      <Image
-                        key={p.id}
-                        src={p.cloudinary_url}
-                        alt={p.title || item.title}
-                        width={80}
-                        height={80}
-                        className="w-16 h-16 object-cover rounded-md shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                      />
-                    ))}
-                  </div>
-                )}
+                <PhotoThumbnails
+                  photos={item.photos}
+                  fallbackTitle={item.title}
+                  className="mt-6"
+                />
                 <div className="flex gap-4 mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800">
                   <button
                     type="button"

@@ -1,7 +1,5 @@
 "use client";
-import imageCompression from "browser-image-compression";
 import Image from "next/image";
-import { dump, insert, load } from "piexif-ts";
 import { type SubmitEvent, useState, useTransition } from "react";
 import { deletePhotoAction, editPhotoAction } from "@/app/actions/admin";
 import {
@@ -14,6 +12,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
+import { compressImageWithExif } from "@/lib/imageCompression";
 export interface PhotoItem {
   id: string | number;
   title: string;
@@ -34,27 +33,6 @@ interface PhotoManagerProps {
   rules: OptionItem[];
   stories: OptionItem[];
 }
-const fileToDataURL = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target?.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-const dataURLtoFile = (
-  dataurl: string,
-  filename: string,
-  mimeType: string,
-): File => {
-  const arr = dataurl.split(",");
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, { type: mimeType });
-};
 export default function PhotoManager({
   photos,
   collections,
@@ -76,54 +54,7 @@ export default function PhotoManager({
         const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
         const file = fileInput?.files?.[0];
         if (!file) throw new Error("Please select a photo to upload.");
-        let fileToUpload = file;
-        if (file.size > 10 * 1024 * 1024) {
-          setStatus("Compressing large photo...");
-          const options = {
-            maxSizeMB: 10,
-            maxWidthOrHeight: 7680,
-            useWebWorker: true,
-            preserveExif: true,
-          };
-          try {
-            fileToUpload = await imageCompression(file, options);
-          } catch (_compressionError) {
-            console.warn(
-              "Native EXIF preservation failed, attempting manual EXIF injection...",
-            );
-            try {
-              options.preserveExif = false;
-              const compressedWithoutExif = await imageCompression(
-                file,
-                options,
-              );
-              if (file.type === "image/jpeg" || file.type === "image/jpg") {
-                const originalDataURL = await fileToDataURL(file);
-                const exifObj = load(originalDataURL);
-                const exifBytes = dump(exifObj);
-                const compressedDataURL = await fileToDataURL(
-                  compressedWithoutExif,
-                );
-                const finalDataURL = insert(exifBytes, compressedDataURL);
-                fileToUpload = dataURLtoFile(
-                  finalDataURL,
-                  file.name,
-                  file.type,
-                );
-              } else {
-                fileToUpload = compressedWithoutExif;
-              }
-            } catch (manualExifError) {
-              console.error(
-                "Manual EXIF preservation failed:",
-                manualExifError,
-              );
-              throw new Error(
-                "Failed to compress image and preserve EXIF data.",
-              );
-            }
-          }
-        }
+        const fileToUpload = await compressImageWithExif(file, setStatus);
         const signData = await getCloudinarySignatureAction();
         setStatus("Uploading to Cloudinary...");
         const formData = new FormData();
@@ -242,17 +173,12 @@ export default function PhotoManager({
               className="text-sm cursor-pointer border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg"
             />
             <SubmitButton
-              isLoading={isPending}
-              loadingText="Uploading..."
+              isLoading={isPending || Boolean(status)}
+              loadingText={status || "Uploading..."}
               text="Upload Photo"
               className="bg-black dark:bg-white text-white dark:text-black w-full"
             />
           </form>
-          {status && (
-            <div className="mt-4 p-3 text-center border rounded-lg text-sm font-medium">
-              {status}
-            </div>
-          )}
         </div>
       </div>
       <div className="lg:col-span-2 flex flex-col gap-4">

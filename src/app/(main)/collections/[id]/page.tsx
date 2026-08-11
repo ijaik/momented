@@ -1,5 +1,5 @@
 import PhotoGrid from "@/components/PhotoGrid";
-import BackButton from "@/components/ui/BackButton";
+import DetailLayout from "@/components/ui/DetailLayout";
 import { supabase } from "@/lib/supabase";
 import type { PageProps, Photo } from "@/types";
 export default async function SingleCollectionPage({
@@ -25,24 +25,11 @@ export default async function SingleCollectionPage({
       <div className="p-20 text-center text-xl">Collection not found.</div>
     );
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton />
-        <header className="mb-16 md:mb-24 text-center md:text-left">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6">
-            {collection.title}
-          </h1>
-          {collection.description && (
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed whitespace-pre-wrap">
-              {collection.description}
-            </p>
-          )}
-        </header>
-        <PhotoGrid
-          photos={(photos as unknown as Photo[]) || []}
-          emptyMessage="No photos have been added to this collection yet."
-        />
-      </div>
-    </main>
+    <DetailLayout title={collection.title} description={collection.description}>
+      <PhotoGrid
+        photos={(photos as unknown as Photo[]) || []}
+        emptyMessage="No photos have been added to this collection yet."
+      />
+    </DetailLayout>
   );
 }

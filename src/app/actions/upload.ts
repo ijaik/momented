@@ -1,4 +1,5 @@
 "use server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth";
@@ -49,6 +50,22 @@ function parseExifDate(dateStr?: string | null): string | null {
     .replace(/^(\d{4}):(\d{2}):(\d{2})[\sT]?/, "$1-$2-$3T");
   const parsed = new Date(formattedStr);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+async function insertJunctionRecords(
+  db: SupabaseClient,
+  table: string,
+  fkColumn: string,
+  photoId: string | number,
+  ids?: string[],
+) {
+  if (ids?.length) {
+    await db.from(table).insert(
+      ids.map((id) => ({
+        photo_id: photoId,
+        [fkColumn]: id,
+      })),
+    );
+  }
 }
 export async function getCloudinarySignatureAction(): Promise<CloudinarySignatureResponse> {
   await verifyAdminSession();
@@ -125,30 +142,27 @@ export async function savePhotoToDbAction(
       calendar_id: monthId,
     },
   ]);
-  if (data.collectionIds?.length) {
-    await db.from("photo_collections").insert(
-      data.collectionIds.map((cId) => ({
-        photo_id: newPhoto.id,
-        collection_id: cId,
-      })),
-    );
-  }
-  if (data.ruleIds?.length) {
-    await db.from("photo_rule_collections").insert(
-      data.ruleIds.map((rId) => ({
-        photo_id: newPhoto.id,
-        rule_id: rId,
-      })),
-    );
-  }
-  if (data.storyIds?.length) {
-    await db.from("photo_stories").insert(
-      data.storyIds.map((sId) => ({
-        photo_id: newPhoto.id,
-        story_id: sId,
-      })),
-    );
-  }
+  await insertJunctionRecords(
+    db,
+    "photo_collections",
+    "collection_id",
+    newPhoto.id,
+    data.collectionIds,
+  );
+  await insertJunctionRecords(
+    db,
+    "photo_rule_collections",
+    "rule_id",
+    newPhoto.id,
+    data.ruleIds,
+  );
+  await insertJunctionRecords(
+    db,
+    "photo_stories",
+    "story_id",
+    newPhoto.id,
+    data.storyIds,
+  );
   revalidatePath("/", "layout");
   return { success: true };
 }

@@ -5,28 +5,21 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
+
+const baseInputStyle =
+  "border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white";
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
 export function FormInput({ className = "", ...props }: FormInputProps) {
-  return (
-    <input
-      className={`border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white ${className}`}
-      {...props}
-    />
-  );
+  return <input className={`${baseInputStyle} ${className}`} {...props} />;
 }
 export interface FormTextareaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   className?: string;
 }
 export function FormTextarea({ className = "", ...props }: FormTextareaProps) {
-  return (
-    <textarea
-      className={`border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white ${className}`}
-      {...props}
-    />
-  );
+  return <textarea className={`${baseInputStyle} ${className}`} {...props} />;
 }
 export interface FormSelectProps
   extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -39,10 +32,7 @@ export function FormSelect({
   ...props
 }: FormSelectProps) {
   return (
-    <select
-      className={`border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white ${className}`}
-      {...props}
-    >
+    <select className={`${baseInputStyle} ${className}`} {...props}>
       {children}
     </select>
   );

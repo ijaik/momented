@@ -1,5 +1,5 @@
 import PhotoCard from "@/components/PhotoCard";
-import BackButton from "@/components/ui/BackButton";
+import DetailLayout from "@/components/ui/DetailLayout";
 import { getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 import type { PageProps, Photo } from "@/types";
@@ -62,40 +62,27 @@ export default async function CalendarMonthPage({
       return { year, photos: photosForYear };
     });
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton />
-        <header className="mb-16 md:mb-24 text-center md:text-left">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6">
-            {collection.title}
-          </h1>
-          {collection.description && (
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl leading-relaxed whitespace-pre-wrap">
-              {collection.description}
-            </p>
-          )}
-        </header>
-        {structuredYears.length > 0 ? (
-          <div className="flex flex-col gap-24 pb-24">
-            {structuredYears.map(({ year, photos }) => (
-              <section key={year}>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-                  {collection.title} {year}
-                </h2>
-                <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-                  {photos.map((photo, index) => (
-                    <PhotoCard key={photo.id} photo={photo} index={index} />
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-zinc-500 py-20 border-t border-zinc-200 dark:border-zinc-800">
-            No photos have been captured in {collection.title} yet.
-          </div>
-        )}
-      </div>
-    </main>
+    <DetailLayout title={collection.title} description={collection.description}>
+      {structuredYears.length > 0 ? (
+        <div className="flex flex-col gap-24 pb-24">
+          {structuredYears.map(({ year, photos }) => (
+            <section key={year}>
+              <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
+                {collection.title} {year}
+              </h2>
+              <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+                {photos.map((photo, index) => (
+                  <PhotoCard key={photo.id} photo={photo} index={index} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-zinc-500 py-20 border-t border-zinc-200 dark:border-zinc-800">
+          No photos have been captured in {collection.title} yet.
+        </div>
+      )}
+    </DetailLayout>
   );
 }

@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
 export const metadata: Metadata = {
   title: "About",
 };
+function SectionHeading({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
+      <Icons.Sparkle className="w-3 h-3" />
+      {children}
+    </h2>
+  );
+}
 export default function AboutPage() {
   return (
     <main className="min-h-screen py-24 md:py-40 relative overflow-hidden">
@@ -59,10 +68,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-24 md:gap-32">
             <section className="group relative">
               <div className="absolute -left-4 top-0 h-full w-px bg-linear-to-b from-transparent via-zinc-300 to-transparent dark:via-zinc-700 transition-all duration-500 group-hover:via-zinc-900 dark:group-hover:via-white" />
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-                <Icons.Sparkle className="w-3 h-3" />
-                The Concept
-              </h2>
+              <SectionHeading>The Concept</SectionHeading>
               <div className="space-y-6">
                 <p>
                   <span className="text-zinc-900 dark:text-white font-leckerli tracking-tight text-3xl md:text-4xl block mb-2">
@@ -84,10 +90,7 @@ export default function AboutPage() {
             </section>
             <section className="group relative">
               <div className="absolute -left-4 top-0 h-full w-px bg-linear-to-b from-transparent via-zinc-300 to-transparent dark:via-zinc-700 transition-all duration-500 group-hover:via-zinc-900 dark:group-hover:via-white" />
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-                <Icons.Sparkle className="w-3 h-3" />
-                The Purpose
-              </h2>
+              <SectionHeading>The Purpose</SectionHeading>
               <div className="space-y-6">
                 <p>Art is meant to be shared, not locked away.</p>
                 <p className="text-zinc-500 dark:text-zinc-400">
@@ -97,10 +100,7 @@ export default function AboutPage() {
             </section>
           </div>
           <section className="relative">
-            <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3">
-              <Icons.Sparkle className="w-3 h-3" />
-              The License
-            </h2>
+            <SectionHeading>The License</SectionHeading>
             <div className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-linear-to-br from-white/80 to-zinc-50/40 dark:from-white/4 dark:to-white/1 backdrop-blur p-8 md:p-14">
               <p className="relative text-xl md:text-2xl font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed">
                 {siteConfig.license}
