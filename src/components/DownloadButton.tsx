@@ -42,13 +42,13 @@ export default function DownloadButton({
       type="button"
       onClick={handleDownload}
       disabled={isDownloading}
-      className="w-full inline-flex items-center justify-between px-5 py-3.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-60"
+      className="w-full flex items-center justify-between bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 px-6 py-3.5 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-colors disabled:opacity-50"
     >
-      <span className="inline-flex items-center gap-2.5">
-        <Icons.Download className="w-4 h-4" />
-        {isDownloading ? "Downloading..." : "Download Original"}
-      </span>
-      <span className="text-xs font-mono opacity-80 bg-zinc-800 dark:bg-zinc-200 px-2.5 py-1 rounded-md">
+      <div className="flex items-center gap-2.5">
+        <Icons.Download className="w-5 h-5" />
+        <span>{isDownloading ? "Downloading..." : "High-Res"}</span>
+      </div>
+      <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-semibold">
         {count}
       </span>
     </button>
