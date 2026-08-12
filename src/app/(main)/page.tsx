@@ -2,11 +2,12 @@ import PhotoGrid from "@/components/PhotoGrid";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
-import type { Photo } from "@/types";
 export default async function Home() {
   const { data: photos, error } = await supabase
     .from("photos")
-    .select("id, title, cloudinary_url, width, height, camera_model")
+    .select(
+      "id, title, cloudinary_url, width, height, camera_model, created_at",
+    )
     .order("created_at", { ascending: false });
   if (error) return <EmptyState description="Failed to load." />;
   return (
@@ -20,7 +21,7 @@ export default async function Home() {
           </>
         }
       />
-      <PhotoGrid photos={(photos as Photo[]) || []} />
+      <PhotoGrid photos={photos || []} />
     </main>
   );
 }

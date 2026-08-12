@@ -1,7 +1,7 @@
 export interface Photo {
   id: string;
   title: string | null;
-  description: string | null;
+  description?: string | null;
   cloudinary_url: string;
   cloudinary_public_id?: string;
   width: number;
@@ -15,7 +15,7 @@ export interface Photo {
   artist?: string | null;
   taken_at?: string | null;
   created_at: string;
-  downloads?: number;
+  downloads?: number | null;
   shares?: number;
   collections?: CollectionReference[];
   rules?: RuleCollectionReference[];
@@ -38,12 +38,12 @@ export interface StoryReference {
   title: string;
 }
 export interface BaseCollection {
-  id: string;
+  id: string | number;
   title: string;
   description?: string | null;
   cover_photo_id?: string | null;
-  created_at?: string;
-  photos?: Pick<Photo, "id" | "cloudinary_url" | "title">[];
+  created_at?: string | null;
+  photos?: Pick<Photo, "id" | "cloudinary_url">[];
 }
 export interface Collection extends BaseCollection {}
 export interface RuleCollection extends BaseCollection {}
@@ -60,7 +60,7 @@ export interface Story {
   content: string;
   cover_photo_id?: string | null;
   created_at: string;
-  photos?: Pick<Photo, "id" | "cloudinary_url" | "title">[];
+  photos?: Pick<Photo, "id" | "cloudinary_url">[];
 }
 export type PageProps<
   TParams = Record<string, string>,

@@ -2,9 +2,9 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { incrementShare } from "@/app/actions/download";
 import { Icons } from "@/components/ui/Icons";
 import { copyText, imageUrlToFile } from "@/lib/share";
-import { supabase } from "@/lib/supabase";
 export interface ShareDialogProps {
   title?: string;
   photoId?: string | number;
@@ -82,11 +82,8 @@ export default function ShareDialog({
   const trackShare = async () => {
     if (!photoId) return;
     try {
-      const { error } = await supabase.rpc("increment_shares", {
-        row_id: photoId,
-      });
-      if (error) console.error("Supabase share error:", error);
-      else router.refresh();
+      await incrementShare(photoId);
+      router.refresh();
     } catch (err) {
       console.error("Failed to track share:", err);
     }

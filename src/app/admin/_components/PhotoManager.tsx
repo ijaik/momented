@@ -17,7 +17,7 @@ import { compressImageWithExif } from "@/lib/imageCompression";
 export interface PhotoItem {
   id: string | number;
   title: string;
-  description?: string;
+  description?: string | null;
   cloudinary_url: string;
   cloudinary_public_id?: string;
   collections?: { id: string | number; title: string }[];
@@ -194,7 +194,6 @@ export default function PhotoManager({
               width={200}
               height={200}
               className="w-full sm:w-32 h-32 object-cover rounded-lg"
-              priority
             />
             <div className="flex-1 w-full">
               {editingPhotoId === photo.id ? (
@@ -205,7 +204,7 @@ export default function PhotoManager({
                   <FormInput name="title" defaultValue={photo.title} required />
                   <FormTextarea
                     name="description"
-                    defaultValue={photo.description}
+                    defaultValue={photo.description ?? ""}
                     rows={2}
                   />
                   <div className="flex flex-col sm:flex-row gap-2">

@@ -53,10 +53,10 @@ export function SubmitButton({
 }: SubmitButtonProps) {
   return (
     <button
+      {...props}
       type="submit"
       disabled={isLoading}
       className={`py-3 px-6 rounded-lg font-medium disabled:opacity-50 transition-colors ${className}`}
-      {...props}
     >
       {isLoading ? loadingText : text}
     </button>

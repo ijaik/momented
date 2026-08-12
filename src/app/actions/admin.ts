@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { getAdminDb } from "@/lib/supabase-admin";
+import type { Database, TableName } from "@/types/database.types";
 
+type JunctionTable =
+  | "photo_collections"
+  | "photo_rule_collections"
+  | "photo_stories";
 const revalidateAll = () => revalidatePath("/", "layout");
 function parseFormData(formData: FormData) {
   return {
@@ -16,56 +21,42 @@ function parseFormData(formData: FormData) {
   };
 }
 async function syncJunction(
-  db: SupabaseClient,
-  table: string,
+  db: SupabaseClient<Database>,
+  table: JunctionTable,
   mainCol: string,
   mainId: string | number,
   targetCol: string,
   targetIds: string[],
 ) {
-  await db.from(table).delete().eq(mainCol, mainId);
+  await db
+    .from(table)
+    .delete()
+    .eq(mainCol as never, mainId as never);
   if (targetIds?.length > 0) {
     const inserts = targetIds.map((targetId) => ({
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));
-    await db.from(table).insert(inserts);
+    await db.from(table).insert(inserts as never);
   }
 }
-async function fetchItemsWithPhotos<
-  TTable extends string,
-  TRelation extends string,
->(
-  table: TTable,
-  photoRelation: TRelation,
-  orderBy = "created_at",
-  ascending = false,
-) {
-  await verifyAdminSession();
-  const db = await getAdminDb();
-  const selectQuery =
-    `*, photos!${photoRelation}(id, cloudinary_url, title)` as const;
-  const { data, error } = await db
-    .from(table)
-    .select(selectQuery)
-    .order(orderBy, { ascending });
-  if (error) throw new Error(error.message);
-  return data ?? [];
-}
 async function deleteItem(
-  table: string,
+  table: TableName,
   id: string | number,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
-  const { error } = await db.from(table).delete().eq("id", id);
+  const db = getAdminDb();
+  const { error } = await db
+    .from(table)
+    .delete()
+    .eq("id" as never, id as never);
   if (error) throw new Error(error.message);
   revalidateAll();
   return { success: true };
 }
 export async function getPhotosAction() {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { data, error } = await db
     .from("photos")
     .select(
@@ -80,10 +71,19 @@ export async function deletePhotoAction(
   publicId?: string,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
-  if (publicId) await cloudinary.uploader.destroy(publicId);
-  const { error } = await db.from("photos").delete().eq("id", id);
+  const db = getAdminDb();
+  const { error } = await db
+    .from("photos")
+    .delete()
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
+  if (publicId) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (cloudinaryError) {
+      console.error("Failed to delete Cloudinary asset:", cloudinaryError);
+    }
+  }
   revalidateAll();
   return { success: true };
 }
@@ -96,11 +96,11 @@ export async function editPhotoAction(
   ruleIds: string[],
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { error } = await db
     .from("photos")
     .update({ title, description })
-    .eq("id", id);
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
   await syncJunction(
     db,
@@ -123,13 +123,20 @@ export async function editPhotoAction(
   return { success: true };
 }
 export async function getCollectionsAction() {
-  return fetchItemsWithPhotos("collections", "photo_collections");
+  await verifyAdminSession();
+  const db = getAdminDb();
+  const { data, error } = await db
+    .from("collections")
+    .select("*, photos!photo_collections(id, cloudinary_url, title)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 export async function createCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseFormData(formData);
   const { data, error } = await db
@@ -154,13 +161,13 @@ export async function editCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseFormData(formData);
   const { error } = await db
     .from("collections")
     .update({ title, description, cover_photo_id })
-    .eq("id", id);
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
   await syncJunction(
     db,
@@ -179,13 +186,20 @@ export async function deleteCollectionAction(
   return deleteItem("collections", id);
 }
 export async function getStoriesAction() {
-  return fetchItemsWithPhotos("stories", "photo_stories");
+  await verifyAdminSession();
+  const db = getAdminDb();
+  const { data, error } = await db
+    .from("stories")
+    .select("*, photos!photo_stories(id, cloudinary_url, title)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 export async function createStoryAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, content, cover_photo_id, photoIds } = parseFormData(formData);
   const { data, error } = await db
     .from("stories")
@@ -209,12 +223,12 @@ export async function editStoryAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, content, cover_photo_id, photoIds } = parseFormData(formData);
   const { error } = await db
     .from("stories")
     .update({ title, content, cover_photo_id })
-    .eq("id", id);
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
   await syncJunction(db, "photo_stories", "story_id", id, "photo_id", photoIds);
   revalidateAll();
@@ -226,36 +240,45 @@ export async function deleteStoryAction(
   return deleteItem("stories", id);
 }
 export async function getCalendarCollectionsAction() {
-  return fetchItemsWithPhotos(
-    "calendar_collections",
-    "photo_calendar_collections",
-    "id",
-    true,
-  );
+  await verifyAdminSession();
+  const db = getAdminDb();
+  const { data, error } = await db
+    .from("calendar_collections")
+    .select("*, photos!photo_calendar_collections(id, cloudinary_url, title)")
+    .order("id", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 export async function editCalendarCollectionAction(
   id: string | number,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, description, cover_photo_id } = parseFormData(formData);
   const { error } = await db
     .from("calendar_collections")
     .update({ title, description, cover_photo_id })
-    .eq("id", id);
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
   revalidateAll();
   return { success: true };
 }
 export async function getRuleCollectionsAction() {
-  return fetchItemsWithPhotos("rule_collections", "photo_rule_collections");
+  await verifyAdminSession();
+  const db = getAdminDb();
+  const { data, error } = await db
+    .from("rule_collections")
+    .select("*, photos!photo_rule_collections(id, cloudinary_url, title)")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return data ?? [];
 }
 export async function createRuleCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseFormData(formData);
   const { data, error } = await db
@@ -280,13 +303,13 @@ export async function editRuleCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseFormData(formData);
   const { error } = await db
     .from("rule_collections")
     .update({ title, description, cover_photo_id })
-    .eq("id", id);
+    .eq("id", id as never);
   if (error) throw new Error(error.message);
   await syncJunction(
     db,

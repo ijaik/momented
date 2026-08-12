@@ -12,7 +12,7 @@ import PhotoThumbnails from "./PhotoThumbnails";
 export interface CalendarItem {
   id: string | number;
   title: string;
-  description?: string;
+  description?: string | null;
   cover_photo_id?: string | number | null;
   photos?: ChecklistPhoto[];
 }
@@ -65,7 +65,7 @@ export default function CalendarManager({
                 />
                 <FormTextarea
                   name="description"
-                  defaultValue={cal.description}
+                  defaultValue={cal.description ?? ""}
                   rows={3}
                 />
                 <PhotoChecklist

@@ -12,8 +12,12 @@ import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
-import type { CollectionReference, PageProps, Photo } from "@/types";
-
+import type { PageProps, Photo } from "@/types";
+export const revalidate = 3600;
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const { data } = await supabase.from("photos").select("id");
+  return (data ?? []).map((photo) => ({ id: photo.id }));
+}
 const getPhoto = cache(async (id: string) => {
   const { data } = await supabase
     .from("photos")
@@ -30,19 +34,19 @@ export default async function PhotoDetail({
   const { id } = await params;
   const photo = await getPhoto(id);
   if (!photo) return <EmptyState description="Photo not found." />;
-  const typedPhoto = photo as unknown as Photo;
+  const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(
     typedPhoto.created_at,
     typedPhoto.taken_at,
   );
   const { month: monthIndex } = getPhotoDate(typedPhoto);
-  let calendarCollections: CollectionReference[] = [];
+  let calendarCollections: { id: number; title: string }[] = [];
   if (monthIndex) {
     const { data: calData } = await supabase
       .from("calendar_collections")
       .select("id, title")
       .eq("id", monthIndex);
-    calendarCollections = (calData as CollectionReference[]) || [];
+    calendarCollections = calData || [];
   }
   const standardCollections = typedPhoto.collections || [];
   const ruleCollections = typedPhoto.rules || [];

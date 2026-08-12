@@ -16,8 +16,8 @@ import PhotoThumbnails from "./PhotoThumbnails";
 export interface BaseItem {
   id: string | number;
   title: string;
-  description?: string;
-  content?: string;
+  description?: string | null;
+  content?: string | null;
   cover_photo_id?: string | number | null;
   photos?: ChecklistPhoto[];
   [key: string]: unknown;

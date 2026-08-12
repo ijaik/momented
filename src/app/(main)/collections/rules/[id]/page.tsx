@@ -2,7 +2,12 @@ import PhotoGrid from "@/components/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
 import { supabase } from "@/lib/supabase";
-import type { PageProps, Photo } from "@/types";
+import type { PageProps } from "@/types";
+export const revalidate = 3600;
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const { data } = await supabase.from("rule_collections").select("id");
+  return (data ?? []).map((rule) => ({ id: rule.id }));
+}
 export default async function SingleRulePage({
   params,
 }: PageProps<{ id: string }>) {
@@ -26,7 +31,7 @@ export default async function SingleRulePage({
   return (
     <DetailLayout title={collection.title} description={collection.description}>
       <PhotoGrid
-        photos={(photos as unknown as Photo[]) || []}
+        photos={photos || []}
         emptyMessage="No photos have been tagged with this rule yet."
       />
     </DetailLayout>

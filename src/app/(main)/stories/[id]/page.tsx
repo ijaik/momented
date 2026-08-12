@@ -2,7 +2,12 @@ import PhotoGrid from "@/components/PhotoGrid";
 import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
 import { supabase } from "@/lib/supabase";
-import type { PageProps, Photo, Story } from "@/types";
+import type { PageProps } from "@/types";
+export const revalidate = 3600;
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const { data } = await supabase.from("stories").select("id");
+  return (data ?? []).map((story) => ({ id: story.id }));
+}
 export default async function SingleStoryPage({
   params,
 }: PageProps<{ id: string }>) {
@@ -22,18 +27,17 @@ export default async function SingleStoryPage({
       .order("created_at", { ascending: true }),
   ]);
   if (!story) return <EmptyState description="Story not found." />;
-  const typedStory = story as Story;
-  const typedPhotos = (photos as unknown as Photo[]) || [];
+  const typedPhotos = photos || [];
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <BackButton />
         <header className="mb-16">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6 leading-tight">
-            {typedStory.title}
+            {story.title}
           </h1>
           <p className="text-sm text-zinc-500 uppercase tracking-widest font-semibold border-b border-zinc-200 dark:border-zinc-800 pb-6">
-            Published {new Date(typedStory.created_at).toLocaleDateString()}
+            Published {new Date(story.created_at).toLocaleDateString()}
           </p>
         </header>
         {typedPhotos.length > 0 && (
@@ -46,7 +50,7 @@ export default async function SingleStoryPage({
         )}
         <article className="max-w-3xl">
           <div className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
-            {typedStory.content}
+            {story.content}
           </div>
         </article>
       </div>

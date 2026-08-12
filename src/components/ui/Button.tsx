@@ -28,9 +28,9 @@ export default function Button({
   };
   return (
     <button
+      {...props}
       disabled={isLoading || props.disabled}
       className={`${baseStyles} ${variants[variant]} ${className}`}
-      {...props}
     >
       {isLoading ? loadingText || children : children}
     </button>

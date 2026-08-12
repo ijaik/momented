@@ -9,6 +9,11 @@ type CalendarPhoto = Photo & {
   dayContext?: { current: number; total: number } | null;
 };
 type GroupedPhotos = Record<number, Record<string, Photo[]>>;
+export const revalidate = 3600;
+export async function generateStaticParams(): Promise<{ id: string }[]> {
+  const { data } = await supabase.from("calendar_collections").select("id");
+  return (data ?? []).map((collection) => ({ id: String(collection.id) }));
+}
 export default async function CalendarMonthPage({
   params,
 }: PageProps<{ id: string }>) {
@@ -31,7 +36,7 @@ export default async function CalendarMonthPage({
       .order("created_at", { ascending: false }),
   ]);
   if (!collection) return <EmptyState description="Month not found." />;
-  const monthPhotos = (monthPhotosData as unknown as Photo[]) || [];
+  const monthPhotos = monthPhotosData || [];
   const groupedByYear = monthPhotos.reduce<GroupedPhotos>((acc, photo) => {
     const { year, dateString } = getPhotoDate(photo);
     if (!acc[year]) acc[year] = {};

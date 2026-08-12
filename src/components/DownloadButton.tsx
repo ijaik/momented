@@ -19,8 +19,12 @@ export default function DownloadButton({
     if (isDownloading) return;
     setIsDownloading(true);
     try {
-      const updatedCount = await incrementDownload(String(photoId));
-      setCount(updatedCount);
+      try {
+        const updatedCount = await incrementDownload(String(photoId));
+        setCount(updatedCount);
+      } catch (countError) {
+        console.warn("Failed to record download count:", countError);
+      }
       const response = await fetch(cloudinaryUrl);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);

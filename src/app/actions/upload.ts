@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
+import { parsePhotoDate } from "@/lib/dateUtils";
 import { getAdminDb } from "@/lib/supabase-admin";
+import type { Database } from "@/types/database.types";
 export interface CloudinarySignatureResponse {
   timestamp: number;
   folder: string;
@@ -43,17 +45,9 @@ export interface SavePhotoPayload {
     [key: string]: unknown;
   };
 }
-function parseExifDate(dateStr?: string | null): string | null {
-  if (!dateStr || typeof dateStr !== "string") return null;
-  const formattedStr = dateStr
-    .trim()
-    .replace(/^(\d{4}):(\d{2}):(\d{2})[\sT]?/, "$1-$2-$3T");
-  const parsed = new Date(formattedStr);
-  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-}
 async function insertJunctionRecords(
-  db: SupabaseClient,
-  table: string,
+  db: SupabaseClient<Database>,
+  table: "photo_collections" | "photo_rule_collections" | "photo_stories",
   fkColumn: string,
   photoId: string | number,
   ids?: string[],
@@ -63,7 +57,7 @@ async function insertJunctionRecords(
       ids.map((id) => ({
         photo_id: photoId,
         [fkColumn]: id,
-      })),
+      })) as never,
     );
   }
 }
@@ -95,7 +89,7 @@ export async function savePhotoToDbAction(
   data: SavePhotoPayload,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = await getAdminDb();
+  const db = getAdminDb();
   const meta = data.image_metadata || {};
   const rawFocal = meta.FocalLength || "";
   const cleanFocal = rawFocal
@@ -110,7 +104,7 @@ export async function savePhotoToDbAction(
     meta.DateTime ||
     meta.CreateDate ||
     meta.DateCreated) as string | undefined;
-  const takenAtDate = parseExifDate(rawExifDate);
+  const takenAtDate = parsePhotoDate(rawExifDate)?.toISOString() ?? null;
   const { data: newPhoto, error: dbError } = await db
     .from("photos")
     .insert([
