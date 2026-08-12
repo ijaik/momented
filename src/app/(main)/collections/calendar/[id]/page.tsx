@@ -1,5 +1,6 @@
-import PhotoCard from "@/components/PhotoCard";
+import PhotoGrid from "@/components/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
+import EmptyState from "@/components/ui/EmptyState";
 import { getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 import type { PageProps, Photo } from "@/types";
@@ -26,8 +27,7 @@ export default async function CalendarMonthPage({
       )
       .order("created_at", { ascending: false }),
   ]);
-  if (!collection)
-    return <div className="p-20 text-center text-xl">Month not found.</div>;
+  if (!collection) return <EmptyState description="Month not found." />;
   const typedPhotos = (allPhotos as Photo[]) || [];
   const monthPhotos = typedPhotos.filter(
     (p) => getPhotoDate(p).month === monthIndex,
@@ -70,18 +70,15 @@ export default async function CalendarMonthPage({
               <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
                 {collection.title} {year}
               </h2>
-              <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-                {photos.map((photo, index) => (
-                  <PhotoCard key={photo.id} photo={photo} index={index} />
-                ))}
-              </div>
+              <PhotoGrid photos={photos} />
             </section>
           ))}
         </div>
       ) : (
-        <div className="text-center text-zinc-500 py-20 border-t border-zinc-200 dark:border-zinc-800">
-          No photos have been captured in {collection.title} yet.
-        </div>
+        <EmptyState
+          description={`No photos have been captured in ${collection.title} yet.`}
+          className="border-none py-20 border-t border-t-zinc-200 dark:border-t-zinc-800 rounded-none"
+        />
       )}
     </DetailLayout>
   );

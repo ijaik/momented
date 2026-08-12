@@ -1,5 +1,6 @@
 import PhotoGrid from "@/components/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
+import EmptyState from "@/components/ui/EmptyState";
 import { supabase } from "@/lib/supabase";
 import type { PageProps, Photo } from "@/types";
 export default async function SingleRulePage({
@@ -21,9 +22,7 @@ export default async function SingleRulePage({
       .order("created_at", { ascending: false }),
   ]);
   if (!collection)
-    return (
-      <div className="p-20 text-center text-xl">Rule collection not found.</div>
-    );
+    return <EmptyState description="Rule collection not found." />;
   return (
     <DetailLayout title={collection.title} description={collection.description}>
       <PhotoGrid

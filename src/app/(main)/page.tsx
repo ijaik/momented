@@ -1,4 +1,5 @@
 import PhotoGrid from "@/components/PhotoGrid";
+import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
 import type { Photo } from "@/types";
@@ -7,7 +8,7 @@ export default async function Home() {
     .from("photos")
     .select("id, title, cloudinary_url, width, height, camera_model")
     .order("created_at", { ascending: false });
-  if (error) return <div className="p-10 text-center">Failed to load.</div>;
+  if (error) return <EmptyState description="Failed to load." />;
   return (
     <main className="max-w-7xl mx-auto px-6 md:px-10 py-20 font-sans">
       <PageHeader

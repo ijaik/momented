@@ -12,6 +12,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
+import Button from "@/components/ui/Button";
 import { compressImageWithExif } from "@/lib/imageCompression";
 export interface PhotoItem {
   id: string | number;
@@ -262,22 +263,24 @@ export default function PhotoManager({
                     {photo.description}
                   </p>
                   <div className="flex gap-3 mt-4">
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
                       onClick={() => setEditingPhotoId(photo.id)}
-                      className="text-sm font-medium text-blue-600 dark:text-blue-400"
+                      className="text-sm"
                     >
                       Edit
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="link"
                       onClick={() =>
                         deletePhotoAction(photo.id, photo.cloudinary_public_id)
                       }
-                      className="text-sm font-medium text-red-600 dark:text-red-400"
+                      className="text-sm text-red-600 dark:text-red-400"
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import CoverCard from "@/components/ui/CoverCard";
+import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
 import type { Story } from "@/types";
@@ -9,8 +10,7 @@ export default async function StoriesPage() {
     .from("stories")
     .select("*, photos!photo_stories(id, cloudinary_url)")
     .order("created_at", { ascending: false });
-  if (error)
-    return <div className="p-10 text-center">Failed to load stories.</div>;
+  if (error) return <EmptyState description="Failed to load stories." />;
   const typedStories = (stories as Story[]) || [];
   return (
     <main className="max-w-7xl mx-auto px-6 md:px-10 py-20 font-sans">
@@ -35,8 +35,8 @@ export default async function StoriesPage() {
         ))}
       </div>
       {typedStories.length === 0 && (
-        <div className="text-center py-24 px-6 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-500 dark:text-zinc-400">
-          <p className="text-zinc-500 col-span-full">No stories written yet.</p>
+        <div className="col-span-full pt-8">
+          <EmptyState description="No stories written yet." />
         </div>
       )}
     </main>

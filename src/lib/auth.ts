@@ -5,7 +5,8 @@ export async function verifyAdminSession(): Promise<boolean> {
   const token = cookieStore.get("admin_session")?.value;
   if (!token) throw new Error("Unauthorized: No session token found");
   const secretKey = process.env.ADMIN_SESSION_SECRET;
-  if (!secretKey) throw new Error("Server configuration error");
+  if (!secretKey)
+    throw new Error("Server configuration error: missing ADMIN_SESSION_SECRET");
   try {
     const secret = new TextEncoder().encode(secretKey);
     await jwtVerify(token, secret);

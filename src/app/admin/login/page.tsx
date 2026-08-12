@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { loginAction } from "@/app/actions/auth";
+import { FormInput, SubmitButton } from "@/components/ui/AdminForms";
 export default function LoginPage() {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -27,20 +28,18 @@ export default function LoginPage() {
       <div className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-center mb-6">Admin Access</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
+          <FormInput
             type="password"
             name="password"
             required
             placeholder="Enter admin password"
-            className="border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white"
           />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="bg-black dark:bg-white text-white dark:text-black py-3 rounded-lg font-medium transition-colors hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50"
-          >
-            {isLoading ? "Verifying..." : "Login"}
-          </button>
+          <SubmitButton
+            isLoading={isLoading}
+            loadingText="Verifying..."
+            text="Login"
+            className="bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+          />
         </form>
         {error && (
           <p className="mt-4 text-red-500 text-sm text-center font-medium">

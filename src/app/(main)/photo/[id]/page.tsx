@@ -1,27 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import DownloadButton from "@/components/DownloadButton";
 import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
 import BackButton from "@/components/ui/BackButton";
+import Badge from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 import type { CollectionReference, PageProps, Photo } from "@/types";
-
-function CollectionTag({ href, title }: { href: string; title: string }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center text-xs font-medium bg-zinc-100 dark:bg-zinc-800/80 text-zinc-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-    >
-      {title}
-    </Link>
-  );
-}
 export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
@@ -33,8 +23,7 @@ export default async function PhotoDetail({
     )
     .eq("id", id)
     .single();
-  if (!photo)
-    return <div className="p-20 text-center text-xl">Photo not found.</div>;
+  if (!photo) return <EmptyState description="Photo not found." />;
   const typedPhoto = photo as unknown as Photo;
   const displayDate = formatDisplayDate(
     typedPhoto.created_at,
@@ -83,54 +72,48 @@ export default async function PhotoDetail({
                   {typedPhoto.description}
                 </p>
               )}
-              {(hasCollections || hasStories) && (
-                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-4">
-                  {hasCollections && (
-                    <div className="flex flex-col gap-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                        Collections
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {standardCollections.map((c) => (
-                          <CollectionTag
-                            key={`std-${c.id}`}
-                            href={`/collections/${c.id}`}
-                            title={c.title}
-                          />
-                        ))}
-                        {ruleCollections.map((r) => (
-                          <CollectionTag
-                            key={`rule-${r.id}`}
-                            href={`/collections/rules/${r.id}`}
-                            title={r.title}
-                          />
-                        ))}
-                        {calendarCollections.map((c) => (
-                          <CollectionTag
-                            key={`cal-${c.id}`}
-                            href={`/collections/calendar/${c.id}`}
-                            title={c.title}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {hasStories && (
-                    <div className="flex flex-col gap-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                        Stories
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {typedPhoto.stories?.map((s) => (
-                          <CollectionTag
-                            key={s.id}
-                            href={`/stories/${s.id}`}
-                            title={s.title}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {hasCollections && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Collections
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {standardCollections.map((c) => (
+                      <Badge key={`std-${c.id}`} href={`/collections/${c.id}`}>
+                        {c.title}
+                      </Badge>
+                    ))}
+                    {ruleCollections.map((r) => (
+                      <Badge
+                        key={`rule-${r.id}`}
+                        href={`/collections/rules/${r.id}`}
+                      >
+                        {r.title}
+                      </Badge>
+                    ))}
+                    {calendarCollections.map((c) => (
+                      <Badge
+                        key={`cal-${c.id}`}
+                        href={`/collections/calendar/${c.id}`}
+                      >
+                        {c.title}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {hasStories && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Stories
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {typedPhoto.stories?.map((s) => (
+                      <Badge key={s.id} href={`/stories/${s.id}`}>
+                        {s.title}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

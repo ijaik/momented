@@ -6,6 +6,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
+import Button from "@/components/ui/Button";
 import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
 import PhotoThumbnails from "./PhotoThumbnails";
 export interface CalendarItem {
@@ -79,13 +80,13 @@ export default function CalendarManager({
                     text="Save"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => setEditingId(null)}
-                    className="bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-2 rounded-lg font-medium"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
@@ -100,13 +101,14 @@ export default function CalendarManager({
                   className="mt-4"
                 />
                 <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
                     onClick={() => setEditingId(cal.id)}
-                    className="text-sm font-semibold text-blue-600 dark:text-blue-400"
+                    className="text-sm font-semibold"
                   >
                     Edit Cover & Details
-                  </button>
+                  </Button>
                 </div>
               </>
             )}

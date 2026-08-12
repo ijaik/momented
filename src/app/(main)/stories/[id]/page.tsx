@@ -1,5 +1,6 @@
 import PhotoGrid from "@/components/PhotoGrid";
 import BackButton from "@/components/ui/BackButton";
+import EmptyState from "@/components/ui/EmptyState";
 import { supabase } from "@/lib/supabase";
 import type { PageProps, Photo, Story } from "@/types";
 export default async function SingleStoryPage({
@@ -20,8 +21,7 @@ export default async function SingleStoryPage({
       .eq("photo_stories.story_id", id)
       .order("created_at", { ascending: true }),
   ]);
-  if (!story)
-    return <div className="p-20 text-center text-xl">Story not found.</div>;
+  if (!story) return <EmptyState description="Story not found." />;
   const typedStory = story as Story;
   const typedPhotos = (photos as unknown as Photo[]) || [];
   return (

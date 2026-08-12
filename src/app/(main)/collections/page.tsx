@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CoverCard from "@/components/ui/CoverCard";
+import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
 import type { BaseCollection, PageProps } from "@/types";
@@ -104,9 +105,7 @@ export default async function CollectionsPage({
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 px-6 border border-zinc-200 dark:border-zinc-800 border-dashed rounded-2xl text-zinc-500 dark:text-zinc-400">
-          No collections found for this view.
-        </div>
+        <EmptyState description="No collections found for this view." />
       )}
     </main>
   );

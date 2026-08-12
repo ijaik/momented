@@ -10,6 +10,7 @@ import {
   FormTextarea,
   SubmitButton,
 } from "@/components/ui/AdminForms";
+import Button from "@/components/ui/Button";
 import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
 import PhotoThumbnails from "./PhotoThumbnails";
 export interface BaseItem {
@@ -91,13 +92,9 @@ export default function ItemManager<T extends BaseItem>({
         <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
           {title}
         </h2>
-        <button
-          type="button"
-          onClick={() => setIsCreating(!isCreating)}
-          className="bg-black dark:bg-white text-white dark:text-black px-5 py-2 rounded-lg font-medium"
-        >
+        <Button type="button" onClick={() => setIsCreating(!isCreating)}>
           {isCreating ? "Close Form" : newItemLabel}
-        </button>
+        </Button>
       </div>
       {isCreating && (
         <form
@@ -162,13 +159,13 @@ export default function ItemManager<T extends BaseItem>({
                     text="Save"
                     className="bg-blue-600 hover:bg-blue-700 text-white"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => setEditingId(null)}
-                    className="bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-white px-6 py-2 rounded-lg font-medium"
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
@@ -183,20 +180,16 @@ export default function ItemManager<T extends BaseItem>({
                   className="mt-6"
                 />
                 <div className="flex gap-4 mt-6 pt-6 border-t border-zinc-100 dark:border-zinc-800">
-                  <button
-                    type="button"
-                    onClick={() => setEditingId(item.id)}
-                    className="text-sm font-semibold text-blue-600 dark:text-blue-400"
-                  >
+                  <Button variant="link" onClick={() => setEditingId(item.id)}>
                     Edit
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="link"
                     onClick={() => deleteAction(item.id)}
-                    className="text-sm font-semibold text-red-600 dark:text-red-400"
+                    className="text-red-600 dark:text-red-400"
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
