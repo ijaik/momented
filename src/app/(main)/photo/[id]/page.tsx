@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { cache } from "react";
 import DownloadButton from "@/components/DownloadButton";
 import InfoItem from "@/components/InfoItem";
 import ShareButton from "@/components/ShareButton";
@@ -12,17 +13,22 @@ import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
 import { supabase } from "@/lib/supabase";
 import type { CollectionReference, PageProps, Photo } from "@/types";
-export default async function PhotoDetail({
-  params,
-}: PageProps<{ id: string }>) {
-  const { id } = await params;
-  const { data: photo } = await supabase
+
+const getPhoto = cache(async (id: string) => {
+  const { data } = await supabase
     .from("photos")
     .select(
       "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
     )
     .eq("id", id)
     .single();
+  return data;
+});
+export default async function PhotoDetail({
+  params,
+}: PageProps<{ id: string }>) {
+  const { id } = await params;
+  const photo = await getPhoto(id);
   if (!photo) return <EmptyState description="Photo not found." />;
   const typedPhoto = photo as unknown as Photo;
   const displayDate = formatDisplayDate(
@@ -163,11 +169,7 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  const { data: photo } = await supabase
-    .from("photos")
-    .select("title, description, camera_model, cloudinary_url")
-    .eq("id", id)
-    .single();
+  const photo = await getPhoto(id);
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title || "Photography Gallery";
   const fullTitle = `${title} | ${siteConfig.name}`;

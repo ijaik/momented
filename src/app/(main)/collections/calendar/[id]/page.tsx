@@ -14,7 +14,9 @@ export default async function CalendarMonthPage({
 }: PageProps<{ id: string }>) {
   const { id } = await params;
   const monthIndex = parseInt(id, 10);
-  const [{ data: collection }, { data: allPhotos }] = await Promise.all([
+  if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
+    return <EmptyState description="Invalid month requested." />;
+  const [{ data: collection }, { data: monthPhotosData }] = await Promise.all([
     supabase
       .from("calendar_collections")
       .select("title, description")
@@ -23,15 +25,13 @@ export default async function CalendarMonthPage({
     supabase
       .from("photos")
       .select(
-        "id, title, cloudinary_url, width, height, camera_model, taken_at, created_at",
+        "id, title, cloudinary_url, width, height, camera_model, taken_at, created_at, photo_calendar_collections!inner(calendar_id)",
       )
+      .eq("photo_calendar_collections.calendar_id", monthIndex)
       .order("created_at", { ascending: false }),
   ]);
   if (!collection) return <EmptyState description="Month not found." />;
-  const typedPhotos = (allPhotos as Photo[]) || [];
-  const monthPhotos = typedPhotos.filter(
-    (p) => getPhotoDate(p).month === monthIndex,
-  );
+  const monthPhotos = (monthPhotosData as unknown as Photo[]) || [];
   const groupedByYear = monthPhotos.reduce<GroupedPhotos>((acc, photo) => {
     const { year, dateString } = getPhotoDate(photo);
     if (!acc[year]) acc[year] = {};

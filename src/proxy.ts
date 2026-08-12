@@ -14,9 +14,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   }
   if (path === "/admin/login") {
-    if (isValid) {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
+    if (isValid) return NextResponse.redirect(new URL("/admin", request.url));
     const response = NextResponse.next();
     if (token && !isValid) response.cookies.delete("admin_session");
     return response;

@@ -6,19 +6,16 @@ export async function loginAction(
   formData: FormData,
 ): Promise<{ success: boolean; error?: string }> {
   const password = formData.get("password");
-  if (typeof password !== "string" || !password) {
+  if (typeof password !== "string" || !password)
     return { success: false, error: "Password is required" };
-  }
   const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-  if (!adminPasswordHash) {
+  if (!adminPasswordHash)
     return { success: false, error: "Server configuration error" };
-  }
-  const isValid = bcrypt.compareSync(password, adminPasswordHash);
+  const isValid = await bcrypt.compare(password, adminPasswordHash);
   if (isValid) {
     const secretKey = process.env.ADMIN_SESSION_SECRET;
-    if (!secretKey) {
+    if (!secretKey)
       return { success: false, error: "Server configuration error" };
-    }
     const secret = new TextEncoder().encode(secretKey);
     const token = await new SignJWT({ admin: true })
       .setProtectedHeader({ alg: "HS256" })
@@ -35,7 +32,6 @@ export async function loginAction(
     });
     return { success: true };
   }
-  await new Promise((resolve) => setTimeout(resolve, 1000));
   return { success: false, error: "Incorrect password" };
 }
 export async function logoutAction(): Promise<{ success: boolean }> {
