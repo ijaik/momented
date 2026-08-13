@@ -71,5 +71,5 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   return response;
 }
 export const config = {
-  matcher: ["/admin/:path*", "/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
