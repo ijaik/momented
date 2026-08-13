@@ -2,6 +2,7 @@ import PhotoGrid from "@/components/PhotoGrid";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
+export const revalidate = 3600;
 export default async function Home() {
   const { data: photos, error } = await supabase
     .from("photos")

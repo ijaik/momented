@@ -6,6 +6,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
 import type { BaseCollection, PageProps } from "@/types";
 export const metadata: Metadata = { title: "Collections" };
+export const revalidate = 3600;
 export default async function CollectionsPage({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>) {

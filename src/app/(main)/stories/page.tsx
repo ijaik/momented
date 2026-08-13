@@ -4,6 +4,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { supabase } from "@/lib/supabase";
 export const metadata: Metadata = { title: "Stories" };
+export const revalidate = 3600;
 export default async function StoriesPage() {
   const { data: stories, error } = await supabase
     .from("stories")
