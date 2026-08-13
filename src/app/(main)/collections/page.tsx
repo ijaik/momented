@@ -3,7 +3,11 @@ import Link from "next/link";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
-import { supabase } from "@/lib/supabase";
+import {
+  getCalendarCollectionsList,
+  getCuratedCollections,
+  getRuleCollectionsList,
+} from "@/lib/queries";
 import type { BaseCollection, PageProps } from "@/types";
 export const metadata: Metadata = { title: "Collections" };
 export const revalidate = 3600;
@@ -18,18 +22,9 @@ export default async function CollectionsPage({
     { data: ruleCollections },
     { data: calendarCollections },
   ] = await Promise.all([
-    supabase
-      .from("collections")
-      .select("*, photos!photo_collections(id, cloudinary_url)")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("rule_collections")
-      .select("*, photos!photo_rule_collections(id, cloudinary_url)")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("calendar_collections")
-      .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
-      .order("id", { ascending: true }),
+    getCuratedCollections(),
+    getRuleCollectionsList(),
+    getCalendarCollectionsList(),
   ]);
   const activeCalendarCollections = (calendarCollections || []).filter(
     (col) => col.photos && col.photos.length > 0,

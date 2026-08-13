@@ -1,12 +1,10 @@
 "use server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth";
 import cloudinary from "@/lib/cloudinary";
 import { parsePhotoDate } from "@/lib/dateUtils";
-import { getAdminDb } from "@/lib/supabase-admin";
-import type { Database } from "@/types/database.types";
+import { getAdminDb, syncJunction } from "@/lib/supabase-admin";
 export interface CloudinarySignatureResponse {
   timestamp: number;
   folder: string;
@@ -44,22 +42,6 @@ export interface SavePhotoPayload {
     ExposureTime?: number | string;
     [key: string]: unknown;
   };
-}
-async function insertJunctionRecords(
-  db: SupabaseClient<Database>,
-  table: "photo_collections" | "photo_rule_collections" | "photo_stories",
-  fkColumn: string,
-  photoId: string | number,
-  ids?: string[],
-) {
-  if (ids?.length) {
-    await db.from(table).insert(
-      ids.map((id) => ({
-        photo_id: photoId,
-        [fkColumn]: id,
-      })) as never,
-    );
-  }
 }
 export async function getCloudinarySignatureAction(): Promise<CloudinarySignatureResponse> {
   await verifyAdminSession();
@@ -136,26 +118,29 @@ export async function savePhotoToDbAction(
       calendar_id: monthId,
     },
   ]);
-  await insertJunctionRecords(
+  await syncJunction(
     db,
     "photo_collections",
-    "collection_id",
+    "photo_id",
     newPhoto.id,
-    data.collectionIds,
+    "collection_id",
+    data.collectionIds ?? [],
   );
-  await insertJunctionRecords(
+  await syncJunction(
     db,
     "photo_rule_collections",
-    "rule_id",
+    "photo_id",
     newPhoto.id,
-    data.ruleIds,
+    "rule_id",
+    data.ruleIds ?? [],
   );
-  await insertJunctionRecords(
+  await syncJunction(
     db,
     "photo_stories",
-    "story_id",
+    "photo_id",
     newPhoto.id,
-    data.storyIds,
+    "story_id",
+    data.storyIds ?? [],
   );
   revalidatePath("/", "layout");
   return { success: true };

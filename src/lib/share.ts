@@ -1,17 +1,6 @@
+import { buildCloudinaryUrl } from "@/lib/cloudinaryUtils";
 export function toJpegUrl(imageUrl: string): string {
-  if (!imageUrl.includes("/upload/")) return imageUrl;
-  const parts = imageUrl.split("/upload/");
-  const base = `${parts[0]}/upload/`;
-  let rest = parts[1];
-  const firstSegment = rest.split("/")[0];
-  if (
-    firstSegment.includes(",") ||
-    firstSegment.startsWith("f_") ||
-    firstSegment.startsWith("c_")
-  ) {
-    rest = rest.substring(firstSegment.length + 1);
-  }
-  return `${base}c_limit,w_1600,q_auto,f_jpg/${rest}`;
+  return buildCloudinaryUrl(imageUrl, ["c_limit", "w_1600", "q_auto", "f_jpg"]);
 }
 export async function imageUrlToFile(imageUrl: string): Promise<File | null> {
   const jpegUrl = toJpegUrl(imageUrl);

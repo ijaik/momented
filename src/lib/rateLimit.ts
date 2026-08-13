@@ -1,3 +1,4 @@
+import "server-only";
 interface RateLimitEntry {
   count: number;
   resetAt: number;

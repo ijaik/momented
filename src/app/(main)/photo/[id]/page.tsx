@@ -11,21 +11,15 @@ import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
 import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
-import { supabase } from "@/lib/supabase";
+import { getAllIds, getCalendarMonthTitle, getPhotoById } from "@/lib/queries";
 import type { PageProps, Photo } from "@/types";
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const { data } = await supabase.from("photos").select("id");
-  return (data ?? []).map((photo) => ({ id: photo.id }));
+  const ids = await getAllIds("photos");
+  return ids.map((id) => ({ id }));
 }
 const getPhoto = cache(async (id: string) => {
-  const { data } = await supabase
-    .from("photos")
-    .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
-    )
-    .eq("id", id)
-    .single();
+  const { data } = await getPhotoById(id);
   return data;
 });
 export default async function PhotoDetail({
@@ -42,10 +36,7 @@ export default async function PhotoDetail({
   const { month: monthIndex } = getPhotoDate(typedPhoto);
   let calendarCollections: { id: number; title: string }[] = [];
   if (monthIndex) {
-    const { data: calData } = await supabase
-      .from("calendar_collections")
-      .select("id, title")
-      .eq("id", monthIndex);
+    const { data: calData } = await getCalendarMonthTitle(monthIndex);
     calendarCollections = calData || [];
   }
   const standardCollections = typedPhoto.collections || [];

@@ -1,19 +1,13 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
-import { supabase } from "@/lib/supabase";
+import { getAllIds } from "@/lib/queries";
 export const revalidate = 3600;
-async function getIds(
-  table: "photos" | "collections" | "stories" | "rule_collections",
-) {
-  const { data } = await supabase.from(table).select("id");
-  return (data ?? []).map((row) => String(row.id));
-}
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [photoIds, collectionIds, storyIds, ruleIds] = await Promise.all([
-    getIds("photos"),
-    getIds("collections"),
-    getIds("stories"),
-    getIds("rule_collections"),
+    getAllIds("photos"),
+    getAllIds("collections"),
+    getAllIds("stories"),
+    getAllIds("rule_collections"),
   ]);
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteConfig.url}/`, changeFrequency: "daily", priority: 1 },

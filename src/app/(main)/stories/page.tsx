@@ -2,14 +2,11 @@ import type { Metadata } from "next";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
-import { supabase } from "@/lib/supabase";
+import { getStoriesWithPhotos } from "@/lib/queries";
 export const metadata: Metadata = { title: "Stories" };
 export const revalidate = 3600;
 export default async function StoriesPage() {
-  const { data: stories, error } = await supabase
-    .from("stories")
-    .select("*, photos!photo_stories(id, cloudinary_url)")
-    .order("created_at", { ascending: false });
+  const { data: stories, error } = await getStoriesWithPhotos();
   if (error) return <EmptyState description="Failed to load stories." />;
   const typedStories = stories || [];
   return (

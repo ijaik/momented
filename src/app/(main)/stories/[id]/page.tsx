@@ -1,30 +1,20 @@
 import PhotoGrid from "@/components/PhotoGrid";
 import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
-import { supabase } from "@/lib/supabase";
+import { getAllIds, getPhotosForStory, getStoryById } from "@/lib/queries";
 import type { PageProps } from "@/types";
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const { data } = await supabase.from("stories").select("id");
-  return (data ?? []).map((story) => ({ id: story.id }));
+  const ids = await getAllIds("stories");
+  return ids.map((id) => ({ id }));
 }
 export default async function SingleStoryPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
   const [{ data: story }, { data: photos }] = await Promise.all([
-    supabase
-      .from("stories")
-      .select("title, created_at, content")
-      .eq("id", id)
-      .single(),
-    supabase
-      .from("photos")
-      .select(
-        "id, title, description, created_at, cloudinary_url, width, height, camera_model, photo_stories!inner(story_id)",
-      )
-      .eq("photo_stories.story_id", id)
-      .order("created_at", { ascending: true }),
+    getStoryById(id),
+    getPhotosForStory(id),
   ]);
   if (!story) return <EmptyState description="Story not found." />;
   const typedPhotos = photos || [];

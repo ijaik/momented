@@ -5,6 +5,10 @@ import { getAdminDb } from "@/lib/supabase-admin";
 
 const STAT_WINDOW_MS = 60 * 60 * 1000;
 const STAT_MAX_REQUESTS = 120;
+const PHOTO_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+function assertValidPhotoId(photoId: string): void {
+  if (!PHOTO_ID_PATTERN.test(photoId)) throw new Error("Invalid photo id.");
+}
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
   return checkRateLimit(
@@ -14,6 +18,7 @@ async function isStatRateLimited(action: string): Promise<boolean> {
   ).limited;
 }
 export async function incrementDownload(photoId: string): Promise<number> {
+  assertValidPhotoId(photoId);
   if (await isStatRateLimited("download"))
     throw new Error("Rate limit exceeded. Try again later.");
   const db = getAdminDb();
@@ -27,6 +32,7 @@ export async function incrementDownload(photoId: string): Promise<number> {
   return data as number;
 }
 export async function incrementShare(photoId: string | number): Promise<void> {
+  assertValidPhotoId(String(photoId));
   if (await isStatRateLimited("share"))
     throw new Error("Rate limit exceeded. Try again later.");
   const db = getAdminDb();

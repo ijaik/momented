@@ -26,6 +26,8 @@ export default function DownloadButton({
         console.warn("Failed to record download count:", countError);
       }
       const response = await fetch(cloudinaryUrl);
+      if (!response.ok)
+        throw new Error(`Download failed with status ${response.status}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");

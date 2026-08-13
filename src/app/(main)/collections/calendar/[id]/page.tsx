@@ -2,7 +2,11 @@ import PhotoGrid from "@/components/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
 import { getPhotoDate } from "@/lib/dateUtils";
-import { supabase } from "@/lib/supabase";
+import {
+  getAllIds,
+  getCalendarMonthById,
+  getPhotosForCalendarMonth,
+} from "@/lib/queries";
 import type { PageProps, Photo } from "@/types";
 
 type CalendarPhoto = Photo & {
@@ -11,8 +15,8 @@ type CalendarPhoto = Photo & {
 type GroupedPhotos = Record<number, Record<string, Photo[]>>;
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const { data } = await supabase.from("calendar_collections").select("id");
-  return (data ?? []).map((collection) => ({ id: String(collection.id) }));
+  const ids = await getAllIds("calendar_collections");
+  return ids.map((id) => ({ id }));
 }
 export default async function CalendarMonthPage({
   params,
@@ -22,18 +26,8 @@ export default async function CalendarMonthPage({
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
     return <EmptyState description="Invalid month requested." />;
   const [{ data: collection }, { data: monthPhotosData }] = await Promise.all([
-    supabase
-      .from("calendar_collections")
-      .select("title, description")
-      .eq("id", monthIndex)
-      .single(),
-    supabase
-      .from("photos")
-      .select(
-        "id, title, cloudinary_url, width, height, camera_model, taken_at, created_at, photo_calendar_collections!inner(calendar_id)",
-      )
-      .eq("photo_calendar_collections.calendar_id", monthIndex)
-      .order("created_at", { ascending: false }),
+    getCalendarMonthById(monthIndex),
+    getPhotosForCalendarMonth(monthIndex),
   ]);
   if (!collection) return <EmptyState description="Month not found." />;
   const monthPhotos = monthPhotosData || [];
