@@ -25,7 +25,7 @@ function buildCsp(scriptSrc: string): string {
   ].join("; ");
 }
 function buildStrictCsp(nonce: string): string {
-  return buildCsp(`script-src 'self' 'nonce-${nonce}'`);
+  return buildCsp(`script-src 'self' 'nonce-${nonce}' 'unsafe-eval'`);
 }
 function buildBaselineCsp(): string {
   return buildCsp("script-src 'self' 'unsafe-inline'");
