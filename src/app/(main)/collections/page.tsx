@@ -17,23 +17,18 @@ export default async function CollectionsPage({
   const { tab } = await searchParams;
   const activeTab =
     tab === "calendar" ? "calendar" : tab === "rules" ? "rules" : "curated";
-  const [
-    { data: curatedCollections },
-    { data: ruleCollections },
-    { data: calendarCollections },
-  ] = await Promise.all([
-    getCuratedCollections(),
-    getRuleCollectionsList(),
-    getCalendarCollectionsList(),
-  ]);
-  const activeCalendarCollections = (calendarCollections || []).filter(
-    (col) => col.photos && col.photos.length > 0,
-  );
-  let displayCollections: BaseCollection[] | null = curatedCollections;
+  let displayCollections: BaseCollection[] | null = null;
   if (activeTab === "rules") {
-    displayCollections = ruleCollections;
+    const { data } = await getRuleCollectionsList();
+    displayCollections = data ?? null;
   } else if (activeTab === "calendar") {
-    displayCollections = activeCalendarCollections;
+    const { data } = await getCalendarCollectionsList();
+    displayCollections = (data ?? []).filter(
+      (col) => col.photos && col.photos.length > 0,
+    );
+  } else {
+    const { data } = await getCuratedCollections();
+    displayCollections = data ?? null;
   }
   const tabs = [
     {

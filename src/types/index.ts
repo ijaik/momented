@@ -25,18 +25,13 @@ export interface Photo {
     total: number;
   } | null;
 }
-export interface CollectionReference {
+export interface EntityReference {
   id: string;
   title: string;
 }
-export interface RuleCollectionReference {
-  id: string;
-  title: string;
-}
-export interface StoryReference {
-  id: string;
-  title: string;
-}
+export type CollectionReference = EntityReference;
+export type RuleCollectionReference = EntityReference;
+export type StoryReference = EntityReference;
 export interface BaseCollection {
   id: string | number;
   title: string;

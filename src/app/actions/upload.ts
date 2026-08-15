@@ -67,10 +67,41 @@ export async function getCloudinarySignatureAction(): Promise<CloudinarySignatur
     cloudName: siteConfig.cloudinary.cloudName || "",
   };
 }
+const CLOUDINARY_URL_PATTERN = /^https:\/\/res\.cloudinary\.com\/[^\s]+$/;
+const CLOUDINARY_PUBLIC_ID_PATTERN = /^[A-Za-z0-9_/-]{1,200}$/;
+const MAX_TITLE_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 5_000;
+const MAX_ARTIST_LENGTH = 200;
+function assertSafeAsset(data: SavePhotoPayload): void {
+  if (
+    typeof data.secure_url !== "string" ||
+    !CLOUDINARY_URL_PATTERN.test(data.secure_url)
+  )
+    throw new Error("Invalid image URL.");
+  if (
+    typeof data.public_id !== "string" ||
+    !CLOUDINARY_PUBLIC_ID_PATTERN.test(data.public_id)
+  )
+    throw new Error("Invalid image identifier.");
+  if (!data.title?.trim() || data.title.length > MAX_TITLE_LENGTH)
+    throw new Error("A valid title is required.");
+  if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH)
+    throw new Error("Description is too long.");
+  if (data.artistInput && data.artistInput.length > MAX_ARTIST_LENGTH)
+    throw new Error("Artist name is too long.");
+  if (
+    !Number.isInteger(data.width) ||
+    !Number.isInteger(data.height) ||
+    data.width <= 0 ||
+    data.height <= 0
+  )
+    throw new Error("Invalid image dimensions.");
+}
 export async function savePhotoToDbAction(
   data: SavePhotoPayload,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
+  assertSafeAsset(data);
   const db = getAdminDb();
   const meta = data.image_metadata || {};
   const rawFocal = meta.FocalLength || "";

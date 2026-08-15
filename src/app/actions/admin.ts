@@ -193,15 +193,19 @@ export async function editPhotoAction(
   revalidateAll();
   return { success: true };
 }
-export async function getCollectionsAction() {
+async function getItemsAction(kind: keyof typeof ITEM_SPECS) {
   await verifyAdminSession();
+  const spec = ITEM_SPECS[kind];
   const db = getAdminDb();
   const { data, error } = await db
-    .from("collections")
-    .select("*, photos!photo_collections(id, cloudinary_url, title)")
+    .from(spec.table)
+    .select(`*, photos!${spec.junction?.table}(id, cloudinary_url, title)`)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+export async function getCollectionsAction() {
+  return getItemsAction("collection");
 }
 export async function createCollectionAction(
   formData: FormData,
@@ -220,14 +224,7 @@ export async function deleteCollectionAction(
   return deleteItem("collections", id);
 }
 export async function getStoriesAction() {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("stories")
-    .select("*, photos!photo_stories(id, cloudinary_url, title)")
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  return getItemsAction("story");
 }
 export async function createStoryAction(
   formData: FormData,
@@ -246,14 +243,7 @@ export async function deleteStoryAction(
   return deleteItem("stories", id);
 }
 export async function getRuleCollectionsAction() {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("rule_collections")
-    .select("*, photos!photo_rule_collections(id, cloudinary_url, title)")
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  return getItemsAction("rule");
 }
 export async function createRuleCollectionAction(
   formData: FormData,
