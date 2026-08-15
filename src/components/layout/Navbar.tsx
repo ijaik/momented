@@ -69,7 +69,6 @@ export default function Navbar() {
         </button>
       </div>
       <div
-        aria-hidden={!isOpen}
         className={`md:hidden absolute top-0 left-0 w-full h-screen bg-white dark:bg-black flex flex-col items-center justify-center gap-8 transition-transform duration-500 ease-in-out ${
           isOpen
             ? "translate-y-0"

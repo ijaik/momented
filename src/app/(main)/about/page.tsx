@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import JsonLd from "@/components/seo/JsonLd";
 import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
+import { personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 export const metadata: Metadata = {
   title: "About",
+  description:
+    "Hi, I'm Jai — an observer and narrator. The perspective is mine; AI helps express it.",
+  alternates: { canonical: "/about" },
 };
 function SectionHeading({ children }: { children: ReactNode }) {
   return (
@@ -16,6 +21,7 @@ function SectionHeading({ children }: { children: ReactNode }) {
 export default function AboutPage() {
   return (
     <main className="min-h-screen py-24 md:py-40 relative overflow-hidden">
+      <JsonLd data={[personJsonLd(), websiteJsonLd()]} />
       <div className="relative max-w-5xl mx-auto px-6 md:px-10">
         <header className="mb-28 md:mb-40">
           <h1 className="text-[56px] md:text-[104px] font-extrabold tracking-tighter text-zinc-900 dark:text-white leading-[0.95] mb-10">

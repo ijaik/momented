@@ -141,7 +141,7 @@ export function getStoriesWithPhotos() {
 export function getStoryById(id: string) {
   return supabase
     .from("stories")
-    .select("title, created_at, content")
+    .select("id, title, created_at, content")
     .eq("id", id)
     .single();
 }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Leckerli_One } from "next/font/google";
 import type { ReactNode } from "react";
+import { siteConfig } from "@/config/site";
 import "./globals.css";
 const leckerli = Leckerli_One({
   weight: "400",
@@ -9,18 +10,39 @@ const leckerli = Leckerli_One({
   variable: "--font-leckerli",
 });
 export const metadata: Metadata = {
-  metadataBase: new URL("https://momented.vercel.app"),
+  metadataBase: new URL(siteConfig.url),
   title: {
     default: "Momented",
     template: "%s | Momented",
   },
   description:
     "A momented journal by Jai, exploring light, shadow, and moments in between.",
+  authors: [{ name: siteConfig.author.name, url: siteConfig.author.github }],
+  creator: siteConfig.author.name,
+  publisher: siteConfig.name,
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "/",
+    url: siteConfig.url,
     siteName: "Momented",
+    title: "Momented",
+    description:
+      "A momented journal by Jai, exploring light, shadow, and moments in between.",
+    images: [
+      {
+        url: "/screenshots/desktop.png",
+        width: 1280,
+        height: 720,
+        alt: "Momented",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Momented",
+    description:
+      "A momented journal by Jai, exploring light, shadow, and moments in between.",
+    images: ["/screenshots/desktop.png"],
   },
   icons: {
     icon: [

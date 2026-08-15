@@ -9,8 +9,40 @@ import {
   getRuleCollectionsList,
 } from "@/lib/db/queries";
 import type { BaseCollection, PageProps } from "@/types";
-export const metadata: Metadata = { title: "Collections" };
 export const revalidate = 3600;
+const TAB_TITLES: Record<string, { title: string; description: string }> = {
+  curated: {
+    title: "Collections",
+    description:
+      "Browse curated collections of photographed moments on Momented.",
+  },
+  rules: {
+    title: "Rule Collections",
+    description:
+      "Explore collections made under specific photography rules on Momented.",
+  },
+  calendar: {
+    title: "Calendar Collections",
+    description:
+      "Photographs grouped by the month they were captured on Momented.",
+  },
+};
+export async function generateMetadata({
+  searchParams,
+}: PageProps<Record<string, never>, { tab?: string }>): Promise<Metadata> {
+  const { tab } = await searchParams;
+  const active =
+    tab === "calendar" ? "calendar" : tab === "rules" ? "rules" : "curated";
+  const { title, description } = TAB_TITLES[active];
+  return {
+    title,
+    description,
+    alternates: {
+      canonical:
+        active === "curated" ? "/collections" : `/collections?tab=${active}`,
+    },
+  };
+}
 export default async function CollectionsPage({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>) {

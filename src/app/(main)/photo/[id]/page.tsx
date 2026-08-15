@@ -4,6 +4,7 @@ import { cache } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
 import InfoItem from "@/components/photos/InfoItem";
 import ShareButton from "@/components/photos/ShareButton";
+import JsonLd from "@/components/seo/JsonLd";
 import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
@@ -15,6 +16,7 @@ import {
   getCalendarMonthTitle,
   getPhotoById,
 } from "@/lib/db/queries";
+import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
 import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export const revalidate = 3600;
@@ -52,6 +54,21 @@ export default async function PhotoDetail({
   const hasStories = typedPhoto.stories && typedPhoto.stories.length > 0;
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
+      <JsonLd
+        data={[
+          photographJsonLd(typedPhoto),
+          breadcrumbJsonLd([
+            {
+              name: "Photos",
+              url: `${siteConfig.url}/`,
+            },
+            {
+              name: typedPhoto.title || "Untitled",
+              url: `${siteConfig.url}/photo/${typedPhoto.id}`,
+            },
+          ]),
+        ]}
+      />
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <BackButton />
         <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
@@ -181,6 +198,7 @@ export async function generateMetadata({
     metadataBase: new URL(siteConfig.url),
     title,
     description,
+    alternates: { canonical: pageUrl },
     openGraph: {
       title: fullTitle,
       description,

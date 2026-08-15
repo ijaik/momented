@@ -3,7 +3,11 @@ import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { getStoriesWithPhotos } from "@/lib/db/queries";
-export const metadata: Metadata = { title: "Stories" };
+export const metadata: Metadata = {
+  title: "Stories",
+  description: "Read the stories behind each captured moment on Momented.",
+  alternates: { canonical: "/stories" },
+};
 export const revalidate = 3600;
 export default async function StoriesPage() {
   const { data: stories, error } = await getStoriesWithPhotos();
