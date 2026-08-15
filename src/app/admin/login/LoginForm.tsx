@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { loginAction } from "@/app/actions/auth";
+import { loginAction } from "@/actions/auth";
 import { FormInput, SubmitButton } from "@/components/ui/AdminForms";
 export default function LoginForm() {
   const [error, setError] = useState<string>("");

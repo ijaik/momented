@@ -1,12 +1,12 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { verifyAdminSession } from "@/lib/auth";
-import cloudinary from "@/lib/cloudinary";
+import { verifyAdminSession } from "@/lib/auth/auth";
+import cloudinary from "@/lib/cloudinary/cloudinary";
 import {
   getAdminDb,
   type JunctionTable,
   syncJunction,
-} from "@/lib/supabase-admin";
+} from "@/lib/db/supabase-admin";
 import type { TableName } from "@/types/database.types";
 
 const revalidateAll = () => revalidatePath("/", "layout");

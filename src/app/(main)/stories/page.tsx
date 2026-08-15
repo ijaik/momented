@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
-import { getStoriesWithPhotos } from "@/lib/queries";
+import { getStoriesWithPhotos } from "@/lib/db/queries";
 export const metadata: Metadata = { title: "Stories" };
 export const revalidate = 3600;
 export default async function StoriesPage() {

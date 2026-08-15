@@ -2,7 +2,7 @@ import {
   createCollectionAction,
   deleteCollectionAction,
   editCollectionAction,
-} from "@/app/actions/admin";
+} from "@/actions/admin";
 import ItemManager, { type BaseItem } from "./ItemManager";
 import type { ChecklistPhoto } from "./PhotoChecklist";
 

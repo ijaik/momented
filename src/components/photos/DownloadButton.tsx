@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { incrementDownload } from "@/app/actions/download";
+import { incrementDownload } from "@/actions/download";
 import { Icons } from "@/components/ui/Icons";
 
 interface DownloadButtonProps {

@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
     loader: "custom",
-    loaderFile: "./src/lib/cloudinaryLoader.ts",
+    loaderFile: "./src/lib/cloudinary/cloudinaryLoader.ts",
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
   },
   async headers() {

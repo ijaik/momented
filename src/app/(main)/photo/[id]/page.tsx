@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { cache } from "react";
-import DownloadButton from "@/components/DownloadButton";
-import InfoItem from "@/components/InfoItem";
-import ShareButton from "@/components/ShareButton";
+import DownloadButton from "@/components/photos/DownloadButton";
+import InfoItem from "@/components/photos/InfoItem";
+import ShareButton from "@/components/photos/ShareButton";
 import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
-import { getSocialShareImageUrl } from "@/lib/cloudinaryUtils";
-import { formatDisplayDate, getPhotoDate } from "@/lib/dateUtils";
-import { getAllIds, getCalendarMonthTitle, getPhotoById } from "@/lib/queries";
+import { getSocialShareImageUrl } from "@/lib/cloudinary/cloudinaryUtils";
+import {
+  getAllIds,
+  getCalendarMonthTitle,
+  getPhotoById,
+} from "@/lib/db/queries";
+import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {

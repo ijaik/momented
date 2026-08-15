@@ -1,4 +1,4 @@
-import { buildCloudinaryUrl } from "@/lib/cloudinaryUtils";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export function toJpegUrl(imageUrl: string): string {
   return buildCloudinaryUrl(imageUrl, ["c_limit", "w_1600", "q_auto", "f_jpg"]);
 }

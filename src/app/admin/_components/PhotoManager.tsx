@@ -1,11 +1,11 @@
 "use client";
 import Image from "next/image";
 import { type SubmitEvent, useState, useTransition } from "react";
-import { deletePhotoAction, editPhotoAction } from "@/app/actions/admin";
+import { deletePhotoAction, editPhotoAction } from "@/actions/admin";
 import {
   getCloudinarySignatureAction,
   savePhotoToDbAction,
-} from "@/app/actions/upload";
+} from "@/actions/upload";
 import {
   FormInput,
   FormSelect,
@@ -13,7 +13,7 @@ import {
   SubmitButton,
 } from "@/components/ui/AdminForms";
 import Button from "@/components/ui/Button";
-import { compressImageWithExif } from "@/lib/imageCompression";
+import { compressImageWithExif } from "@/lib/utils/imageCompression";
 export interface PhotoItem {
   id: string | number;
   title: string;

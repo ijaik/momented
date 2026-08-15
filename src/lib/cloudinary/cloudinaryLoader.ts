@@ -1,5 +1,5 @@
 import type { ImageLoaderProps } from "next/image";
-import { buildCloudinaryUrl } from "@/lib/cloudinaryUtils";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export default function cloudinaryLoader({
   src,
   width,

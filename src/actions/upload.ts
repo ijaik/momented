@@ -1,10 +1,10 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { siteConfig } from "@/config/site";
-import { verifyAdminSession } from "@/lib/auth";
-import cloudinary from "@/lib/cloudinary";
-import { parsePhotoDate } from "@/lib/dateUtils";
-import { getAdminDb, syncJunction } from "@/lib/supabase-admin";
+import { verifyAdminSession } from "@/lib/auth/auth";
+import cloudinary from "@/lib/cloudinary/cloudinary";
+import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
+import { parsePhotoDate } from "@/lib/utils/dateUtils";
 export interface CloudinarySignatureResponse {
   timestamp: number;
   folder: string;

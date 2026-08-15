@@ -1,5 +1,5 @@
 import "server-only";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/db/supabase";
 export const PHOTO_CARD_COLUMNS =
   "id, title, description, created_at, cloudinary_url, width, height, camera_model, taken_at";
 export type IdTable =

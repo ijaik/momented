@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { logoutAction } from "@/app/actions/auth";
+import { logoutAction } from "@/actions/auth";
 import Button from "@/components/ui/Button";
 import type { CalendarItem } from "./CalendarManager";
 import type { BaseItem } from "./ItemManager";

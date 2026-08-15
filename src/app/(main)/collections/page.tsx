@@ -7,7 +7,7 @@ import {
   getCalendarCollectionsList,
   getCuratedCollections,
   getRuleCollectionsList,
-} from "@/lib/queries";
+} from "@/lib/db/queries";
 import type { BaseCollection, PageProps } from "@/types";
 export const metadata: Metadata = { title: "Collections" };
 export const revalidate = 3600;

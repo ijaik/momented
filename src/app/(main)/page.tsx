@@ -1,7 +1,7 @@
-import PhotoGrid from "@/components/PhotoGrid";
+import PhotoGrid from "@/components/photos/PhotoGrid";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
-import { getHomePhotos } from "@/lib/queries";
+import { getHomePhotos } from "@/lib/db/queries";
 export const revalidate = 3600;
 export default async function Home() {
   const { data: photos, error } = await getHomePhotos();

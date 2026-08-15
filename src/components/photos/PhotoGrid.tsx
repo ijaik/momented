@@ -1,4 +1,4 @@
-import PhotoCard from "@/components/PhotoCard";
+import PhotoCard from "@/components/photos/PhotoCard";
 import EmptyState from "@/components/ui/EmptyState";
 import type { Photo } from "@/types";
 

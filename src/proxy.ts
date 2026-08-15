@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { isValidAdminToken, SESSION_COOKIE } from "@/lib/auth";
+import { isValidAdminToken, SESSION_COOKIE } from "@/lib/auth/auth";
 
 function generateNonce(): string {
   const bytes = new Uint8Array(16);

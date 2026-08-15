@@ -1,11 +1,11 @@
-import PhotoGrid from "@/components/PhotoGrid";
+import PhotoGrid from "@/components/photos/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
 import {
   getAllIds,
   getCollectionById,
   getPhotosForCollection,
-} from "@/lib/queries";
+} from "@/lib/db/queries";
 import type { PageProps } from "@/types";
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {

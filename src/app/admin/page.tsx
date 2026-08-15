@@ -4,7 +4,7 @@ import {
   getPhotosAction,
   getRuleCollectionsAction,
   getStoriesAction,
-} from "@/app/actions/admin";
+} from "@/actions/admin";
 import DashboardTabs from "./_components/DashboardTabs";
 export const dynamic = "force-dynamic";
 export default async function AdminDashboard() {

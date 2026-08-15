@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
-import { getAllIds } from "@/lib/queries";
+import { getAllIds } from "@/lib/db/queries";
 export const revalidate = 3600;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [photoIds, collectionIds, storyIds, ruleIds] = await Promise.all([

@@ -1,6 +1,6 @@
 "use client";
 import { type SubmitEvent, useState, useTransition } from "react";
-import { editCalendarCollectionAction } from "@/app/actions/admin";
+import { editCalendarCollectionAction } from "@/actions/admin";
 import {
   FormInput,
   FormTextarea,

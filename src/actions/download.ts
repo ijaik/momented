@@ -1,7 +1,7 @@
 "use server";
-import { checkRateLimit } from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/request";
-import { getAdminDb } from "@/lib/supabase-admin";
+import { checkRateLimit } from "@/lib/auth/rateLimit";
+import { getClientIp } from "@/lib/auth/request";
+import { getAdminDb } from "@/lib/db/supabase-admin";
 
 const STAT_WINDOW_MS = 60 * 60 * 1000;
 const STAT_MAX_REQUESTS = 120;

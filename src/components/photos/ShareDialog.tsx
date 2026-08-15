@@ -2,9 +2,9 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { incrementShare } from "@/app/actions/download";
+import { incrementShare } from "@/actions/download";
 import { Icons } from "@/components/ui/Icons";
-import { copyText, imageUrlToFile } from "@/lib/share";
+import { copyText, imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
   title?: string;
   photoId?: string | number;

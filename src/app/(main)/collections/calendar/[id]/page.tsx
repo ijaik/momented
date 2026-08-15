@@ -1,12 +1,12 @@
-import PhotoGrid from "@/components/PhotoGrid";
+import PhotoGrid from "@/components/photos/PhotoGrid";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
-import { getPhotoDate } from "@/lib/dateUtils";
 import {
   getAllIds,
   getCalendarMonthById,
   getPhotosForCalendarMonth,
-} from "@/lib/queries";
+} from "@/lib/db/queries";
+import { getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 
 type CalendarPhoto = Photo & {

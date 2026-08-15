@@ -5,13 +5,13 @@ import {
   SESSION_COOKIE,
   SESSION_COOKIE_MAX_AGE,
   signAdminToken,
-} from "@/lib/auth";
+} from "@/lib/auth/auth";
 import {
   clearLoginFailures,
   getLoginLockout,
   recordLoginFailure,
-} from "@/lib/rateLimit";
-import { getClientIp } from "@/lib/request";
+} from "@/lib/auth/rateLimit";
+import { getClientIp } from "@/lib/auth/request";
 export async function loginAction(
   formData: FormData,
 ): Promise<{ success: boolean; error?: string }> {
