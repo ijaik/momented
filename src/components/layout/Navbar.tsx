@@ -21,7 +21,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
         <Link
           href="/"
-          className="font-leckerli text-[25px] tracking-tighter text-black dark:text-white relative z-50"
+          className="font-leckerli text-2xl tracking-tight text-zinc-900 dark:text-white transition-opacity hover:opacity-80"
           onClick={() => setIsOpen(false)}
         >
           Momented
