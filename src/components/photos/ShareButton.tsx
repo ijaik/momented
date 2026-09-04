@@ -29,13 +29,32 @@ export default function ShareButton({
     setIsOpen(false);
     triggerRef.current?.focus();
   }, []);
-  const isIcon = variant === "icon";
-  const hasPositioning = /\b(absolute|fixed|sticky)\b/.test(className);
-  const triggerClasses = isIcon
-    ? `${
-        hasPositioning ? "" : "relative "
-      }flex items-center justify-center w-10 h-10 rounded-full bg-white/90 dark:bg-zinc-900/80 backdrop-blur-md shadow-lg ring-1 ring-black/5 dark:ring-white/10 text-zinc-900 dark:text-white hover:scale-110 hover:bg-white dark:hover:bg-zinc-800 active:scale-95 transition-all duration-300 ${className}`
-    : `w-full flex items-center justify-between bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.99] transition-all ${className}`;
+  if (variant === "icon") {
+    return (
+      <>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={open}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          aria-label={`Share ${title || "photo"}`}
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-surface text-ink transition-colors hover:bg-soft ${className}`}
+        >
+          <Icons.Share className="h-4.5 w-4.5" />
+        </button>
+        {isOpen && (
+          <ShareDialog
+            title={title}
+            photoId={photoId}
+            url={url}
+            imageUrl={imageUrl}
+            onClose={close}
+          />
+        )}
+      </>
+    );
+  }
   return (
     <>
       <button
@@ -44,22 +63,18 @@ export default function ShareButton({
         onClick={open}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        aria-label={isIcon ? `Share ${title || "photo"}` : undefined}
-        className={triggerClasses}
+        className="inline-flex w-full items-center justify-between gap-3 rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85"
       >
-        {isIcon ? (
-          <Icons.Share className="w-5 h-5" />
-        ) : (
-          <>
-            <div className="flex items-center gap-2.5">
-              <Icons.Share className="w-4 h-4" />
-              <span>Share</span>
-            </div>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 dark:bg-zinc-200 font-semibold">
-              {shareCount}
-            </span>
-          </>
-        )}
+        <span className="inline-flex items-center gap-2">
+          <Icons.Share className="h-4 w-4" />
+          Share
+        </span>
+        <span
+          aria-hidden="true"
+          className="text-[13px] tabular-nums opacity-60"
+        >
+          {shareCount}
+        </span>
       </button>
       {isOpen && (
         <ShareDialog

@@ -68,10 +68,15 @@ export default async function SingleRulePage({
       <DetailLayout
         title={collection.title}
         description={collection.description}
+        meta={
+          photos.length === 0
+            ? undefined
+            : `${photos.length} ${photos.length === 1 ? "photograph" : "photographs"}`
+        }
       >
         <PhotoGrid
           photos={photos}
-          emptyMessage="No photos have been tagged with this rule yet."
+          emptyMessage="No photographs have been tagged with this rule yet."
         />
       </DetailLayout>
     </>

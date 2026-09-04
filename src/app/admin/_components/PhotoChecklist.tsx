@@ -39,70 +39,83 @@ export default function PhotoChecklist({
     }
   };
   return (
-    <div className="flex flex-col gap-2 mt-4">
-      <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        Select Photos & Choose Cover
-      </span>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto border border-zinc-300 dark:border-zinc-700 p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
-        {photos.map((p) => {
-          const isChecked = selectedIds.includes(p.id);
-          const isCover = coverId === p.id;
-          return (
-            <div
-              key={p.id}
-              className={`flex flex-col gap-2 p-2 rounded-xl border transition-all ${
-                isCover
-                  ? "border-blue-500 bg-blue-50/30 dark:bg-blue-950/10"
-                  : "border-zinc-200 dark:border-zinc-800"
-              }`}
-            >
-              <label className="relative aspect-square w-full rounded-md overflow-hidden bg-zinc-200 dark:bg-zinc-800 border-2 border-transparent cursor-pointer block group">
-                <Image
-                  src={p.cloudinary_url}
-                  alt={p.title || "Photo"}
-                  fill
-                  className="object-cover"
-                  sizes="150px"
-                />
-                <input
-                  type="checkbox"
-                  name="photo_ids"
-                  value={p.id}
-                  checked={isChecked}
-                  onChange={(e) => handleCheckboxChange(p.id, e.target.checked)}
-                  className="absolute top-2 left-2 w-4 h-4 z-10 cursor-pointer shadow-sm"
-                />
-              </label>
-              <div className="flex flex-col gap-1 px-1">
-                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                  {p.title}
-                </span>
-                {isChecked && (
-                  <label className="flex items-center gap-1.5 cursor-pointer mt-1">
-                    <input
-                      type="radio"
-                      name="cover_photo_id"
-                      value={p.id}
-                      checked={isCover}
-                      onChange={() => setCoverId(p.id)}
-                      className="w-3.5 h-3.5 text-blue-600 cursor-pointer"
-                    />
-                    <span
-                      className={`text-[11px] font-bold uppercase tracking-wider ${
-                        isCover
-                          ? "text-blue-600 dark:text-blue-400"
-                          : "text-zinc-400"
-                      }`}
-                    >
-                      {isCover ? "Cover Photo" : "Set Cover"}
+    <div className="flex flex-col gap-3">
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium text-ink">
+          Pick the photographs
+        </legend>
+        <div className="max-h-80 overflow-y-auto rounded-md border border-line bg-paper p-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {photos.map((p) => {
+              const isChecked = selectedIds.includes(p.id);
+              const isCover = coverId === p.id;
+              return (
+                <div
+                  key={p.id}
+                  className={`flex flex-col rounded-md border p-2 transition-colors ${
+                    isCover ? "border-ink/40 bg-soft" : "border-line bg-surface"
+                  }`}
+                >
+                  <div className="relative">
+                    <label className="group relative block aspect-square cursor-pointer overflow-hidden rounded-sm bg-soft">
+                      <Image
+                        src={p.cloudinary_url}
+                        alt={p.title || "Photograph"}
+                        fill
+                        className={`object-cover transition-opacity ${
+                          isChecked ? "" : "opacity-60"
+                        }`}
+                        sizes="160px"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className={`absolute inset-0 transition-shadow ${
+                          isCover ? "ring-2 ring-inset ring-ink/60" : ""
+                        }`}
+                      />
+                      <input
+                        type="checkbox"
+                        name="photo_ids"
+                        value={p.id}
+                        checked={isChecked}
+                        onChange={(e) =>
+                          handleCheckboxChange(p.id, e.target.checked)
+                        }
+                        className="absolute left-2 top-2 z-10 h-4 w-4 cursor-pointer accent-solid"
+                      />
+                      {isCover && (
+                        <span className="absolute bottom-2 right-2 z-10 rounded-sm bg-solid px-1.5 py-0.5 text-[10px] font-medium text-on-solid">
+                          Cover
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                  <div className="mt-2 flex min-h-6 flex-col px-0.5">
+                    <span className="truncate text-xs text-muted">
+                      {p.title}
                     </span>
-                  </label>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+                    {isChecked && !isCover && (
+                      <label className="mt-1 flex cursor-pointer items-center gap-1.5">
+                        <input
+                          type="radio"
+                          name="cover_photo_id"
+                          value={p.id}
+                          checked={isCover}
+                          onChange={() => setCoverId(p.id)}
+                          className="h-3.5 w-3.5 cursor-pointer accent-solid"
+                        />
+                        <span className="text-[11px] text-muted">
+                          Use as cover
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </fieldset>
     </div>
   );
 }

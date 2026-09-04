@@ -24,25 +24,45 @@ export default function LoginForm() {
     }
   }
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-black flex justify-center items-center font-sans p-6">
-      <div className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-6">Admin Access</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <FormInput
-            type="password"
-            name="password"
-            required
-            placeholder="Enter admin password"
-          />
+    <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-16">
+      <div className="w-full max-w-sm">
+        <p className="text-center font-script text-3xl tracking-tight text-ink">
+          Momented
+        </p>
+        <h1 className="mt-6 text-center font-serif text-3xl font-medium tracking-tight text-ink">
+          Content studio
+        </h1>
+        <p className="mt-2 text-center text-sm text-muted">
+          Enter the admin password to continue.
+        </p>
+        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+          <div>
+            <label
+              htmlFor="admin-password"
+              className="mb-1.5 block text-sm font-medium text-ink"
+            >
+              Password
+            </label>
+            <FormInput
+              id="admin-password"
+              type="password"
+              name="password"
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </div>
           <SubmitButton
             isLoading={isLoading}
-            loadingText="Verifying..."
-            text="Login"
-            className="bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200"
+            loadingText="Verifying…"
+            text="Log in"
           />
         </form>
         {error && (
-          <p className="mt-4 text-red-500 text-sm text-center font-medium">
+          <p
+            role="alert"
+            className="mt-4 rounded-md bg-danger-soft px-3 py-2.5 text-center text-sm font-medium text-danger"
+          >
             {error}
           </p>
         )}

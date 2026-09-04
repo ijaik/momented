@@ -12,14 +12,14 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`text-center py-20 px-6 border border-zinc-200 dark:border-zinc-800 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 ${className}`}
+      className={`flex flex-col items-center justify-center gap-2 py-20 text-center ${className}`}
     >
       {title && (
-        <h3 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          {title}
-        </h3>
+        <h2 className="font-serif text-2xl font-medium text-ink">{title}</h2>
       )}
-      <p className="text-zinc-500 dark:text-zinc-400">{description}</p>
+      <p className="max-w-sm text-[15px] leading-relaxed text-muted">
+        {description}
+      </p>
     </div>
   );
 }

@@ -18,17 +18,18 @@ export default function StoryManager({
     <ItemManager
       items={stories}
       allPhotos={allPhotos}
-      title="Your Stories"
-      newItemLabel="+ Write New Story"
-      titlePlaceholder="Story Title"
+      title="Stories"
+      newItemLabel="Write a story"
+      titlePlaceholder="Story title"
       descName="content"
-      descPlaceholder="Write the narrative here..."
+      descLabel="Story"
+      descPlaceholder="Write the narrative here…"
       descRows={8}
       createAction={createStoryAction}
       editAction={editStoryAction}
       deleteAction={deleteStoryAction}
       renderContent={(story) => (
-        <p className="text-zinc-600 dark:text-zinc-400 mt-4 line-clamp-3 leading-relaxed">
+        <p className="mt-3 max-w-2xl whitespace-pre-line text-[15px] leading-relaxed text-muted line-clamp-3">
           {story.content}
         </p>
       )}

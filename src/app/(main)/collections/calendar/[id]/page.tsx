@@ -110,13 +110,19 @@ export default async function CalendarMonthPage({
       <DetailLayout
         title={collection.title}
         description={collection.description}
+        meta={
+          monthPhotos.length === 0
+            ? undefined
+            : `${monthPhotos.length} ${monthPhotos.length === 1 ? "photograph" : "photographs"}`
+        }
       >
         {structuredYears.length > 0 ? (
-          <div className="flex flex-col gap-24 pb-24">
+          <div className="flex flex-col gap-20">
             {structuredYears.map(({ year, photos }) => (
               <section key={year}>
-                <h2 className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-                  {collection.title} {year}
+                <h2 className="mb-8 border-b border-line pb-3 text-sm font-medium text-muted">
+                  {year} · {photos.length}{" "}
+                  {photos.length === 1 ? "photograph" : "photographs"}
                 </h2>
                 <PhotoGrid photos={photos} />
               </section>
@@ -124,8 +130,8 @@ export default async function CalendarMonthPage({
           </div>
         ) : (
           <EmptyState
-            description={`No photos have been captured in ${collection.title} yet.`}
-            className="border-none py-20 border-t border-t-zinc-200 dark:border-t-zinc-800 rounded-none"
+            description={`No photographs were captured in ${collection.title.toLowerCase()} yet.`}
+            className="pt-6"
           />
         )}
       </DetailLayout>

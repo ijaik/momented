@@ -64,10 +64,15 @@ export default async function SingleCollectionPage({
       <DetailLayout
         title={collection.title}
         description={collection.description}
+        meta={
+          photos.length === 0
+            ? undefined
+            : `${photos.length} ${photos.length === 1 ? "photograph" : "photographs"}`
+        }
       >
         <PhotoGrid
           photos={photos}
-          emptyMessage="No photos have been added to this collection yet."
+          emptyMessage="No photographs have been added to this collection yet."
         />
       </DetailLayout>
     </>

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
@@ -171,7 +170,7 @@ export default function ShareDialog({
   }
   return (
     <div
-      className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-labelledby="share-dialog-title"
@@ -181,86 +180,91 @@ export default function ShareDialog({
         tabIndex={-1}
         aria-label="Close share dialog"
         onClick={close}
-        className="absolute inset-0 cursor-default bg-black/60 backdrop-blur-sm animate-[share-fade-in_200ms_ease-out]"
+        className="absolute inset-0 cursor-default bg-ink/50 animate-[dialog-backdrop-in_200ms_ease-out]"
       />
       <div
         ref={panelRef}
-        className="relative w-full max-w-md max-h-[92vh] overflow-y-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 animate-[share-pop-in_300ms_cubic-bezier(0.16,1,0.3,1)]"
+        className="relative w-full max-w-md overflow-hidden rounded-xl border border-line bg-surface shadow-2xl animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)]"
       >
-        {imageUrl && (
-          <div className="relative h-44 sm:h-52 w-full shrink-0 overflow-hidden rounded-t-3xl">
-            <Image
-              src={imageUrl}
-              alt=""
-              fill
-              sizes="448px"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-linear-to-t from-zinc-950/40 to-transparent" />
-          </div>
-        )}
-        <div className="p-6 pt-5">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div className="min-w-0">
-              <h3
-                id="share-dialog-title"
-                className="text-lg font-bold text-zinc-900 dark:text-zinc-50 tracking-tight line-clamp-2"
-              >
-                Share {title ? `"${title}"` : "this photo"}
-              </h3>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Send the photo or a link — your choice.
-              </p>
-            </div>
-            <button
-              ref={closeBtnRef}
-              type="button"
-              onClick={close}
-              aria-label="Close share dialog"
-              className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full text-zinc-500 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+        <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-6">
+          <div className="min-w-0">
+            <h3
+              id="share-dialog-title"
+              className="font-serif text-xl font-medium leading-snug text-ink"
             >
-              <Icons.Close className="w-4 h-4" />
-            </button>
+              Share this moment
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              Send the photograph, or a link to it.
+            </p>
           </div>
+          <button
+            ref={closeBtnRef}
+            type="button"
+            onClick={close}
+            aria-label="Close share dialog"
+            className="-mr-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-soft hover:text-ink"
+          >
+            <Icons.Close className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
           {supportsNativeShare && (
-            <div className="mb-6">
+            <div>
               <button
                 type="button"
                 onClick={handleNativeShare}
                 disabled={isSharing}
-                className="w-full flex items-center justify-center gap-2.5 bg-black dark:bg-white text-white dark:text-black px-6 py-3.5 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-[0.99] transition-all disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-solid px-5 py-3 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 disabled:opacity-60"
               >
-                <Icons.Share className="w-5 h-5" />
-                {isSharing ? "Preparing…" : "Share the photo"}
+                <Icons.Share className="h-4 w-4" />
+                {isSharing ? "Preparing…" : "Send the photograph"}
               </button>
-              <p className="mt-2 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
-                Sends a quick preview image.
+              <p className="mt-2 text-center text-[13px] text-muted">
+                Opens your phone&apos;s share sheet with a preview image.
               </p>
             </div>
           )}
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 px-3 py-2">
-            <Icons.Link className="w-4 h-4 shrink-0 text-zinc-400" />
-            <span className="flex-1 truncate text-sm text-zinc-600 dark:text-zinc-300">
-              {shareUrl}
-            </span>
-            <button
-              type="button"
-              onClick={copyLink}
-              className={`shrink-0 flex items-center gap-1.5 text-sm font-semibold rounded-lg px-3 py-1.5 transition-colors ${
-                copied
-                  ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"
-                  : "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-200"
-              }`}
+          <div>
+            <label
+              htmlFor="share-url"
+              className="mb-1.5 block text-sm font-medium text-ink"
             >
-              {copied ? (
-                <Icons.Copied className="w-4 h-4" />
-              ) : (
-                <Icons.Copy className="w-4 h-4" />
-              )}
-            </button>
+              Link
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="share-url"
+                readOnly
+                value={shareUrl}
+                className="min-w-0 flex-1 rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
+                onFocus={(e) => e.currentTarget.select()}
+              />
+              <button
+                type="button"
+                onClick={copyLink}
+                aria-live="polite"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+              >
+                {copied ? (
+                  <>
+                    <Icons.Copied className="h-4 w-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Icons.Copy className="h-4 w-4" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           {error && (
-            <p className="mt-4 flex items-center justify-center gap-1.5 text-xs font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg px-3 py-2.5 animate-[share-fade-in_200ms_ease-out]">
+            <p
+              role="alert"
+              className="rounded-md bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger"
+            >
               {error}
             </p>
           )}

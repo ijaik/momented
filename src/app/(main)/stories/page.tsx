@@ -11,34 +11,40 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 export default async function StoriesPage() {
   const { data: stories, error } = await getStoriesWithPhotos();
-  if (error) return <EmptyState description="Failed to load stories." />;
+  if (error)
+    return (
+      <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
+        <EmptyState description="The stories failed to load. Please try again in a moment." />
+      </main>
+    );
   const typedStories = stories || [];
   return (
-    <main className="max-w-7xl mx-auto px-6 md:px-10 py-20 font-sans">
+    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
       <PageHeader
         title="Stories"
-        subtitle={
-          <>
-            Thoughts behind the{" "}
-            <span className="font-leckerli tracking-tight">Momented</span>.
-          </>
-        }
-        description="Where the captured moment meets your own narrative."
+        description="The thinking around a frame — notes and narratives that grew out of the moments."
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {typedStories.map((story, index) => (
-          <CoverCard
-            key={story.id}
-            item={story}
-            href={`/stories/${story.id}`}
-            index={index}
-          />
-        ))}
-      </div>
-      {typedStories.length === 0 && (
-        <div className="col-span-full pt-8">
-          <EmptyState description="No stories written yet." />
+      {typedStories.length > 0 ? (
+        <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
+          {typedStories.map((story, index) => (
+            <CoverCard
+              key={story.id}
+              item={story}
+              href={`/stories/${story.id}`}
+              index={index}
+              meta={
+                story.created_at
+                  ? new Date(story.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                    })
+                  : undefined
+              }
+            />
+          ))}
         </div>
+      ) : (
+        <EmptyState description="No stories have been written yet." />
       )}
     </main>
   );

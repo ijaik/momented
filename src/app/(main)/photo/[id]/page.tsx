@@ -8,7 +8,6 @@ import JsonLd from "@/components/seo/JsonLd";
 import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
-import { Icons } from "@/components/ui/Icons";
 import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinary/cloudinaryUtils";
 import {
@@ -52,131 +51,124 @@ export default async function PhotoDetail({
     ruleCollections.length > 0 ||
     calendarCollections.length > 0;
   const hasStories = typedPhoto.stories && typedPhoto.stories.length > 0;
+  const title = typedPhoto.title || "Untitled";
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-black font-sans py-10 relative">
+    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
       <JsonLd
         data={[
           photographJsonLd(typedPhoto),
           breadcrumbJsonLd([
             {
-              name: "Photos",
+              name: "Photographs",
               url: `${siteConfig.url}/`,
             },
             {
-              name: typedPhoto.title || "Untitled",
+              name: title,
               url: `${siteConfig.url}/photo/${typedPhoto.id}`,
             },
           ]),
         ]}
       />
-      <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <BackButton />
-        <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
-          <div className="w-full lg:w-2/3 h-fit lg:sticky lg:top-28">
-            <div className="w-full bg-zinc-100 dark:bg-zinc-900/50 p-2.5 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-              <Image
-                src={typedPhoto.cloudinary_url}
-                alt={typedPhoto.title || "Photographed Moment"}
-                width={typedPhoto.width}
-                height={typedPhoto.height}
-                className="w-full h-auto block"
-                priority
-              />
-            </div>
+      <BackButton label="All photographs" className="mb-8 md:mb-10" />
+      <div className="grid grid-cols-1 gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+        <figure className="min-w-0 lg:sticky lg:top-24">
+          <div className="overflow-hidden border border-line bg-soft">
+            <Image
+              src={typedPhoto.cloudinary_url}
+              alt={title}
+              width={typedPhoto.width}
+              height={typedPhoto.height}
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              className="block h-auto w-full"
+              priority
+            />
           </div>
-          <div className="w-full lg:w-1/3 flex flex-col gap-6">
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm flex flex-col gap-3">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-50 wrap-break-words">
-                {typedPhoto.title || "Untitled"}
-              </h1>
-              {!!typedPhoto.description && (
-                <p className="text-zinc-700 dark:text-zinc-300 text-[15px] leading-relaxed whitespace-pre-wrap">
-                  {typedPhoto.description}
-                </p>
-              )}
-              {hasCollections && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Collections
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {standardCollections.map((c) => (
-                      <Badge key={`std-${c.id}`} href={`/collections/${c.id}`}>
-                        {c.title}
-                      </Badge>
-                    ))}
-                    {ruleCollections.map((r) => (
-                      <Badge
-                        key={`rule-${r.id}`}
-                        href={`/collections/rules/${r.id}`}
-                      >
-                        {r.title}
-                      </Badge>
-                    ))}
-                    {calendarCollections.map((c) => (
-                      <Badge
-                        key={`cal-${c.id}`}
-                        href={`/collections/calendar/${c.id}`}
-                      >
-                        {c.title}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {hasStories && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    Stories
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {typedPhoto.stories?.map((s) => (
-                      <Badge key={s.id} href={`/stories/${s.id}`}>
-                        {s.title}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 shadow-sm">
-              <div className="mb-6">
-                <Icons.Info className="w-5 h-5 text-zinc-400" />
-              </div>
-              <div className="grid grid-cols-2 gap-y-5 gap-x-4 text-sm">
-                <InfoItem label="Date" value={displayDate} />
-                <InfoItem label="Camera" value={typedPhoto.camera_model} />
-                <InfoItem
-                  label="Focal Length"
-                  value={typedPhoto.focal_length}
-                />
-                <InfoItem label="Aperture" value={typedPhoto.aperture} />
-                <InfoItem
-                  label="Shutter Speed"
-                  value={typedPhoto.shutter_speed}
-                />
-                <InfoItem label="ISO" value={typedPhoto.iso?.toString()} />
-                <InfoItem
-                  label="Photographed by"
-                  value={typedPhoto.artist || siteConfig.author.name}
-                />
-              </div>
-            </div>
-            <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-6 flex flex-col gap-3">
-              <DownloadButton
-                photoId={typedPhoto.id}
-                cloudinaryUrl={typedPhoto.cloudinary_url}
-                downloadCount={typedPhoto.downloads || 0}
+          <figcaption className="mt-6">
+            <h1 className="font-serif text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl">
+              {title}
+            </h1>
+            {typedPhoto.description && (
+              <p className="mt-3 max-w-xl whitespace-pre-wrap text-[15px] leading-relaxed text-muted">
+                {typedPhoto.description}
+              </p>
+            )}
+            <p className="mt-3 text-sm text-muted">
+              {displayDate}
+              {typedPhoto.camera_model &&
+                ` · shot on ${typedPhoto.camera_model}`}
+              {` · by ${typedPhoto.artist || siteConfig.author.name}`}
+            </p>
+          </figcaption>
+        </figure>
+        <aside className="flex min-w-0 flex-col gap-10">
+          <section aria-label="Photograph details">
+            <h2 className="mb-1 text-sm font-medium text-ink">Details</h2>
+            <dl className="border-t border-line">
+              <InfoItem label="Focal length" value={typedPhoto.focal_length} />
+              <InfoItem label="Aperture" value={typedPhoto.aperture} />
+              <InfoItem
+                label="Shutter speed"
+                value={typedPhoto.shutter_speed}
               />
-              <ShareButton
-                title={typedPhoto.title || ""}
-                photoId={typedPhoto.id}
-                imageUrl={typedPhoto.cloudinary_url}
-                shareCount={typedPhoto.shares || 0}
-              />
-            </div>
-          </div>
-        </div>
+              <InfoItem label="ISO" value={typedPhoto.iso?.toString()} />
+            </dl>
+          </section>
+          {(hasCollections || hasStories) && (
+            <section aria-label="Related collections and stories">
+              <h2 className="mb-3 text-sm font-medium text-ink">
+                {hasCollections && hasStories
+                  ? "Found in"
+                  : hasCollections
+                    ? "Part of"
+                    : "Written about in"}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {standardCollections.map((c) => (
+                  <Badge key={`std-${c.id}`} href={`/collections/${c.id}`}>
+                    {c.title}
+                  </Badge>
+                ))}
+                {ruleCollections.map((r) => (
+                  <Badge
+                    key={`rule-${r.id}`}
+                    href={`/collections/rules/${r.id}`}
+                  >
+                    {r.title}
+                  </Badge>
+                ))}
+                {calendarCollections.map((c) => (
+                  <Badge
+                    key={`cal-${c.id}`}
+                    href={`/collections/calendar/${c.id}`}
+                  >
+                    {c.title}
+                  </Badge>
+                ))}
+                {typedPhoto.stories?.map((s) => (
+                  <Badge key={s.id} href={`/stories/${s.id}`}>
+                    {s.title}
+                  </Badge>
+                ))}
+              </div>
+            </section>
+          )}
+          <section
+            aria-label="Download and share"
+            className="grid grid-cols-1 gap-3 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
+          >
+            <ShareButton
+              title={typedPhoto.title || ""}
+              photoId={typedPhoto.id}
+              imageUrl={typedPhoto.cloudinary_url}
+              shareCount={typedPhoto.shares || 0}
+            />
+            <DownloadButton
+              photoId={typedPhoto.id}
+              cloudinaryUrl={typedPhoto.cloudinary_url}
+              downloadCount={typedPhoto.downloads || 0}
+            />
+          </section>
+        </aside>
       </div>
     </main>
   );

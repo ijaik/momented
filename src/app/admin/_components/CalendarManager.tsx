@@ -42,47 +42,65 @@ export default function CalendarManager({
     });
   }
   return (
-    <div className="flex flex-col gap-8 w-full">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">
-        Calendar Collections
-      </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="flex w-full flex-col gap-8">
+      <div>
+        <h2 className="text-xl font-medium text-ink">Calendar collections</h2>
+        <p className="mt-0.5 text-sm text-muted">
+          Months are populated automatically from photograph dates.
+        </p>
+      </div>
+      <div className="flex flex-col divide-y divide-line border-y border-line">
         {calendars.map((cal) => (
-          <div
-            key={cal.id}
-            className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm"
-          >
+          <div key={cal.id} className="py-8">
             {editingId === cal.id ? (
               <form
                 onSubmit={(e) => handleEdit(e, cal.id)}
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-5"
               >
-                <FormInput
-                  type="text"
-                  name="title"
-                  defaultValue={cal.title}
-                  required
-                />
-                <FormTextarea
-                  name="description"
-                  defaultValue={cal.description ?? ""}
-                  rows={3}
-                />
+                <div>
+                  <label
+                    htmlFor={`cal-title-${cal.id}`}
+                    className="mb-1.5 block text-sm font-medium text-ink"
+                  >
+                    Title
+                  </label>
+                  <FormInput
+                    id={`cal-title-${cal.id}`}
+                    type="text"
+                    name="title"
+                    defaultValue={cal.title}
+                    required
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor={`cal-desc-${cal.id}`}
+                    className="mb-1.5 block text-sm font-medium text-ink"
+                  >
+                    Description
+                  </label>
+                  <FormTextarea
+                    id={`cal-desc-${cal.id}`}
+                    name="description"
+                    defaultValue={cal.description ?? ""}
+                    rows={3}
+                  />
+                </div>
                 <PhotoChecklist
                   photos={allPhotos}
                   linkedPhotos={cal.photos || []}
                   initialCoverId={cal.cover_photo_id}
                 />
-                <div className="flex gap-3 mt-4">
+                <div className="flex items-center gap-3">
                   <SubmitButton
                     isLoading={isPending}
-                    loadingText="Saving..."
-                    text="Save"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    loadingText="Saving…"
+                    text="Save changes"
                   />
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setEditingId(null)}
                   >
                     Cancel
@@ -90,27 +108,32 @@ export default function CalendarManager({
                 </div>
               </form>
             ) : (
-              <>
-                <h3 className="font-bold text-xl text-zinc-900 dark:text-white">
-                  {cal.title}
-                </h3>
-                <p className="text-sm text-zinc-500 mt-2">{cal.description}</p>
-                <PhotoThumbnails
-                  photos={cal.photos}
-                  fallbackTitle={cal.title}
-                  className="mt-4"
-                />
-                <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                  <Button
-                    type="button"
-                    variant="link"
-                    onClick={() => setEditingId(cal.id)}
-                    className="text-sm font-semibold"
-                  >
-                    Edit Cover & Details
-                  </Button>
+              <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-3">
+                <div className="min-w-0">
+                  <h3 className="font-serif text-2xl font-medium leading-snug tracking-tight text-ink">
+                    {cal.title}
+                  </h3>
+                  {cal.description && (
+                    <p className="mt-1.5 text-[15px] text-muted">
+                      {cal.description}
+                    </p>
+                  )}
+                  <PhotoThumbnails
+                    photos={cal.photos}
+                    fallbackTitle={cal.title}
+                    className="mt-4"
+                  />
                 </div>
-              </>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setEditingId(cal.id)}
+                  className="shrink-0"
+                >
+                  Edit details & cover
+                </Button>
+              </div>
             )}
           </div>
         ))}

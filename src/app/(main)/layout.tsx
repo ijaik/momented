@@ -2,12 +2,18 @@ import type { ReactNode } from "react";
 import Navbar from "@/components/layout/Navbar";
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen w-full">
+    <div className="flex min-h-screen w-full flex-col">
       <Navbar />
-      <div className="grow pt-24">{children}</div>
-      <footer className="shrink-0 py-10 text-center text-sm text-zinc-500 border-t border-zinc-200 dark:border-zinc-900 mt-20">
-        <span className="font-leckerli tracking-tight">Momented</span> with ♥︎ by
-        Jai.
+      <div className="grow pt-16">{children}</div>
+      <footer className="border-t border-line py-8">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-center px-5 sm:px-8">
+          <p className="text-sm text-muted">
+            <span className="font-script text-base tracking-tight text-ink">
+              Momented
+            </span>{" "}
+            with ♥︎ by Jai.
+          </p>
+        </div>
       </footer>
     </div>
   );

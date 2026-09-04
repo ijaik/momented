@@ -18,16 +18,17 @@ export default function CollectionManager({
     <ItemManager
       items={collections}
       allPhotos={allPhotos}
-      title="Your Collections"
-      newItemLabel="+ New Collection"
-      titlePlaceholder="Collection Title"
+      title="Collections"
+      newItemLabel="New collection"
+      titlePlaceholder="Collection title"
       descName="description"
-      descPlaceholder="Theme / Description"
+      descLabel="Description"
+      descPlaceholder="The theme or mood of this collection"
       createAction={createCollectionAction}
       editAction={editCollectionAction}
       deleteAction={deleteCollectionAction}
       renderContent={(col) => (
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
           {col.description}
         </p>
       )}

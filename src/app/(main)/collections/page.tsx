@@ -14,17 +14,17 @@ const TAB_TITLES: Record<string, { title: string; description: string }> = {
   curated: {
     title: "Collections",
     description:
-      "Browse curated collections of photographed moments on Momented.",
+      "Moments gathered by hand — themes and moods curated on Momented.",
   },
   rules: {
     title: "Rule Collections",
     description:
-      "Explore collections made under specific photography rules on Momented.",
+      "Moments made under a deliberate constraint — one photography rule at a time.",
   },
   calendar: {
     title: "Calendar Collections",
     description:
-      "Photographs grouped by the month they were captured on Momented.",
+      "Moments as they happened, grouped by the month they were captured.",
   },
 };
 export async function generateMetadata({
@@ -43,6 +43,11 @@ export async function generateMetadata({
     },
   };
 }
+const TAB_LABELS: { key: string; name: string; href: string }[] = [
+  { key: "curated", name: "Curated", href: "/collections" },
+  { key: "rules", name: "Rules", href: "/collections?tab=rules" },
+  { key: "calendar", name: "Calendar", href: "/collections?tab=calendar" },
+];
 export default async function CollectionsPage({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>) {
@@ -62,62 +67,44 @@ export default async function CollectionsPage({
     const { data } = await getCuratedCollections();
     displayCollections = data ?? null;
   }
-  const tabs = [
-    {
-      name: "Curated",
-      href: "/collections",
-      isActive: activeTab === "curated",
-    },
-    {
-      name: "Rules",
-      href: "/collections?tab=rules",
-      isActive: activeTab === "rules",
-    },
-    {
-      name: "Calendar",
-      href: "/collections?tab=calendar",
-      isActive: activeTab === "calendar",
-    },
-  ];
   const getHref = (id: string | number) => {
     if (activeTab === "calendar") return `/collections/calendar/${id}`;
     if (activeTab === "rules") return `/collections/rules/${id}`;
     return `/collections/${id}`;
   };
+  const count = displayCollections?.length ?? 0;
   return (
-    <main className="max-w-7xl mx-auto px-6 md:px-10 py-20 font-sans">
+    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
       <PageHeader
-        title="Collections"
-        subtitle={
-          <>
-            Collections of{" "}
-            <span className="font-leckerli tracking-tight">Momented</span>.
-          </>
+        title={TAB_TITLES[activeTab].title}
+        description={TAB_TITLES[activeTab].description}
+        meta={
+          count > 0
+            ? `${count} ${count === 1 ? "collection" : "collections"}`
+            : undefined
         }
       />
-      <div className="w-full mb-10">
-        <nav
-          className="flex w-full border-b border-zinc-200 dark:border-zinc-800"
-          aria-label="Collection views"
-        >
-          {tabs.map((tabItem) => (
+      <div className="mb-10 -mt-2 flex gap-7 overflow-x-auto overflow-y-hidden border-b border-line">
+        {TAB_LABELS.map((t) => {
+          const isActive = t.key === activeTab;
+          return (
             <Link
-              key={tabItem.name}
-              href={tabItem.href}
-              aria-current={tabItem.isActive ? "page" : undefined}
-              className={`w-1/3 text-center py-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                tabItem.isActive
-                  ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
-                  : "border-transparent text-zinc-500 hover:text-zinc-800 hover:border-zinc-300 dark:hover:text-zinc-300 dark:hover:border-zinc-700"
+              key={t.key}
+              href={t.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm transition-colors ${
+                isActive
+                  ? "border-ink font-medium text-ink"
+                  : "border-transparent text-muted hover:border-ink/30 hover:text-ink"
               }`}
             >
-              {tabItem.name}
+              {t.name}
             </Link>
-          ))}
-        </nav>
+          );
+        })}
       </div>
       {displayCollections && displayCollections.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
           {displayCollections.map((col, index) => (
             <CoverCard
               key={col.id}
@@ -128,7 +115,7 @@ export default async function CollectionsPage({
           ))}
         </div>
       ) : (
-        <EmptyState description="No collections found for this view." />
+        <EmptyState description="Nothing here yet — this view is still waiting for its first collection." />
       )}
     </main>
   );

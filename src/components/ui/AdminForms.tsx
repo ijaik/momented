@@ -7,7 +7,7 @@ import type {
 } from "react";
 
 const baseInputStyle =
-  "border border-zinc-300 dark:border-zinc-700 rounded-lg p-3 bg-transparent text-zinc-900 dark:text-white";
+  "w-full rounded-md border border-line bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-faint transition-colors hover:border-ink/25";
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
@@ -56,7 +56,7 @@ export function SubmitButton({
       {...props}
       type="submit"
       disabled={isLoading}
-      className={`py-3 px-6 rounded-lg font-medium disabled:opacity-50 transition-colors ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-60 ${className}`}
     >
       {isLoading ? loadingText : text}
     </button>

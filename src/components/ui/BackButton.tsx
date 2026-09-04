@@ -1,7 +1,15 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { Icons } from "@/components/ui/Icons";
-export default function BackButton() {
+import { Icons } from "./Icons";
+
+interface BackButtonProps {
+  label?: string;
+  className?: string;
+}
+export default function BackButton({
+  label = "Back",
+  className = "",
+}: BackButtonProps) {
   const router = useRouter();
   const handleBack = () => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -14,11 +22,11 @@ export default function BackButton() {
     <button
       type="button"
       onClick={handleBack}
-      aria-label="Go Back"
-      title="Go Back"
-      className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all mb-8"
+      aria-label={label}
+      className={`group inline-flex items-center gap-2 text-sm text-muted transition-colors hover:text-ink ${className}`}
     >
-      <Icons.ArrowLeft className="w-5 h-5" />
+      <Icons.ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+      {label}
     </button>
   );
 }

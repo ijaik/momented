@@ -15,16 +15,17 @@ export default function RuleManager({ rules, allPhotos }: RuleManagerProps) {
     <ItemManager
       items={rules}
       allPhotos={allPhotos}
-      title="Photography Rules"
-      newItemLabel="+ New Rule Collection"
-      titlePlaceholder="Rule Name (e.g., Rule of Thirds)"
+      title="Photography rules"
+      newItemLabel="New rule collection"
+      titlePlaceholder="Rule name, e.g. Rule of thirds"
       descName="description"
-      descPlaceholder="Description / Technique details..."
+      descLabel="Description"
+      descPlaceholder="Describe the technique or constraint"
       createAction={createRuleCollectionAction}
       editAction={editRuleCollectionAction}
       deleteAction={deleteRuleCollectionAction}
       renderContent={(rule) => (
-        <p className="text-zinc-600 dark:text-zinc-400 mt-2">
+        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
           {rule.description}
         </p>
       )}

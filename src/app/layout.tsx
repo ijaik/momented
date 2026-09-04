@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Leckerli_One } from "next/font/google";
+import { Fraunces, Leckerli_One, Schibsted_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
@@ -8,6 +8,17 @@ const leckerli = Leckerli_One({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-leckerli",
+});
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  axes: ["opsz"],
+  display: "swap",
+  variable: "--font-fraunces",
+});
+const schibsted = Schibsted_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-schibsted",
 });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -60,15 +71,26 @@ export const metadata: Metadata = {
   },
 };
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#faf9f6",
   width: "device-width",
   initialScale: 1,
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${leckerli.variable}`}>
-      <body className="min-h-screen overflow-x-hidden flex flex-col bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-50 selection:bg-zinc-900 dark:selection:bg-white selection:text-white dark:selection:text-black">
-        <div className="grow">{children}</div>
+    <html
+      lang="en"
+      className={`${leckerli.variable} ${fraunces.variable} ${schibsted.variable}`}
+    >
+      <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-200 -translate-y-20 rounded-md bg-solid px-4 py-2 text-sm font-medium text-on-solid opacity-0 transition-none focus:translate-y-0 focus:opacity-100"
+        >
+          Skip to content
+        </a>
+        <div className="grow" id="main-content" tabIndex={-1}>
+          {children}
+        </div>
       </body>
     </html>
   );

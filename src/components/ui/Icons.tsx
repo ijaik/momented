@@ -1,6 +1,13 @@
 interface IconProps {
   className?: string;
 }
+const strokeProps = {
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.75,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
 const CheckIcon = ({ className = "w-5 h-5" }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
@@ -47,13 +54,9 @@ export const Icons = {
   ArrowLeft: ({ className = "w-5 h-5" }: IconProps) => (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       className={className}
+      {...strokeProps}
     >
       <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
@@ -61,13 +64,9 @@ export const Icons = {
   ArrowUpRight: ({ className = "w-5 h-5" }: IconProps) => (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       className={className}
+      {...strokeProps}
     >
       <path d="M7 17L17 7M7 7h10v10" />
     </svg>
@@ -75,42 +74,19 @@ export const Icons = {
   Sparkle: ({ className = "w-5 h-5" }: IconProps) => (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       className={className}
+      {...strokeProps}
     >
       <path d="M9.937 15.5A2 2 0 008.5 14.063l-6.135-1.582a.5.5 0 010-.962L8.5 9.936A2 2 0 009.937 8.5l1.582-6.135a.5.5 0 01.963 0L14.063 8.5A2 2 0 0015.5 9.937l6.135 1.581a.5.5 0 010 .964L15.5 14.063a2 2 0 00-1.437 1.437l-1.582 6.135a.5.5 0 01-.963 0z" />
-    </svg>
-  ),
-  Info: ({ className = "w-5 h-5" }: IconProps) => (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 16v-4M12 8h.01" />
     </svg>
   ),
   Download: ({ className = "w-5 h-5" }: IconProps) => (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
       className={className}
+      {...strokeProps}
     >
       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
     </svg>
@@ -118,11 +94,16 @@ export const Icons = {
   Copy: ({ className = "w-5 h-5" }: IconProps) => (
     <svg
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden="true"
       className={className}
     >
-      <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+      <rect x="9" y="9" width="12" height="12" rx="1.5" />
+      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
     </svg>
   ),
 };

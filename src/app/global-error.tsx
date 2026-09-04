@@ -11,20 +11,18 @@ export default function GlobalError({
     console.error("Unhandled application error:", error);
   }, [error]);
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center font-sans">
-      <span className="font-leckerli text-3xl tracking-tight text-zinc-900 dark:text-white mb-4">
-        Momented
-      </span>
-      <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">
+    <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <p className="font-script text-2xl tracking-tight text-ink">Momented</p>
+      <h1 className="mt-6 font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl">
         Something went wrong
       </h1>
-      <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mb-8">
+      <p className="mt-4 max-w-sm leading-relaxed text-muted">
         An unexpected error occurred while loading this page. Please try again.
       </p>
       <button
         type="button"
         onClick={reset}
-        className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+        className="mt-8 inline-flex items-center justify-center rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85"
       >
         Try again
       </button>

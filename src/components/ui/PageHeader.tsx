@@ -2,29 +2,31 @@ import type { ReactNode } from "react";
 
 interface PageHeaderProps {
   title: string;
-  subtitle?: ReactNode;
-  description?: string;
+  description?: ReactNode;
+  meta?: ReactNode;
+  className?: string;
 }
 export default function PageHeader({
   title,
-  subtitle,
   description,
+  meta,
+  className = "",
 }: PageHeaderProps) {
   return (
-    <header className="mb-12 md:mb-16 border-b border-zinc-200/80 dark:border-zinc-800/80 pb-8 transition-colors">
-      <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
-          {title}
-        </span>
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-[1.1]">
-          {subtitle || title}
-        </h1>
-        {description && (
-          <p className="mt-3 max-w-xl text-base md:text-lg text-zinc-600 dark:text-zinc-400 font-normal leading-relaxed">
-            {description}
-          </p>
-        )}
-      </div>
+    <header className={`mb-12 border-b border-line pb-8 md:mb-14 ${className}`}>
+      <h1 className="max-w-3xl font-serif text-4xl font-medium leading-[1.08] tracking-tight text-ink sm:text-5xl">
+        {title}
+      </h1>
+      {(description || meta) && (
+        <div className="mt-4 flex flex-col gap-1.5">
+          {description && (
+            <p className="max-w-2xl text-[15px] leading-relaxed text-muted md:text-base">
+              {description}
+            </p>
+          )}
+          {meta && <p className="text-sm text-muted/80">{meta}</p>}
+        </div>
+      )}
     </header>
   );
 }

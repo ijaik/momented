@@ -21,7 +21,7 @@ export default function PhotoThumbnails({
           alt={p.title || fallbackTitle}
           width={80}
           height={80}
-          className="w-16 h-16 object-cover rounded-md shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+          className="h-16 w-16 shrink-0 rounded-sm border border-line object-cover bg-soft"
         />
       ))}
     </div>

@@ -13,18 +13,17 @@ export const metadata: Metadata = {
 };
 export default async function Home() {
   const { data: photos, error } = await getHomePhotos();
-  if (error) return <EmptyState description="Failed to load." />;
+  if (error)
+    return (
+      <EmptyState description="The photographs failed to load. Please try again in a moment." />
+    );
   return (
-    <main className="max-w-7xl mx-auto px-6 md:px-10 py-20 font-sans">
+    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
       <JsonLd data={websiteJsonLd()} />
       <PageHeader
-        title="Photos"
-        subtitle={
-          <>
-            <span className="font-leckerli tracking-tight">Momented</span> at a
-            time.
-          </>
-        }
+        title="Photographs"
+        description="A journal of light, shadow, and the moments in between — one frame at a time."
+        meta={`${photos?.length ?? 0} ${(photos?.length ?? 0) === 1 ? "moment" : "moments"} so far`}
       />
       <PhotoGrid photos={photos || []} />
     </main>

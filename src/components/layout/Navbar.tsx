@@ -1,98 +1,125 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface NavLink {
   name: string;
   href: string;
 }
 const links: NavLink[] = [
-  { name: "Photos", href: "/" },
+  { name: "Photographs", href: "/" },
   { name: "Collections", href: "/collections" },
   { name: "Stories", href: "/stories" },
   { name: "About", href: "/about" },
 ];
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
   return (
-    <nav className="fixed top-0 z-50 w-full backdrop-blur-xl bg-white/70 dark:bg-black/70 border-b border-zinc-200 dark:border-zinc-900 transition-all">
-      <div className="max-w-7xl mx-auto px-6 md:px-10 h-20 flex items-center justify-between">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-paper/85 backdrop-blur-md">
+      <nav
+        aria-label="Main"
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8"
+      >
         <Link
           href="/"
-          className="font-leckerli text-2xl tracking-tight text-zinc-900 dark:text-white transition-opacity hover:opacity-80"
-          onClick={() => setIsOpen(false)}
+          className="font-script text-[22px] leading-none tracking-tight text-ink transition-opacity hover:opacity-75"
         >
           Momented
         </Link>
-        <div className="hidden md:flex gap-5">
+        <div className="hidden items-center gap-7 md:flex">
           {links.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = isActivePath(pathname, link.href);
             return (
               <Link
-                key={link.name}
+                key={link.href}
                 href={link.href}
-                className={`text-sm font-medium transition-colors ${
+                aria-current={isActive ? "page" : undefined}
+                className={`relative text-sm transition-colors ${
                   isActive
-                    ? "text-black dark:text-white"
-                    : "text-zinc-500 hover:text-black dark:hover:text-white"
+                    ? "font-medium text-ink"
+                    : "text-muted hover:text-ink"
                 }`}
               >
                 {link.name}
+                {isActive && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-5.75 left-0 h-px w-full bg-ink"
+                  />
+                )}
               </Link>
             );
           })}
         </div>
         <button
           type="button"
-          className="md:hidden flex flex-col justify-center items-center gap-1.5 z-50 p-2"
+          className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-soft md:hidden"
           onClick={() => setIsOpen((prev) => !prev)}
-          aria-label="Toggle menu"
           aria-expanded={isOpen}
+          aria-controls="mobile-menu"
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
-          <span
-            className={`block w-6 h-0.5 bg-black dark:bg-white transition-transform duration-300 ${
-              isOpen ? "rotate-45 translate-y-2" : ""
-            }`}
-          ></span>
-          <span
-            className={`block w-6 h-0.5 bg-black dark:bg-white transition-opacity duration-300 ${
-              isOpen ? "opacity-0" : "opacity-100"
-            }`}
-          ></span>
-          <span
-            className={`block w-6 h-0.5 bg-black dark:bg-white transition-transform duration-300 ${
-              isOpen ? "-rotate-45 -translate-y-2" : ""
-            }`}
-          ></span>
+          <svg
+            viewBox="0 0 24 24"
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            aria-hidden="true"
+          >
+            {isOpen ? (
+              <path d="M6 6l12 12M18 6L6 18" />
+            ) : (
+              <path d="M4 7h16M4 12h16M4 17h10" />
+            )}
+          </svg>
         </button>
-      </div>
-      <div
-        className={`md:hidden absolute top-0 left-0 w-full h-screen bg-white dark:bg-black flex flex-col items-center justify-center gap-8 transition-transform duration-500 ease-in-out ${
-          isOpen
-            ? "translate-y-0"
-            : "-translate-y-full invisible pointer-events-none"
-        }`}
-      >
-        {links.map((link) => {
-          const isActive = pathname === link.href;
-          return (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={() => setIsOpen(false)}
-              className={`text-2xl font-bold transition-colors ${
-                isActive
-                  ? "text-black dark:text-white"
-                  : "text-zinc-500 hover:text-black dark:hover:text-white"
-              }`}
-            >
-              {link.name}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+      </nav>
+      {isOpen && (
+        <div
+          id="mobile-menu"
+          className="border-t border-line bg-paper md:hidden"
+        >
+          <nav
+            aria-label="Mobile"
+            className="mx-auto flex max-w-6xl flex-col px-5 py-3 sm:px-8"
+          >
+            {links.map((link) => {
+              const isActive = isActivePath(pathname, link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={`border-b border-line/70 py-3.5 text-[15px] transition-colors last:border-b-0 ${
+                    isActive
+                      ? "font-medium text-ink"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+    </header>
   );
 }

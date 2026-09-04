@@ -34,6 +34,22 @@ interface PhotoManagerProps {
   rules: OptionItem[];
   stories: OptionItem[];
 }
+function FieldLabel({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: string;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="mb-1.5 block text-sm font-medium text-ink"
+    >
+      {children}
+    </label>
+  );
+}
 export default function PhotoManager({
   photos,
   collections,
@@ -47,7 +63,7 @@ export default function PhotoManager({
   const [isPending, startTransition] = useTransition();
   async function handleUpload(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Preparing upload...");
+    setStatus("Preparing upload…");
     const form = event.currentTarget;
     const formDataNative = new FormData(form);
     startTransition(async () => {
@@ -57,7 +73,7 @@ export default function PhotoManager({
         if (!file) throw new Error("Please select a photo to upload.");
         const fileToUpload = await compressImageWithExif(file, setStatus);
         const signData = await getCloudinarySignatureAction();
-        setStatus("Uploading to Cloudinary...");
+        setStatus("Uploading…");
         const formData = new FormData();
         formData.append("file", fileToUpload);
         formData.append("api_key", signData.apiKey);
@@ -71,7 +87,7 @@ export default function PhotoManager({
         );
         if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
         const uploadData = await uploadRes.json();
-        setStatus("Saving photo data...");
+        setStatus("Saving photo data…");
         const titleInput = form.elements.namedItem("title") as HTMLInputElement;
         const descriptionInput = form.elements.namedItem(
           "description",
@@ -92,13 +108,13 @@ export default function PhotoManager({
           height: uploadData.height,
           image_metadata: uploadData.image_metadata,
         });
-        setStatus("Photo Uploaded Successfully!");
+        setStatus("Uploaded successfully.");
         form.reset();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        setStatus(`Error: ${message}`);
+        setStatus(`Upload failed: ${message}`);
       } finally {
-        setTimeout(() => setStatus(""), 3000);
+        setTimeout(() => setStatus(""), 4000);
       }
     });
   }
@@ -121,25 +137,46 @@ export default function PhotoManager({
       }
     });
   }
+  const isBusy = isPending || Boolean(status);
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-      <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-800 sticky top-10">
-          <form onSubmit={handleUpload} className="flex flex-col gap-5">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-              Upload Photo
-            </h1>
-            <FormInput name="title" required placeholder="Photo Title" />
+    <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div>
+        <form
+          onSubmit={handleUpload}
+          className="flex flex-col gap-5 rounded-lg border border-line bg-surface p-6 lg:sticky lg:top-8"
+        >
+          <div>
+            <h2 className="text-lg font-medium text-ink">Add a photograph</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              Exif data is read automatically.
+            </p>
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-title">Title</FieldLabel>
             <FormInput
+              id="photo-title"
+              name="title"
+              required
+              placeholder="Give this moment a name"
+            />
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-artist">Photographer</FieldLabel>
+            <FormInput
+              id="photo-artist"
               name="artist"
               defaultValue="Jai"
-              placeholder="Photographer Name"
+              placeholder="Photographer name"
             />
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-collections">Collections</FieldLabel>
             <FormSelect
+              id="photo-collections"
               name="collection_ids"
               multiple
               size={3}
-              className="h-24"
+              className="h-auto min-h-20"
             >
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -147,136 +184,193 @@ export default function PhotoManager({
                 </option>
               ))}
             </FormSelect>
-            <FormSelect name="rule_ids" multiple size={3} className="h-24">
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-rules">Rules</FieldLabel>
+            <FormSelect
+              id="photo-rules"
+              name="rule_ids"
+              multiple
+              size={3}
+              className="h-auto min-h-20"
+            >
               {rules?.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.title}
                 </option>
               ))}
             </FormSelect>
-            <FormSelect name="story_ids" multiple size={3} className="h-24">
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-stories">Stories</FieldLabel>
+            <FormSelect
+              id="photo-stories"
+              name="story_ids"
+              multiple
+              size={3}
+              className="h-auto min-h-20"
+            >
               {stories.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.title}
                 </option>
               ))}
             </FormSelect>
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-caption">Caption</FieldLabel>
             <FormTextarea
+              id="photo-caption"
               name="description"
               rows={3}
-              placeholder="Photo Caption (Optional)"
+              placeholder="A line about this frame (optional)"
             />
+          </div>
+          <div>
+            <FieldLabel htmlFor="photo-file">Image file</FieldLabel>
             <input
+              id="photo-file"
               type="file"
               name="photo"
               accept="image/*"
               required
-              className="text-sm cursor-pointer border border-zinc-300 dark:border-zinc-700 p-2 rounded-lg"
+              className="w-full cursor-pointer rounded-md border border-dashed border-line bg-paper px-3 py-4 text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink hover:border-ink/30"
             />
-            <SubmitButton
-              isLoading={isPending || Boolean(status)}
-              loadingText={status || "Uploading..."}
-              text="Upload Photo"
-              className="bg-black dark:bg-white text-white dark:text-black w-full"
-            />
-          </form>
-        </div>
+          </div>
+          <SubmitButton
+            isLoading={isBusy}
+            loadingText={status || "Uploading…"}
+            text="Upload photograph"
+          />
+        </form>
       </div>
-      <div className="lg:col-span-2 flex flex-col gap-4">
+      <div className="flex min-w-0 flex-col divide-y divide-line">
         {photos.map((photo) => (
           <div
             key={photo.id}
-            className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row gap-6"
+            className="flex flex-col gap-5 py-7 sm:flex-row sm:gap-6"
           >
             <Image
               src={photo.cloudinary_url}
               alt={photo.title}
               width={200}
               height={200}
-              className="w-full sm:w-32 h-32 object-cover rounded-lg"
+              className="h-32 w-full shrink-0 rounded-sm border border-line object-cover bg-soft sm:w-32"
             />
-            <div className="flex-1 w-full">
+            <div className="min-w-0 flex-1">
               {editingPhotoId === photo.id ? (
                 <form
                   onSubmit={(e) => saveEdit(e, photo.id)}
-                  className="flex flex-col gap-2"
+                  className="flex flex-col gap-4"
                 >
-                  <FormInput name="title" defaultValue={photo.title} required />
-                  <FormTextarea
-                    name="description"
-                    defaultValue={photo.description ?? ""}
-                    rows={2}
-                  />
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <FormSelect
-                      name="collection_ids"
-                      multiple
-                      size={4}
-                      defaultValue={
-                        photo.collections?.map((c) => String(c.id)) || []
-                      }
-                      className="w-full sm:w-1/2 h-28"
-                    >
-                      {collections.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.title}
-                        </option>
-                      ))}
-                    </FormSelect>
-                    <FormSelect
-                      name="story_ids"
-                      multiple
-                      size={4}
-                      defaultValue={
-                        photo.stories?.map((s) => String(s.id)) || []
-                      }
-                      className="w-full sm:w-1/2 h-28"
-                    >
-                      {stories.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.title}
-                        </option>
-                      ))}
-                    </FormSelect>
+                  <div>
+                    <FieldLabel htmlFor={`edit-photo-title-${photo.id}`}>
+                      Title
+                    </FieldLabel>
+                    <FormInput
+                      id={`edit-photo-title-${photo.id}`}
+                      name="title"
+                      defaultValue={photo.title}
+                      required
+                    />
                   </div>
-                  <div className="flex gap-2 mt-2">
+                  <div>
+                    <FieldLabel htmlFor={`edit-photo-desc-${photo.id}`}>
+                      Caption
+                    </FieldLabel>
+                    <FormTextarea
+                      id={`edit-photo-desc-${photo.id}`}
+                      name="description"
+                      defaultValue={photo.description ?? ""}
+                      rows={2}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <FieldLabel htmlFor={`edit-photo-cols-${photo.id}`}>
+                        Collections
+                      </FieldLabel>
+                      <FormSelect
+                        id={`edit-photo-cols-${photo.id}`}
+                        name="collection_ids"
+                        multiple
+                        size={4}
+                        defaultValue={
+                          photo.collections?.map((c) => String(c.id)) || []
+                        }
+                        className="h-auto min-h-28"
+                      >
+                        {collections.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.title}
+                          </option>
+                        ))}
+                      </FormSelect>
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor={`edit-photo-stories-${photo.id}`}>
+                        Stories
+                      </FieldLabel>
+                      <FormSelect
+                        id={`edit-photo-stories-${photo.id}`}
+                        name="story_ids"
+                        multiple
+                        size={4}
+                        defaultValue={
+                          photo.stories?.map((s) => String(s.id)) || []
+                        }
+                        className="h-auto min-h-28"
+                      >
+                        {stories.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.title}
+                          </option>
+                        ))}
+                      </FormSelect>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <SubmitButton
                       isLoading={isPending}
-                      text="Save"
-                      loadingText="Saving..."
-                      className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm font-medium"
+                      text="Save changes"
+                      loadingText="Saving…"
                     />
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingPhotoId(null)}
-                      className="bg-zinc-200 dark:bg-zinc-800 px-4 py-1.5 rounded text-sm font-medium"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               ) : (
                 <div>
-                  <h3 className="font-bold text-lg">{photo.title}</h3>
-                  <p className="text-sm text-zinc-500 mt-1 line-clamp-1">
-                    {photo.description}
-                  </p>
-                  <div className="flex gap-3 mt-4">
+                  <h3 className="font-serif text-xl font-medium leading-snug tracking-tight text-ink">
+                    {photo.title}
+                  </h3>
+                  {photo.description && (
+                    <p className="mt-1 text-[15px] text-muted line-clamp-2">
+                      {photo.description}
+                    </p>
+                  )}
+                  <div className="mt-3 flex gap-3">
                     <Button
                       type="button"
-                      variant="link"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingPhotoId(photo.id)}
-                      className="text-sm"
                     >
                       Edit
                     </Button>
                     <Button
                       type="button"
-                      variant="link"
+                      variant="danger"
+                      size="sm"
                       onClick={() =>
                         deletePhotoAction(photo.id, photo.cloudinary_public_id)
                       }
-                      className="text-sm text-red-600 dark:text-red-400"
                     >
                       Delete
                     </Button>

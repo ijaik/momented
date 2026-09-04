@@ -44,6 +44,11 @@ export default async function SingleStoryPage({
   if (!story) return <EmptyState description="Story not found." />;
   const typedPhotos = photos;
   const url = `${siteConfig.url}/stories/${id}`;
+  const published = new Date(story.created_at).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
   return (
     <>
       <JsonLd
@@ -57,29 +62,27 @@ export default async function SingleStoryPage({
       />
       <DetailLayout
         header={
-          <header className="mb-16">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-zinc-900 dark:text-white mb-6 leading-tight">
+          <header className="mb-14 border-b border-line pb-10">
+            <h1 className="max-w-3xl font-serif text-4xl font-medium leading-[1.08] tracking-tight text-ink sm:text-5xl">
               {story.title}
             </h1>
-            <p className="text-sm text-zinc-500 uppercase tracking-widest font-semibold border-b border-zinc-200 dark:border-zinc-800 pb-6">
-              Published {new Date(story.created_at).toLocaleDateString()}
-            </p>
+            <p className="mt-4 text-sm text-muted">Written {published}</p>
           </header>
         }
       >
-        {typedPhotos.length > 0 && (
-          <section className="mb-20">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 mb-8">
-              The Visuals
-            </h3>
-            <PhotoGrid photos={typedPhotos} />
-          </section>
-        )}
-        <article className="max-w-3xl">
-          <div className="text-lg text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+        <article className="max-w-2xl">
+          <div className="whitespace-pre-wrap text-[17px] leading-[1.8] text-ink/90">
             {story.content}
           </div>
         </article>
+        {typedPhotos.length > 0 && (
+          <section className="mt-20">
+            <h2 className="mb-8 border-b border-line pb-3 text-sm font-medium text-muted">
+              The photographs behind it
+            </h2>
+            <PhotoGrid photos={typedPhotos} />
+          </section>
+        )}
       </DetailLayout>
     </>
   );
