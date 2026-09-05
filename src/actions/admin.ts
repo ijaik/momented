@@ -14,7 +14,6 @@ function parseFormData(formData: FormData) {
   return {
     title: (formData.get("title") as string) || "",
     description: (formData.get("description") as string) || "",
-    content: (formData.get("content") as string) || "",
     cover_photo_id: (formData.get("cover_photo_id") as string) || null,
     photoIds: formData.getAll("photo_ids").map(String),
   };

@@ -34,8 +34,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const path = request.nextUrl.pathname;
   const isProduction = process.env.NODE_ENV === "production";
   const isAdminPath = path === "/admin" || path.startsWith("/admin/");
-  const isNonceRoute = isAdminPath;
-  const nonce = isProduction && isNonceRoute ? generateNonce() : undefined;
+  const nonce = isProduction && isAdminPath ? generateNonce() : undefined;
   const csp = isProduction
     ? nonce
       ? buildStrictCsp(nonce)
@@ -43,31 +42,25 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     : undefined;
   const requestHeaders = new Headers(request.headers);
   if (nonce) requestHeaders.set("x-nonce", nonce);
-  if (csp) requestHeaders.set("Content-Security-Policy", csp);
-  if (isAdminPath) {
-    const token = request.cookies.get(SESSION_COOKIE)?.value;
-    const isValid = await isValidAdminToken(token);
-    if (path === "/admin/login") {
-      if (isValid) return NextResponse.redirect(new URL("/admin", request.url));
-      const response = NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-      if (token && !isValid) response.cookies.delete(SESSION_COOKIE);
-      if (csp) response.headers.set("Content-Security-Policy", csp);
-      return response;
-    }
-    if (!isValid) {
-      const response = NextResponse.redirect(
-        new URL("/admin/login", request.url),
-      );
-      if (token) response.cookies.delete(SESSION_COOKIE);
-      return response;
-    }
-  }
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
   if (csp) response.headers.set("Content-Security-Policy", csp);
+  if (!isAdminPath) return response;
+  const token = request.cookies.get(SESSION_COOKIE)?.value;
+  const isValid = await isValidAdminToken(token);
+  if (path === "/admin/login") {
+    if (isValid) return NextResponse.redirect(new URL("/admin", request.url));
+    if (token && !isValid) response.cookies.delete(SESSION_COOKIE);
+    return response;
+  }
+  if (!isValid) {
+    const redirect = NextResponse.redirect(
+      new URL("/admin/login", request.url),
+    );
+    if (token) redirect.cookies.delete(SESSION_COOKIE);
+    return redirect;
+  }
   return response;
 }
 export const config = {

@@ -6,6 +6,20 @@ import type {
   TextareaHTMLAttributes,
 } from "react";
 
+interface FieldLabelProps {
+  htmlFor: string;
+  children: ReactNode;
+}
+export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="mb-1.5 block text-sm font-medium text-ink"
+    >
+      {children}
+    </label>
+  );
+}
 const baseInputStyle =
   "w-full rounded-md border border-line bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-faint transition-colors hover:border-ink/25";
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {

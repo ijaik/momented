@@ -7,6 +7,7 @@ import {
   savePhotoToDbAction,
 } from "@/actions/upload";
 import {
+  FieldLabel,
   FormInput,
   FormSelect,
   FormTextarea,
@@ -33,22 +34,6 @@ interface PhotoManagerProps {
   collections: OptionItem[];
   rules: OptionItem[];
   stories: OptionItem[];
-}
-function FieldLabel({
-  htmlFor,
-  children,
-}: {
-  htmlFor: string;
-  children: string;
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="mb-1.5 block text-sm font-medium text-ink"
-    >
-      {children}
-    </label>
-  );
 }
 export default function PhotoManager({
   photos,

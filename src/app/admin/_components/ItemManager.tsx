@@ -6,6 +6,7 @@ import {
   useTransition,
 } from "react";
 import {
+  FieldLabel,
   FormInput,
   FormTextarea,
   SubmitButton,
@@ -39,22 +40,6 @@ interface ItemManagerProps<T extends BaseItem> {
   ) => Promise<{ success: boolean }>;
   deleteAction: (id: string | number) => Promise<{ success: boolean }>;
   renderContent: (item: T) => ReactNode;
-}
-function FieldLabel({
-  htmlFor,
-  children,
-}: {
-  htmlFor: string;
-  children: ReactNode;
-}) {
-  return (
-    <label
-      htmlFor={htmlFor}
-      className="mb-1.5 block text-sm font-medium text-ink"
-    >
-      {children}
-    </label>
-  );
 }
 export default function ItemManager<T extends BaseItem>({
   items,

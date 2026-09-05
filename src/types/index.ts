@@ -40,15 +40,6 @@ export interface BaseCollection {
   created_at?: string | null;
   photos?: Pick<Photo, "id" | "cloudinary_url">[];
 }
-export interface Collection extends BaseCollection {}
-export interface RuleCollection extends BaseCollection {}
-export interface CalendarCollection {
-  id: number;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | null;
-  photos?: Pick<Photo, "id" | "cloudinary_url" | "title">[];
-}
 export interface Story {
   id: string;
   title: string;

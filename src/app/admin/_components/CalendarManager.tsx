@@ -2,6 +2,7 @@
 import { type SubmitEvent, useState, useTransition } from "react";
 import { editCalendarCollectionAction } from "@/actions/admin";
 import {
+  FieldLabel,
   FormInput,
   FormTextarea,
   SubmitButton,
@@ -58,12 +59,7 @@ export default function CalendarManager({
                 className="flex flex-col gap-5"
               >
                 <div>
-                  <label
-                    htmlFor={`cal-title-${cal.id}`}
-                    className="mb-1.5 block text-sm font-medium text-ink"
-                  >
-                    Title
-                  </label>
+                  <FieldLabel htmlFor={`cal-title-${cal.id}`}>Title</FieldLabel>
                   <FormInput
                     id={`cal-title-${cal.id}`}
                     type="text"
@@ -73,12 +69,9 @@ export default function CalendarManager({
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor={`cal-desc-${cal.id}`}
-                    className="mb-1.5 block text-sm font-medium text-ink"
-                  >
+                  <FieldLabel htmlFor={`cal-desc-${cal.id}`}>
                     Description
-                  </label>
+                  </FieldLabel>
                   <FormTextarea
                     id={`cal-desc-${cal.id}`}
                     name="description"

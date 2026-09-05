@@ -9,13 +9,13 @@ import BackButton from "@/components/ui/BackButton";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import { siteConfig } from "@/config/site";
-import { getSocialShareImageUrl } from "@/lib/cloudinary/cloudinaryUtils";
 import {
   getAllIds,
   getCalendarMonthTitle,
   getPhotoById,
 } from "@/lib/db/queries";
 import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export const revalidate = 3600;
@@ -180,37 +180,13 @@ export async function generateMetadata({
   const photo = await getPhoto(id);
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title || "Photography Gallery";
-  const fullTitle = `${title} | ${siteConfig.name}`;
   const description = photo.description
     ? `${photo.description} Captured on ${photo.camera_model || "camera"}.`
     : `Explore "${photo.title || "this photograph"}" on ${siteConfig.name}.`;
-  const pageUrl = `${siteConfig.url}/photo/${id}`;
-  const imageUrl = getSocialShareImageUrl(photo.cloudinary_url);
-  return {
-    metadataBase: new URL(siteConfig.url),
+  return buildPageMetadata({
     title,
     description,
-    alternates: { canonical: pageUrl },
-    openGraph: {
-      title: fullTitle,
-      description,
-      url: pageUrl,
-      siteName: siteConfig.name,
-      type: "website",
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: fullTitle,
-      description,
-      images: [imageUrl],
-    },
-  };
+    path: `/photo/${id}`,
+    imageUrl: photo.cloudinary_url,
+  });
 }

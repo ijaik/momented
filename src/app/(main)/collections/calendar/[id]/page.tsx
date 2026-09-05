@@ -15,9 +15,6 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 
-type CalendarPhoto = Photo & {
-  dayContext?: { current: number; total: number } | null;
-};
 type GroupedPhotos = Record<number, Record<string, Photo[]>>;
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
@@ -54,10 +51,9 @@ export default async function CalendarMonthPage({
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
     return <EmptyState description="Invalid month requested." />;
-  const { collection, photos: monthPhotosData } =
+  const { collection, photos: monthPhotos } =
     await getCalendarMonth(monthIndex);
   if (!collection) return <EmptyState description="Month not found." />;
-  const monthPhotos = monthPhotosData;
   const groupedByYear = monthPhotos.reduce<GroupedPhotos>((acc, photo) => {
     const { year, dateString } = getPhotoDate(photo);
     if (!acc[year]) acc[year] = {};
@@ -69,7 +65,7 @@ export default async function CalendarMonthPage({
     .sort((a, b) => Number(b) - Number(a))
     .map((yearKey) => {
       const year = Number(yearKey);
-      const photosForYear: CalendarPhoto[] = [];
+      const photosForYear: Photo[] = [];
       const sortedDays = Object.keys(groupedByYear[year]).sort(
         (a, b) => new Date(b).getTime() - new Date(a).getTime(),
       );
