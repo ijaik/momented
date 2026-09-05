@@ -61,7 +61,7 @@ export default function AboutPage() {
             href={siteConfig.author.github}
             target="_blank"
             rel="noreferrer"
-            className="text-sm text-muted underline decoration-line underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
+            className="text-sm text-muted underline decoration-line decoration-[1.5px] underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
           >
             Jai on GitHub
           </a>

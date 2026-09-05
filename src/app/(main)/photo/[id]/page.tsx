@@ -6,8 +6,8 @@ import InfoItem from "@/components/photos/InfoItem";
 import ShareButton from "@/components/photos/ShareButton";
 import JsonLd from "@/components/seo/JsonLd";
 import BackButton from "@/components/ui/BackButton";
-import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
+import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
 import {
   getAllIds,
@@ -52,6 +52,32 @@ export default async function PhotoDetail({
     calendarCollections.length > 0;
   const hasStories = typedPhoto.stories && typedPhoto.stories.length > 0;
   const title = typedPhoto.title || "Untitled";
+  const references: ReferenceLink[] = [
+    ...standardCollections.map((c) => ({
+      id: c.id,
+      title: c.title,
+      href: `/collections/${c.id}`,
+      kind: "Collection",
+    })),
+    ...ruleCollections.map((r) => ({
+      id: r.id,
+      title: r.title,
+      href: `/collections/rules/${r.id}`,
+      kind: "Rule",
+    })),
+    ...calendarCollections.map((c) => ({
+      id: c.id,
+      title: c.title,
+      href: `/collections/calendar/${c.id}`,
+      kind: "Month",
+    })),
+    ...(typedPhoto.stories || []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      href: `/stories/${s.id}`,
+      kind: "Story",
+    })),
+  ];
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
       <JsonLd
@@ -113,43 +139,20 @@ export default async function PhotoDetail({
               <InfoItem label="ISO" value={typedPhoto.iso?.toString()} />
             </dl>
           </section>
-          {(hasCollections || hasStories) && (
+          {references.length > 0 && (
             <section aria-label="Related collections and stories">
-              <h2 className="mb-3 text-sm font-medium text-ink">
+              <h2 className="mb-1 text-sm font-medium text-ink">
                 {hasCollections && hasStories
                   ? "Found in"
                   : hasCollections
                     ? "Part of"
                     : "Written about in"}
               </h2>
-              <div className="flex flex-wrap gap-2">
-                {standardCollections.map((c) => (
-                  <Badge key={`std-${c.id}`} href={`/collections/${c.id}`}>
-                    {c.title}
-                  </Badge>
+              <ul className="divide-y divide-line border-y border-line last:border-b-0">
+                {references.map((ref) => (
+                  <ReferenceRow key={`${ref.kind}-${ref.id}`} link={ref} />
                 ))}
-                {ruleCollections.map((r) => (
-                  <Badge
-                    key={`rule-${r.id}`}
-                    href={`/collections/rules/${r.id}`}
-                  >
-                    {r.title}
-                  </Badge>
-                ))}
-                {calendarCollections.map((c) => (
-                  <Badge
-                    key={`cal-${c.id}`}
-                    href={`/collections/calendar/${c.id}`}
-                  >
-                    {c.title}
-                  </Badge>
-                ))}
-                {typedPhoto.stories?.map((s) => (
-                  <Badge key={s.id} href={`/stories/${s.id}`}>
-                    {s.title}
-                  </Badge>
-                ))}
-              </div>
+              </ul>
             </section>
           )}
           <section
