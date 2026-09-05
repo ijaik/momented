@@ -33,7 +33,8 @@ export default function CoverCard({ item, href, index, meta }: CoverCardProps) {
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-            priority={index < 4}
+            priority={index === 0}
+            loading={index < 6 ? "eager" : undefined}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">

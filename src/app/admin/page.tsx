@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   getCalendarCollectionsAction,
   getCollectionsAction,
@@ -6,6 +7,7 @@ import {
   getRuleCollectionsAction,
   getStoriesAction,
 } from "@/actions/admin";
+import { isAdminAuthed } from "@/lib/auth/auth";
 import DashboardTabs from "./_components/DashboardTabs";
 export const metadata: Metadata = {
   title: "Admin",
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 };
 export const dynamic = "force-dynamic";
 export default async function AdminDashboard() {
+  if (!(await isAdminAuthed())) redirect("/admin/login");
   const [photos, collections, rules, stories, calendars] = await Promise.all([
     getPhotosAction(),
     getCollectionsAction(),

@@ -27,7 +27,8 @@ export default function PhotoCard({
           height={photo.height || 600}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-          priority={index < 4}
+          priority={index === 0}
+          loading={index < 9 ? "eager" : undefined}
         />
       </Link>
       {(title || photo.dayContext) && (
