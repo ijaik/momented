@@ -10,6 +10,13 @@ import {
 } from "@/lib/db/queries";
 import type { BaseCollection, PageProps } from "@/types";
 export const revalidate = 3600;
+function resolveTab(tab?: string): keyof typeof TAB_TITLES {
+  return tab === "calendar"
+    ? "calendar"
+    : tab === "rules"
+      ? "rules"
+      : "curated";
+}
 const TAB_TITLES: Record<string, { title: string; description: string }> = {
   curated: {
     title: "Collections",
@@ -31,15 +38,16 @@ export async function generateMetadata({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>): Promise<Metadata> {
   const { tab } = await searchParams;
-  const active =
-    tab === "calendar" ? "calendar" : tab === "rules" ? "rules" : "curated";
-  const { title, description } = TAB_TITLES[active];
+  const activeTab = resolveTab(tab);
+  const { title, description } = TAB_TITLES[activeTab];
   return {
     title,
     description,
     alternates: {
       canonical:
-        active === "curated" ? "/collections" : `/collections?tab=${active}`,
+        activeTab === "curated"
+          ? "/collections"
+          : `/collections?tab=${activeTab}`,
     },
   };
 }
@@ -52,8 +60,7 @@ export default async function CollectionsPage({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>) {
   const { tab } = await searchParams;
-  const activeTab =
-    tab === "calendar" ? "calendar" : tab === "rules" ? "rules" : "curated";
+  const activeTab = resolveTab(tab);
   let displayCollections: BaseCollection[] | null = null;
   if (activeTab === "rules") {
     const { data } = await getRuleCollectionsList();

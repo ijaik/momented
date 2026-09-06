@@ -24,11 +24,13 @@ export async function syncJunction(
   mainId: string | number,
   targetCol: string,
   targetIds: string[],
+  { skipDelete = false }: { skipDelete?: boolean } = {},
 ): Promise<void> {
-  await db
-    .from(table)
-    .delete()
-    .eq(mainCol as never, mainId as never);
+  if (!skipDelete)
+    await db
+      .from(table)
+      .delete()
+      .eq(mainCol as never, mainId as never);
   if (targetIds?.length > 0) {
     const inserts = targetIds.map((targetId) => ({
       [mainCol]: mainId,

@@ -143,36 +143,38 @@ export async function savePhotoToDbAction(
   if (dbError) throw new Error(`Database Error: ${dbError.message}`);
   const photoDate = takenAtDate ? new Date(takenAtDate) : new Date();
   const monthId = photoDate.getMonth() + 1;
-  await db.from("photo_calendar_collections").insert([
-    {
-      photo_id: newPhoto.id,
-      calendar_id: monthId,
-    },
+  await Promise.all([
+    db
+      .from("photo_calendar_collections")
+      .insert([{ photo_id: newPhoto.id, calendar_id: monthId }]),
+    syncJunction(
+      db,
+      "photo_collections",
+      "photo_id",
+      newPhoto.id,
+      "collection_id",
+      data.collectionIds ?? [],
+      { skipDelete: true },
+    ),
+    syncJunction(
+      db,
+      "photo_rule_collections",
+      "photo_id",
+      newPhoto.id,
+      "rule_id",
+      data.ruleIds ?? [],
+      { skipDelete: true },
+    ),
+    syncJunction(
+      db,
+      "photo_stories",
+      "photo_id",
+      newPhoto.id,
+      "story_id",
+      data.storyIds ?? [],
+      { skipDelete: true },
+    ),
   ]);
-  await syncJunction(
-    db,
-    "photo_collections",
-    "photo_id",
-    newPhoto.id,
-    "collection_id",
-    data.collectionIds ?? [],
-  );
-  await syncJunction(
-    db,
-    "photo_rule_collections",
-    "photo_id",
-    newPhoto.id,
-    "rule_id",
-    data.ruleIds ?? [],
-  );
-  await syncJunction(
-    db,
-    "photo_stories",
-    "photo_id",
-    newPhoto.id,
-    "story_id",
-    data.storyIds ?? [],
-  );
   revalidatePath("/", "layout");
   return { success: true };
 }

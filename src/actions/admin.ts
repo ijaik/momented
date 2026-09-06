@@ -172,23 +172,25 @@ export async function editPhotoAction(
     .update({ title, description })
     .eq("id", id as never);
   if (error) throw new Error(error.message);
-  await syncJunction(
-    db,
-    "photo_collections",
-    "photo_id",
-    id,
-    "collection_id",
-    collectionIds,
-  );
-  await syncJunction(
-    db,
-    "photo_rule_collections",
-    "photo_id",
-    id,
-    "rule_id",
-    ruleIds,
-  );
-  await syncJunction(db, "photo_stories", "photo_id", id, "story_id", storyIds);
+  await Promise.all([
+    syncJunction(
+      db,
+      "photo_collections",
+      "photo_id",
+      id,
+      "collection_id",
+      collectionIds,
+    ),
+    syncJunction(
+      db,
+      "photo_rule_collections",
+      "photo_id",
+      id,
+      "rule_id",
+      ruleIds,
+    ),
+    syncJunction(db, "photo_stories", "photo_id", id, "story_id", storyIds),
+  ]);
   revalidateAll();
   return { success: true };
 }

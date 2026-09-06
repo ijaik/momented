@@ -81,7 +81,7 @@ export default function CalendarManager({
                 </div>
                 <PhotoChecklist
                   photos={allPhotos}
-                  linkedPhotos={cal.photos || []}
+                  linkedPhotos={cal.photos}
                   initialCoverId={cal.cover_photo_id}
                 />
                 <div className="flex items-center gap-3">

@@ -11,9 +11,10 @@ interface PhotoChecklistProps {
   linkedPhotos?: ChecklistPhoto[];
   initialCoverId?: string | number | null;
 }
+const NO_LINKED_PHOTOS: ChecklistPhoto[] = [];
 export default function PhotoChecklist({
   photos,
-  linkedPhotos = [],
+  linkedPhotos = NO_LINKED_PHOTOS,
   initialCoverId = null,
 }: PhotoChecklistProps) {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);

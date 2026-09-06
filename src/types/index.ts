@@ -20,6 +20,7 @@ export interface Photo {
   collections?: CollectionReference[];
   rules?: RuleCollectionReference[];
   stories?: StoryReference[];
+  calendars?: CalendarReference[];
   dayContext?: {
     current: number;
     total: number;
@@ -32,6 +33,10 @@ export interface EntityReference {
 export type CollectionReference = EntityReference;
 export type RuleCollectionReference = EntityReference;
 export type StoryReference = EntityReference;
+export interface CalendarReference {
+  id: number;
+  title: string;
+}
 export interface BaseCollection {
   id: string | number;
   title: string;

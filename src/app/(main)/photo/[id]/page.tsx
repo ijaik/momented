@@ -9,14 +9,10 @@ import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
 import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
-import {
-  getAllIds,
-  getCalendarMonthTitle,
-  getPhotoById,
-} from "@/lib/db/queries";
+import { getAllIds, getPhotoById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
+import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
@@ -38,12 +34,7 @@ export default async function PhotoDetail({
     typedPhoto.created_at,
     typedPhoto.taken_at,
   );
-  const { month: monthIndex } = getPhotoDate(typedPhoto);
-  let calendarCollections: { id: number; title: string }[] = [];
-  if (monthIndex) {
-    const { data: calData } = await getCalendarMonthTitle(monthIndex);
-    calendarCollections = calData || [];
-  }
+  const calendarCollections = typedPhoto.calendars || [];
   const standardCollections = typedPhoto.collections || [];
   const ruleCollections = typedPhoto.rules || [];
   const hasCollections =

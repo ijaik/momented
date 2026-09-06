@@ -1,7 +1,7 @@
 import "server-only";
 import { supabase } from "@/lib/db/supabase";
 export const PHOTO_CARD_COLUMNS =
-  "id, title, description, created_at, cloudinary_url, width, height, camera_model, taken_at";
+  "id, title, created_at, cloudinary_url, width, height, camera_model, taken_at";
 export type IdTable =
   | "photos"
   | "collections"
@@ -57,7 +57,7 @@ export function getPhotoById(id: string) {
   return supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title), calendars:calendar_collections!photo_calendar_collections(id, title)",
     )
     .eq("id", id)
     .single();
@@ -125,12 +125,6 @@ export function getCalendarCollectionsList() {
     .from("calendar_collections")
     .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
     .order("id", { ascending: true });
-}
-export function getCalendarMonthTitle(monthIndex: number) {
-  return supabase
-    .from("calendar_collections")
-    .select("id, title")
-    .eq("id", monthIndex);
 }
 export function getStoriesWithPhotos() {
   return supabase

@@ -1,5 +1,6 @@
 import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
-export function toJpegUrl(imageUrl: string): string {
+
+function toJpegUrl(imageUrl: string): string {
   return buildCloudinaryUrl(imageUrl, ["c_limit", "w_1600", "q_auto", "f_jpg"]);
 }
 export async function imageUrlToFile(imageUrl: string): Promise<File | null> {
