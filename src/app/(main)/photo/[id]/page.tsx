@@ -23,6 +23,23 @@ const getPhoto = cache(async (id: string) => {
   const { data } = await getPhotoById(id);
   return data;
 });
+export async function generateMetadata({
+  params,
+}: PageProps<{ id: string }>): Promise<Metadata> {
+  const { id } = await params;
+  const photo = await getPhoto(id);
+  if (!photo) return { title: "Photo Not Found" };
+  const title = photo.title || "Photography Gallery";
+  const description = photo.description
+    ? `${photo.description} Captured on ${photo.camera_model || "camera"}.`
+    : `Explore "${photo.title || "this photograph"}" on ${siteConfig.name}.`;
+  return buildPageMetadata({
+    title,
+    description,
+    path: `/photo/${id}`,
+    imageUrl: photo.cloudinary_url,
+  });
+}
 export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
@@ -166,21 +183,4 @@ export default async function PhotoDetail({
       </div>
     </main>
   );
-}
-export async function generateMetadata({
-  params,
-}: PageProps<{ id: string }>): Promise<Metadata> {
-  const { id } = await params;
-  const photo = await getPhoto(id);
-  if (!photo) return { title: "Photo Not Found" };
-  const title = photo.title || "Photography Gallery";
-  const description = photo.description
-    ? `${photo.description} Captured on ${photo.camera_model || "camera"}.`
-    : `Explore "${photo.title || "this photograph"}" on ${siteConfig.name}.`;
-  return buildPageMetadata({
-    title,
-    description,
-    path: `/photo/${id}`,
-    imageUrl: photo.cloudinary_url,
-  });
 }

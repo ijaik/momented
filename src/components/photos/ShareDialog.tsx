@@ -25,7 +25,7 @@ export default function ShareDialog({
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const focusablesRef = useRef<HTMLElement[]>([]);
+  const focusablesRef = useRef<HTMLElement[] | null>(null);
   const shareFileRef = useRef<File | null | undefined>(undefined);
   const sharePromiseRef = useRef<Promise<File | null> | null>(null);
   const shareUrl = useMemo(() => {
@@ -44,11 +44,12 @@ export default function ShareDialog({
   }, [onClose]);
   useEffect(() => {
     if (!panelRef.current) return;
-    focusablesRef.current = Array.from(
+    const newFocusables = Array.from(
       panelRef.current.querySelectorAll<HTMLElement>(
         'button:not([tabindex="-1"]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       ),
     );
+    focusablesRef.current = newFocusables;
   }, []);
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -56,7 +57,7 @@ export default function ShareDialog({
         close();
         return;
       }
-      if (e.key === "Tab" && focusablesRef.current.length > 0) {
+      if (e.key === "Tab" && focusablesRef.current?.length) {
         const focusables = focusablesRef.current;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];

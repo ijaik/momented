@@ -6,9 +6,15 @@ interface RateLimitEntry {
 const MAX_ENTRIES = 10_000;
 const entries = new Map<string, RateLimitEntry>();
 function pruneExpired(now: number): void {
-  if (entries.size <= MAX_ENTRIES) return;
-  for (const [key, entry] of entries)
-    if (entry.resetAt <= now) entries.delete(key);
+  if (entries.size <= MAX_ENTRIES * 0.8) return;
+  let deleted = 0;
+  for (const [key, entry] of entries) {
+    if (entry.resetAt <= now) {
+      entries.delete(key);
+      deleted++;
+      if (deleted >= MAX_ENTRIES * 0.2) break;
+    }
+  }
 }
 export function checkRateLimit(
   key: string,

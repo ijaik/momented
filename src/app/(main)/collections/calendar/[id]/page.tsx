@@ -14,8 +14,6 @@ import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-
-type GroupedPhotos = Record<number, Record<string, Photo[]>>;
 export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("calendar_collections");
@@ -54,33 +52,42 @@ export default async function CalendarMonthPage({
   const { collection, photos: monthPhotos } =
     await getCalendarMonth(monthIndex);
   if (!collection) return <EmptyState description="Month not found." />;
-  const groupedByYear = monthPhotos.reduce<GroupedPhotos>((acc, photo) => {
+  const groupedByYear = new Map<number, Map<string, Photo[]>>();
+  for (const photo of monthPhotos) {
     const { year, dateString } = getPhotoDate(photo);
-    if (!acc[year]) acc[year] = {};
-    if (!acc[year][dateString]) acc[year][dateString] = [];
-    acc[year][dateString].push(photo);
-    return acc;
-  }, {});
-  const structuredYears = Object.keys(groupedByYear)
-    .sort((a, b) => Number(b) - Number(a))
-    .map((yearKey) => {
-      const year = Number(yearKey);
+    let yearMap = groupedByYear.get(year);
+    if (!yearMap) {
+      yearMap = new Map();
+      groupedByYear.set(year, yearMap);
+    }
+    const dayPhotos = yearMap.get(dateString);
+    if (dayPhotos) {
+      dayPhotos.push(photo);
+    } else {
+      yearMap.set(dateString, [photo]);
+    }
+  }
+  const structuredYears = Array.from(groupedByYear.entries())
+    .sort((a, b) => b[0] - a[0])
+    .map(([year, dayMap]) => {
       const photosForYear: Photo[] = [];
-      const sortedDays = Object.keys(groupedByYear[year]).sort(
-        (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+      const sortedDays = Array.from(dayMap.entries()).sort(
+        (a, b) => Date.parse(b[0]) - Date.parse(a[0]),
       );
-      sortedDays.forEach((dateString) => {
-        const dayPhotos = groupedByYear[year][dateString];
+      for (const [, dayPhotos] of sortedDays) {
         const isDense = dayPhotos.length > 2;
-        dayPhotos.forEach((photo, index) => {
-          photosForYear.push({
-            ...photo,
-            dayContext: isDense
-              ? { current: index + 1, total: dayPhotos.length }
-              : null,
-          });
-        });
-      });
+        for (let i = 0; i < dayPhotos.length; i++) {
+          const photo = dayPhotos[i];
+          photosForYear.push(
+            isDense
+              ? {
+                  ...photo,
+                  dayContext: { current: i + 1, total: dayPhotos.length },
+                }
+              : { ...photo, dayContext: null },
+          );
+        }
+      }
       return { year, photos: photosForYear };
     });
   const url = `${siteConfig.url}/collections/calendar/${id}`;
