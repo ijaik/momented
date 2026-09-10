@@ -1,18 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isValidAdminToken, SESSION_COOKIE } from "@/lib/auth/auth";
 
-function generateNonce(): string {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join(
-    "",
-  );
-}
-function buildCsp(scriptSrc: string): string {
+function buildCsp(): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   return [
     "default-src 'self'",
-    scriptSrc,
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://res.cloudinary.com",
     "font-src 'self' data:",
@@ -24,24 +17,17 @@ function buildCsp(scriptSrc: string): string {
     "frame-ancestors 'self'",
   ].join("; ");
 }
-function buildStrictCsp(nonce: string): string {
-  return buildCsp(`script-src 'self' 'nonce-${nonce}' 'unsafe-eval'`);
-}
-function buildBaselineCsp(): string {
-  return buildCsp("script-src 'self' 'unsafe-inline'");
-}
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const path = request.nextUrl.pathname;
   const isProduction = process.env.NODE_ENV === "production";
   const isAdminPath = path === "/admin" || path.startsWith("/admin/");
-  const nonce = isProduction && isAdminPath ? generateNonce() : undefined;
-  const csp = isProduction
-    ? nonce
-      ? buildStrictCsp(nonce)
-      : buildBaselineCsp()
-    : undefined;
+  if (path === "/admin/login" && request.nextUrl.searchParams.has("password")) {
+    const cleanUrl = new URL("/admin/login", request.url);
+    return NextResponse.redirect(cleanUrl);
+  }
+  const csp = isProduction ? buildCsp() : undefined;
   const requestHeaders = new Headers(request.headers);
-  if (nonce) requestHeaders.set("x-nonce", nonce);
+  if (csp) requestHeaders.set("Content-Security-Policy", csp);
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });

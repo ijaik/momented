@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cache } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
@@ -9,29 +8,24 @@ import { getAllIds, getPhotosForStory, getStoryById } from "@/lib/db/queries";
 import { articleJsonLd, breadcrumbJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import type { PageProps } from "@/types";
-export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("stories");
   return ids.map((id) => ({ id }));
 }
-const getStory = cache(async (id: string) => {
-  const [{ data: story }, { data: photos }] = await Promise.all([
-    getStoryById(id),
-    getPhotosForStory(id),
-  ]);
-  return { story, photos: photos ?? [] };
-});
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  const { story, photos } = await getStory(id);
+  const [{ data: story }, { data: photos }] = await Promise.all([
+    getStoryById(id),
+    getPhotosForStory(id),
+  ]);
   if (!story) return { title: "Story Not Found" };
   return buildPageMetadata({
     title: story.title,
     description: story.content.replace(/\s+/g, " ").trim().slice(0, 155),
     path: `/stories/${id}`,
-    imageUrl: photos[0]?.cloudinary_url,
+    imageUrl: photos?.[0]?.cloudinary_url,
     type: "article",
     publishedTime: story.created_at,
   });
@@ -40,9 +34,12 @@ export default async function SingleStoryPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  const { story, photos } = await getStory(id);
+  const [{ data: story }, { data: rawPhotos }] = await Promise.all([
+    getStoryById(id),
+    getPhotosForStory(id),
+  ]);
+  const photos = rawPhotos ?? [];
   if (!story) return <EmptyState description="Story not found." />;
-  const typedPhotos = photos;
   const url = `${siteConfig.url}/stories/${id}`;
   const published = new Date(story.created_at).toLocaleDateString("en-US", {
     year: "numeric",
@@ -75,12 +72,12 @@ export default async function SingleStoryPage({
             {story.content}
           </div>
         </article>
-        {typedPhotos.length > 0 && (
+        {photos.length > 0 && (
           <section className="mt-20">
             <h2 className="mb-8 border-b border-line pb-3 text-sm font-medium text-muted">
               The photographs behind it
             </h2>
-            <PhotoGrid photos={typedPhotos} />
+            <PhotoGrid photos={photos} />
           </section>
         )}
       </DetailLayout>

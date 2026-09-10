@@ -5,7 +5,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { getHomePhotos } from "@/lib/db/queries";
 import { websiteJsonLd } from "@/lib/seo/jsonLd";
-export const revalidate = 3600;
+
 export const metadata: Metadata = {
   description:
     "Explore the latest captured moments on Momented — a journal of light, shadow, and moments in between by Jai.",

@@ -35,7 +35,11 @@ export default function LoginForm() {
         <p className="mt-2 text-center text-sm text-muted">
           Enter the admin password to continue.
         </p>
-        <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5">
+        <form
+          method="POST"
+          onSubmit={handleSubmit}
+          className="mt-8 flex flex-col gap-5"
+        >
           <div>
             <label
               htmlFor="admin-password"

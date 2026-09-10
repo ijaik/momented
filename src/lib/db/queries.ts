@@ -1,4 +1,5 @@
 import "server-only";
+import { cacheTag } from "next/cache";
 import { supabase } from "@/lib/db/supabase";
 export const PHOTO_CARD_COLUMNS =
   "id, title, created_at, cloudinary_url, width, height, camera_model, taken_at";
@@ -42,10 +43,12 @@ const CALENDAR_JUNCTION: PhotoJunction = {
   column: "calendar_id",
 };
 export async function getAllIds(table: IdTable): Promise<string[]> {
+  "use cache";
   const { data } = await supabase.from(table).select("id");
   return (data ?? []).map((row) => String(row.id));
 }
-export function getHomePhotos() {
+export async function getHomePhotos() {
+  "use cache";
   return supabase
     .from("photos")
     .select(
@@ -53,7 +56,9 @@ export function getHomePhotos() {
     )
     .order("created_at", { ascending: false });
 }
-export function getPhotoById(id: string) {
+export async function getPhotoById(id: string) {
+  "use cache";
+  cacheTag(`photo-${id}`, "photos");
   return supabase
     .from("photos")
     .select(
@@ -62,11 +67,12 @@ export function getPhotoById(id: string) {
     .eq("id", id)
     .single();
 }
-function getPhotosForEntity(
+async function getPhotosForEntity(
   junction: PhotoJunction,
   entityId: string | number,
   ascending = false,
 ) {
+  "use cache";
   return supabase
     .from("photos")
     .select(
@@ -87,52 +93,60 @@ export function getPhotosForStory(storyId: string) {
 export function getPhotosForCalendarMonth(monthIndex: number) {
   return getPhotosForEntity(CALENDAR_JUNCTION, monthIndex);
 }
-export function getCollectionById(id: string) {
+export async function getCollectionById(id: string) {
+  "use cache";
   return supabase
     .from("collections")
     .select("title, description")
     .eq("id", id)
     .single();
 }
-export function getRuleCollectionById(id: string) {
+export async function getRuleCollectionById(id: string) {
+  "use cache";
   return supabase
     .from("rule_collections")
     .select("title, description")
     .eq("id", id)
     .single();
 }
-export function getCalendarMonthById(monthIndex: number) {
+export async function getCalendarMonthById(monthIndex: number) {
+  "use cache";
   return supabase
     .from("calendar_collections")
     .select("title, description")
     .eq("id", monthIndex)
     .single();
 }
-export function getCuratedCollections() {
+export async function getCuratedCollections() {
+  "use cache";
   return supabase
     .from("collections")
     .select("*, photos!photo_collections(id, cloudinary_url)")
     .order("created_at", { ascending: false });
 }
-export function getRuleCollectionsList() {
+export async function getRuleCollectionsList() {
+  "use cache";
   return supabase
     .from("rule_collections")
     .select("*, photos!photo_rule_collections(id, cloudinary_url)")
     .order("created_at", { ascending: false });
 }
-export function getCalendarCollectionsList() {
+export async function getCalendarCollectionsList() {
+  "use cache";
   return supabase
     .from("calendar_collections")
     .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
     .order("id", { ascending: true });
 }
-export function getStoriesWithPhotos() {
+export async function getStoriesWithPhotos() {
+  "use cache";
   return supabase
     .from("stories")
     .select("*, photos!photo_stories(id, cloudinary_url)")
     .order("created_at", { ascending: false });
 }
-export function getStoryById(id: string) {
+export async function getStoryById(id: string) {
+  "use cache";
   return supabase
     .from("stories")
     .select("id, title, created_at, content")

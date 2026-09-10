@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cache } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
@@ -14,18 +13,10 @@ import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("calendar_collections");
   return ids.map((id) => ({ id }));
 }
-const getCalendarMonth = cache(async (monthIndex: number) => {
-  const [{ data: collection }, { data: photos }] = await Promise.all([
-    getCalendarMonthById(monthIndex),
-    getPhotosForCalendarMonth(monthIndex),
-  ]);
-  return { collection, photos: photos ?? [] };
-});
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
@@ -33,13 +24,16 @@ export async function generateMetadata({
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
     return { title: "Month Not Found" };
-  const { collection, photos } = await getCalendarMonth(monthIndex);
+  const [{ data: collection }, { data: photos }] = await Promise.all([
+    getCalendarMonthById(monthIndex),
+    getPhotosForCalendarMonth(monthIndex),
+  ]);
   if (!collection) return { title: "Month Not Found" };
   return buildPageMetadata({
     title: collection.title,
     description: collection.description || undefined,
     path: `/collections/calendar/${id}`,
-    imageUrl: photos[0]?.cloudinary_url,
+    imageUrl: photos?.[0]?.cloudinary_url,
   });
 }
 export default async function CalendarMonthPage({
@@ -49,8 +43,11 @@ export default async function CalendarMonthPage({
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
     return <EmptyState description="Invalid month requested." />;
-  const { collection, photos: monthPhotos } =
-    await getCalendarMonth(monthIndex);
+  const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
+    getCalendarMonthById(monthIndex),
+    getPhotosForCalendarMonth(monthIndex),
+  ]);
+  const monthPhotos = rawPhotos ?? [];
   if (!collection) return <EmptyState description="Month not found." />;
   const groupedByYear = new Map<number, Map<string, Photo[]>>();
   for (const photo of monthPhotos) {

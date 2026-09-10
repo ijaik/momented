@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   description: "Read the stories behind each captured moment on Momented.",
   alternates: { canonical: "/stories" },
 };
-export const revalidate = 3600;
 export default async function StoriesPage() {
   const { data: stories, error } = await getStoriesWithPhotos();
   if (error)

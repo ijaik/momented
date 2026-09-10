@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cache } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
@@ -13,36 +12,35 @@ import {
 import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import type { PageProps } from "@/types";
-export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("collections");
   return ids.map((id) => ({ id }));
 }
-const getCollection = cache(async (id: string) => {
-  const [{ data: collection }, { data: photos }] = await Promise.all([
-    getCollectionById(id),
-    getPhotosForCollection(id),
-  ]);
-  return { collection, photos: photos ?? [] };
-});
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  const { collection, photos } = await getCollection(id);
+  const [{ data: collection }, { data: photos }] = await Promise.all([
+    getCollectionById(id),
+    getPhotosForCollection(id),
+  ]);
   if (!collection) return { title: "Collection Not Found" };
   return buildPageMetadata({
     title: collection.title,
     description: collection.description || undefined,
     path: `/collections/${id}`,
-    imageUrl: photos[0]?.cloudinary_url,
+    imageUrl: photos?.[0]?.cloudinary_url,
   });
 }
 export default async function SingleCollectionPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  const { collection, photos } = await getCollection(id);
+  const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
+    getCollectionById(id),
+    getPhotosForCollection(id),
+  ]);
+  const photos = rawPhotos ?? [];
   if (!collection) return <EmptyState description="Collection not found." />;
   const url = `${siteConfig.url}/collections/${id}`;
   return (

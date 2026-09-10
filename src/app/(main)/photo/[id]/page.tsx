@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { cache } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
 import InfoItem from "@/components/photos/InfoItem";
 import ShareButton from "@/components/photos/ShareButton";
@@ -14,20 +13,15 @@ import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-export const revalidate = 3600;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("photos");
   return ids.map((id) => ({ id }));
 }
-const getPhoto = cache(async (id: string) => {
-  const { data } = await getPhotoById(id);
-  return data;
-});
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  const photo = await getPhoto(id);
+  const { data: photo } = await getPhotoById(id);
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title || "Photography Gallery";
   const description = photo.description
@@ -44,7 +38,7 @@ export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  const photo = await getPhoto(id);
+  const { data: photo } = await getPhotoById(id);
   if (!photo) return <EmptyState description="Photo not found." />;
   const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(

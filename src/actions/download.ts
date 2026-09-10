@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath, updateTag } from "next/cache";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import { getAdminDb } from "@/lib/db/supabase-admin";
@@ -29,18 +30,26 @@ export async function incrementDownload(photoId: string): Promise<number> {
     console.error("Increment downloads error:", error);
     throw new Error("Could not update download count");
   }
+  updateTag(`photo-${photoId}`);
+  revalidatePath(`/photo/${photoId}`);
   return data as number;
 }
-export async function incrementShare(photoId: string | number): Promise<void> {
-  assertValidPhotoId(String(photoId));
+export async function incrementShare(
+  photoId: string | number,
+): Promise<number> {
+  const idStr = String(photoId);
+  assertValidPhotoId(idStr);
   if (await isStatRateLimited("share"))
     throw new Error("Rate limit exceeded. Try again later.");
   const db = getAdminDb();
-  const { error } = await db.rpc("increment_shares", {
-    row_id: String(photoId),
+  const { data, error } = await db.rpc("increment_shares", {
+    row_id: idStr,
   });
   if (error) {
     console.error("Increment shares error:", error);
     throw new Error("Could not update share count");
   }
+  updateTag(`photo-${idStr}`);
+  revalidatePath(`/photo/${idStr}`);
+  return data as number;
 }

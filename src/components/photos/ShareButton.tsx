@@ -1,7 +1,7 @@
 "use client";
+import { Share2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useRef, useState } from "react";
-import { Icons } from "@/components/ui/Icons";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const ShareDialog = dynamic(() => import("./ShareDialog"), { ssr: false });
 export interface ShareButtonProps {
@@ -17,10 +17,17 @@ export default function ShareButton({
   shareCount = 0,
 }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [count, setCount] = useState(shareCount);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    setCount(shareCount);
+  }, [shareCount]);
   const close = useCallback(() => {
     setIsOpen(false);
     triggerRef.current?.focus();
+  }, []);
+  const handleShareSuccess = useCallback((newCount?: number) => {
+    setCount((prev) => (typeof newCount === "number" ? newCount : prev + 1));
   }, []);
   return (
     <>
@@ -33,14 +40,14 @@ export default function ShareButton({
         className="inline-flex w-full items-center justify-between gap-3 rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85"
       >
         <span className="inline-flex items-center gap-2">
-          <Icons.Share className="h-4 w-4" />
+          <Share2 size={16} aria-hidden="true" />
           Share
         </span>
         <span
           aria-hidden="true"
           className="text-[13px] tabular-nums opacity-60"
         >
-          {shareCount}
+          {count}
         </span>
       </button>
       {isOpen && (
@@ -49,6 +56,7 @@ export default function ShareButton({
           photoId={photoId}
           imageUrl={imageUrl}
           onClose={close}
+          onShareSuccess={handleShareSuccess}
         />
       )}
     </>

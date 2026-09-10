@@ -9,13 +9,49 @@ import {
 } from "@/lib/db/supabase-admin";
 import type { TableName } from "@/types/database.types";
 
+const MAX_TITLE_LENGTH = 200;
+const MAX_DESCRIPTION_LENGTH = 5_000;
+const MAX_CONTENT_LENGTH = 50_000;
+const MAX_PHOTO_IDS = 500;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function assertValidUUID(id: string | number, label = "ID"): void {
+  if (typeof id === "number") return;
+  if (typeof id !== "string" || !UUID_PATTERN.test(id))
+    throw new Error(`Invalid ${label}.`);
+}
+function assertBoundedString(
+  value: string,
+  maxLength: number,
+  label: string,
+): void {
+  if (value.length > maxLength)
+    throw new Error(`${label} exceeds maximum length of ${maxLength}.`);
+}
+function assertBoundedArray(
+  arr: unknown[],
+  maxLength: number,
+  label: string,
+): void {
+  if (arr.length > maxLength)
+    throw new Error(`${label} exceeds maximum of ${maxLength} items.`);
+}
 const revalidateAll = () => revalidatePath("/", "layout");
 function parseFormData(formData: FormData) {
+  const title = (formData.get("title") as string) || "";
+  const description = (formData.get("description") as string) || "";
+  const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
+  const photoIds = formData.getAll("photo_ids").map(String);
+  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
+  assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
+  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
+  assertBoundedArray(photoIds, MAX_PHOTO_IDS, "Photo IDs");
+  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
   return {
-    title: (formData.get("title") as string) || "",
-    description: (formData.get("description") as string) || "",
-    cover_photo_id: (formData.get("cover_photo_id") as string) || null,
-    photoIds: formData.getAll("photo_ids").map(String),
+    title,
+    description,
+    cover_photo_id: coverPhotoRaw,
+    photoIds,
   };
 }
 async function deleteItem(
@@ -23,6 +59,7 @@ async function deleteItem(
   id: string | number,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
+  assertValidUUID(id, "Item ID");
   const db = getAdminDb();
   const { error } = await db
     .from(table)
@@ -67,6 +104,11 @@ async function createItem(
   const db = getAdminDb();
   const { title, cover_photo_id, photoIds } = parseFormData(formData);
   const contentValue = (formData.get(spec.contentField) as string) || "";
+  const maxLen =
+    spec.contentField === "content"
+      ? MAX_CONTENT_LENGTH
+      : MAX_DESCRIPTION_LENGTH;
+  assertBoundedString(contentValue, maxLen, spec.contentField);
   const { data, error } = await db
     .from(spec.table)
     .insert([
@@ -98,10 +140,16 @@ async function editItem(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
+  assertValidUUID(id, "Item ID");
   const spec = ITEM_SPECS[kind];
   const db = getAdminDb();
   const { title, cover_photo_id, photoIds } = parseFormData(formData);
   const contentValue = (formData.get(spec.contentField) as string) || "";
+  const maxLen =
+    spec.contentField === "content"
+      ? MAX_CONTENT_LENGTH
+      : MAX_DESCRIPTION_LENGTH;
+  assertBoundedString(contentValue, maxLen, spec.contentField);
   const { error } = await db
     .from(spec.table)
     .update({
@@ -124,23 +172,43 @@ async function editItem(
   revalidateAll();
   return { success: true };
 }
-export async function getPhotosAction() {
+interface AdminPhotoView {
+  id: string | number;
+  title: string;
+  description: string | null;
+  cloudinary_url: string;
+  cloudinary_public_id: string;
+  collections: { id: string | number; title: string }[];
+  rules: { id: string | number; title: string }[];
+  stories: { id: string | number; title: string }[];
+}
+export async function getPhotosAction(): Promise<AdminPhotoView[]> {
   await verifyAdminSession();
   const db = getAdminDb();
   const { data, error } = await db
     .from("photos")
     .select(
-      "*, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
+      "id, title, description, cloudinary_url, cloudinary_public_id, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return data;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    cloudinary_url: row.cloudinary_url,
+    cloudinary_public_id: row.cloudinary_public_id,
+    collections: row.collections ?? [],
+    rules: row.rules ?? [],
+    stories: row.stories ?? [],
+  }));
 }
 export async function deletePhotoAction(
   id: string | number,
   publicId?: string,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
+  assertValidUUID(id, "Photo ID");
   const db = getAdminDb();
   const { error } = await db
     .from("photos")
@@ -166,6 +234,15 @@ export async function editPhotoAction(
   ruleIds: string[],
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
+  assertValidUUID(id, "Photo ID");
+  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
+  assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
+  assertBoundedArray(collectionIds, MAX_PHOTO_IDS, "Collection IDs");
+  assertBoundedArray(storyIds, MAX_PHOTO_IDS, "Story IDs");
+  assertBoundedArray(ruleIds, MAX_PHOTO_IDS, "Rule IDs");
+  for (const cid of collectionIds) assertValidUUID(cid, "Collection ID");
+  for (const sid of storyIds) assertValidUUID(sid, "Story ID");
+  for (const rid of ruleIds) assertValidUUID(rid, "Rule ID");
   const db = getAdminDb();
   const { error } = await db
     .from("photos")
@@ -194,7 +271,18 @@ export async function editPhotoAction(
   revalidateAll();
   return { success: true };
 }
-async function getItemsAction(kind: keyof typeof ITEM_SPECS) {
+interface AdminItemView {
+  id: string | number;
+  title: string;
+  description?: string | null;
+  content?: string | null;
+  cover_photo_id?: string | number | null;
+  photos: { id: string | number; cloudinary_url: string; title?: string }[];
+  [key: string]: unknown;
+}
+async function getItemsAction(
+  kind: keyof typeof ITEM_SPECS,
+): Promise<AdminItemView[]> {
   await verifyAdminSession();
   const spec = ITEM_SPECS[kind];
   const db = getAdminDb();
@@ -203,7 +291,23 @@ async function getItemsAction(kind: keyof typeof ITEM_SPECS) {
     .select(`*, photos!${spec.junction?.table}(id, cloudinary_url, title)`)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    [spec.contentField]: row[spec.contentField as keyof typeof row] ?? null,
+    cover_photo_id: row.cover_photo_id ?? null,
+    photos: (
+      (row.photos ?? []) as {
+        id: string | number;
+        cloudinary_url: string;
+        title: string | null;
+      }[]
+    ).map((p) => ({
+      id: p.id,
+      cloudinary_url: p.cloudinary_url,
+      title: p.title ?? undefined,
+    })),
+  }));
 }
 export async function getCollectionsAction() {
   return getItemsAction("collection");
@@ -262,7 +366,16 @@ export async function deleteRuleCollectionAction(
 ): Promise<{ success: boolean }> {
   return deleteItem("rule_collections", id);
 }
-export async function getCalendarCollectionsAction() {
+interface AdminCalendarView {
+  id: number;
+  title: string;
+  description: string | null;
+  cover_photo_id: string | null;
+  photos: { id: string | number; cloudinary_url: string; title?: string }[];
+}
+export async function getCalendarCollectionsAction(): Promise<
+  AdminCalendarView[]
+> {
   await verifyAdminSession();
   const db = getAdminDb();
   const { data, error } = await db
@@ -270,15 +383,31 @@ export async function getCalendarCollectionsAction() {
     .select("*, photos!photo_calendar_collections(id, cloudinary_url, title)")
     .order("id", { ascending: true });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    cover_photo_id: row.cover_photo_id,
+    photos: (
+      (row.photos ?? []) as {
+        id: string | number;
+        cloudinary_url: string;
+        title: string | null;
+      }[]
+    ).map((p) => ({
+      id: p.id,
+      cloudinary_url: p.cloudinary_url,
+      title: p.title ?? undefined,
+    })),
+  }));
 }
 export async function editCalendarCollectionAction(
   id: string | number,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const db = getAdminDb();
   const { title, description, cover_photo_id } = parseFormData(formData);
+  const db = getAdminDb();
   const { error } = await db
     .from("calendar_collections")
     .update({ title, description, cover_photo_id })

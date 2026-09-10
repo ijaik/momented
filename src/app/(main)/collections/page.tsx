@@ -9,7 +9,7 @@ import {
   getRuleCollectionsList,
 } from "@/lib/db/queries";
 import type { BaseCollection, PageProps } from "@/types";
-export const revalidate = 3600;
+export const instant = false;
 function resolveTab(tab?: string): keyof typeof TAB_TITLES {
   return tab === "calendar"
     ? "calendar"

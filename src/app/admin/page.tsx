@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Admin",
   robots: { index: false, follow: false },
 };
-export const dynamic = "force-dynamic";
+export const instant = false;
 export default async function AdminDashboard() {
   if (!(await isAdminAuthed())) redirect("/admin/login");
   const [photos, collections, rules, stories, calendars] = await Promise.all([

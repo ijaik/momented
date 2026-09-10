@@ -1,8 +1,8 @@
 "use client";
+import { Check, Copy, Share2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
-import { Icons } from "@/components/ui/Icons";
 import { copyText, imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
   title?: string;
@@ -10,6 +10,7 @@ export interface ShareDialogProps {
   url?: string;
   imageUrl?: string;
   onClose: () => void;
+  onShareSuccess?: (count?: number) => void;
 }
 export default function ShareDialog({
   title = "",
@@ -17,6 +18,7 @@ export default function ShareDialog({
   url,
   imageUrl,
   onClose,
+  onShareSuccess,
 }: ShareDialogProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
@@ -28,10 +30,11 @@ export default function ShareDialog({
   const focusablesRef = useRef<HTMLElement[] | null>(null);
   const shareFileRef = useRef<File | null | undefined>(undefined);
   const sharePromiseRef = useRef<Promise<File | null> | null>(null);
-  const shareUrl = useMemo(() => {
+  const hasTrackedRef = useRef(false);
+  const shareUrl = (() => {
     if (typeof window === "undefined") return url || "";
     return new URL(url || window.location.href, window.location.origin).href;
-  }, [url]);
+  })();
   const shareText = title
     ? `Check out "${title}" on Momented\n\nVisit the link for full resolution & downloads.`
     : "Check out Momented\n\nVisit the link for full resolution & downloads.";
@@ -79,15 +82,17 @@ export default function ShareDialog({
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     };
   }, [close]);
-  const trackShare = async () => {
-    if (!photoId) return;
+  const trackShare = useCallback(async () => {
+    if (!photoId || hasTrackedRef.current) return;
+    hasTrackedRef.current = true;
     try {
-      await incrementShare(photoId);
+      const updatedCount = await incrementShare(photoId);
+      onShareSuccess?.(updatedCount);
       router.refresh();
     } catch (err) {
       console.error("Failed to track share:", err);
     }
-  };
+  }, [photoId, onShareSuccess, router]);
   const getShareFile = useCallback(async (): Promise<File | null> => {
     if (!imageUrl) return null;
     if (shareFileRef.current !== undefined) return shareFileRef.current;
@@ -114,6 +119,7 @@ export default function ShareDialog({
       setCopied(true);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+      await trackShare();
     } catch {
       setError("Couldn't copy the link — please try again.");
     }
@@ -206,7 +212,7 @@ export default function ShareDialog({
             aria-label="Close share dialog"
             className="-mr-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-soft hover:text-ink"
           >
-            <Icons.Close className="h-5 w-5" />
+            <X size={20} aria-hidden="true" />
           </button>
         </div>
         <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
@@ -218,7 +224,7 @@ export default function ShareDialog({
                 disabled={isSharing}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-solid px-5 py-3 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 disabled:opacity-60"
               >
-                <Icons.Share className="h-4 w-4" />
+                <Share2 size={16} aria-hidden="true" />
                 {isSharing ? "Preparing…" : "Send the photograph"}
               </button>
               <p className="mt-2 text-center text-[13px] text-muted">
@@ -249,12 +255,12 @@ export default function ShareDialog({
               >
                 {copied ? (
                   <>
-                    <Icons.Copied className="h-4 w-4" />
+                    <Check size={16} aria-hidden="true" />
                     Copied
                   </>
                 ) : (
                   <>
-                    <Icons.Copy className="h-4 w-4" />
+                    <Copy size={16} aria-hidden="true" />
                     Copy
                   </>
                 )}

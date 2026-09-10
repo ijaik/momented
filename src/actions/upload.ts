@@ -72,6 +72,10 @@ const CLOUDINARY_PUBLIC_ID_PATTERN = /^[A-Za-z0-9_/-]{1,200}$/;
 const MAX_TITLE_LENGTH = 200;
 const MAX_DESCRIPTION_LENGTH = 5_000;
 const MAX_ARTIST_LENGTH = 200;
+const MAX_DIMENSION = 30_000;
+const MAX_JUNCTION_IDS = 500;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function assertSafeAsset(data: SavePhotoPayload): void {
   if (
     typeof data.secure_url !== "string" ||
@@ -93,9 +97,18 @@ function assertSafeAsset(data: SavePhotoPayload): void {
     !Number.isInteger(data.width) ||
     !Number.isInteger(data.height) ||
     data.width <= 0 ||
-    data.height <= 0
+    data.height <= 0 ||
+    data.width > MAX_DIMENSION ||
+    data.height > MAX_DIMENSION
   )
     throw new Error("Invalid image dimensions.");
+  for (const arr of [data.collectionIds, data.ruleIds, data.storyIds]) {
+    if (arr && arr.length > MAX_JUNCTION_IDS)
+      throw new Error("Too many junction IDs.");
+    for (const id of arr ?? []) {
+      if (!UUID_PATTERN.test(id)) throw new Error("Invalid junction ID.");
+    }
+  }
 }
 export async function savePhotoToDbAction(
   data: SavePhotoPayload,
