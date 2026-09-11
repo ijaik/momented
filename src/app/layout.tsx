@@ -91,12 +91,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       className={`${leckerli.variable} ${fraunces.variable} ${schibsted.variable}`}
     >
-      <head>
-        <meta
-          name="strix-verification"
-          content="strix-verify-ff51040ef596f6cc9386627e96e50f05"
-        />
-      </head>
       <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
         <a
           href="#main-content"
