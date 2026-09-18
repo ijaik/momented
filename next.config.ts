@@ -1,13 +1,11 @@
 import type { NextConfig } from "next";
-
 const nextConfig: NextConfig = {
   cacheComponents: true,
-  reactCompiler: true,
   devIndicators: false,
   poweredByHeader: false,
   images: {
     loader: "custom",
-    loaderFile: "./src/lib/cloudinary/cloudinaryLoader.ts",
+    loaderFile: "./lib/cloudinary/cloudinaryLoader.ts",
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
   },
   async headers() {
