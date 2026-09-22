@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "check": "bun run lint && bun run typecheck",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check && eslint",
+    "lint:fix": "biome check --write && eslint --fix",
+    "lint:biome": "biome check",
+    "lint:eslint": "eslint",
+    "format": "biome format --write",
+    "format:check": "biome format"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
@@ -23,10 +30,12 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
