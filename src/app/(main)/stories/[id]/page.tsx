@@ -22,9 +22,12 @@ export async function generateMetadata({
     getPhotosForStory(id),
   ]);
   if (!story) return { title: "Story Not Found" };
+  const description =
+    (story.content ?? "").replace(/\s+/g, " ").trim().slice(0, 155) ||
+    `Read "${story.title}" on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: story.title,
-    description: story.content.replace(/\s+/g, " ").trim().slice(0, 155),
+    description,
     path: `/stories/${id}`,
     imageUrl: photos?.[0]?.cloudinary_url,
     type: "article",

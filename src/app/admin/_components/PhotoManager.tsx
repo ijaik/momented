@@ -45,13 +45,34 @@ export default function PhotoManager({
   const [editingPhotoId, setEditingPhotoId] = useState<string | number | null>(
     null,
   );
-  const [isPending, startTransition] = useTransition();
+  const [deletingPhotoId, setDeletingPhotoId] = useState<
+    string | number | null
+  >(null);
+  const [isUploadPending, startUploadTransition] = useTransition();
+  const [isSavePending, startSaveTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
+  function handleDeletePhoto(id: string | number, publicId?: string) {
+    if (
+      !confirm("Are you sure you want to permanently delete this photograph?")
+    )
+      return;
+    setDeletingPhotoId(id);
+    startDeleteTransition(async () => {
+      try {
+        await deletePhotoAction(id, publicId);
+      } catch {
+        alert("Failed to delete photograph.");
+      } finally {
+        setDeletingPhotoId(null);
+      }
+    });
+  }
   async function handleUpload(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("Preparing upload…");
     const form = event.currentTarget;
     const formDataNative = new FormData(form);
-    startTransition(async () => {
+    startUploadTransition(async () => {
       try {
         const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
         const file = fileInput?.files?.[0];
@@ -106,7 +127,7 @@ export default function PhotoManager({
   function saveEdit(event: SubmitEvent<HTMLFormElement>, id: string | number) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    startTransition(async () => {
+    startSaveTransition(async () => {
       try {
         await editPhotoAction(
           id,
@@ -122,7 +143,7 @@ export default function PhotoManager({
       }
     });
   }
-  const isBusy = isPending || Boolean(status);
+  const isBusy = isUploadPending || Boolean(status);
   return (
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <div>
@@ -318,7 +339,7 @@ export default function PhotoManager({
                   </div>
                   <div className="flex items-center gap-3">
                     <SubmitButton
-                      isLoading={isPending}
+                      isLoading={isSavePending}
                       text="Save changes"
                       loadingText="Saving…"
                     />
@@ -355,11 +376,12 @@ export default function PhotoManager({
                       type="button"
                       variant="danger"
                       size="sm"
+                      disabled={deletingPhotoId === photo.id || isDeletePending}
                       onClick={() =>
-                        deletePhotoAction(photo.id, photo.cloudinary_public_id)
+                        handleDeletePhoto(photo.id, photo.cloudinary_public_id)
                       }
                     >
-                      Delete
+                      {deletingPhotoId === photo.id ? "Deleting…" : "Delete"}
                     </Button>
                   </div>
                 </div>

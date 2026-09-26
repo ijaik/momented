@@ -46,7 +46,6 @@ function getStatLimiter(r: Redis): Ratelimit {
     _statLimiter = new Ratelimit({
       redis: r,
       limiter: Ratelimit.slidingWindow(STAT_MAX_REQUESTS, "1 h"),
-      ephemeralCache: new Map(),
       prefix: "rl:stat",
     });
   }
@@ -57,7 +56,6 @@ function getLoginLimiter(r: Redis): Ratelimit {
     _loginLimiter = new Ratelimit({
       redis: r,
       limiter: Ratelimit.fixedWindow(LOGIN_MAX_FAILURES, "15 m"),
-      ephemeralCache: new Map(),
       prefix: "rl:login",
     });
   }

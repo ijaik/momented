@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 export interface ChecklistPhoto {
   id: string | number;
   cloudinary_url: string;
@@ -23,19 +23,6 @@ export default function PhotoChecklist({
   const [coverId, setCoverId] = useState<string | number | null>(
     initialCoverId || linkedPhotos[0]?.id || null,
   );
-  const prevLinkedRef = useRef(linkedPhotos);
-  const prevCoverRef = useRef(initialCoverId);
-  useEffect(() => {
-    if (
-      prevLinkedRef.current !== linkedPhotos ||
-      prevCoverRef.current !== initialCoverId
-    ) {
-      prevLinkedRef.current = linkedPhotos;
-      prevCoverRef.current = initialCoverId;
-      setSelectedIds(linkedPhotos.map((p) => p.id));
-      setCoverId(initialCoverId || linkedPhotos[0]?.id || null);
-    }
-  }, [linkedPhotos, initialCoverId]);
   const handleCheckboxChange = (
     photoId: string | number,
     isChecked: boolean,
@@ -52,6 +39,11 @@ export default function PhotoChecklist({
   };
   return (
     <div className="flex flex-col gap-3">
+      <input
+        type="hidden"
+        name="cover_photo_id"
+        value={coverId !== null ? String(coverId) : ""}
+      />
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-ink">
           Pick the photographs
@@ -109,19 +101,16 @@ export default function PhotoChecklist({
                       {p.title}
                     </span>
                     {isChecked && !isCover && (
-                      <label className="mt-1 flex cursor-pointer items-center gap-1.5">
-                        <input
-                          type="radio"
-                          name="cover_photo_id"
-                          value={p.id}
-                          checked={isCover}
-                          onChange={() => setCoverId(p.id)}
-                          className="h-3.5 w-3.5 cursor-pointer accent-solid"
-                        />
+                      <button
+                        type="button"
+                        onClick={() => setCoverId(p.id)}
+                        className="mt-1 flex cursor-pointer items-center gap-1.5 text-left"
+                      >
+                        <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-muted" />
                         <span className="text-[11px] text-muted">
                           Use as cover
                         </span>
-                      </label>
+                      </button>
                     )}
                   </div>
                 </div>

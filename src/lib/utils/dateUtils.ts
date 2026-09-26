@@ -26,7 +26,7 @@ export function getPhotoDate(photo: {
   const dateObj =
     parsePhotoDate(photo.taken_at) ||
     parsePhotoDate(photo.created_at) ||
-    new Date();
+    new Date(0);
   const year = dateObj.getUTCFullYear();
   const month = dateObj.getUTCMonth() + 1;
   const day = dateObj.getUTCDate();

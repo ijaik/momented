@@ -57,7 +57,25 @@ export default function ItemManager<T extends BaseItem>({
 }: ItemManagerProps<T>) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | number | null>(null);
   const [isPending, startTransition] = useTransition();
+  function handleDelete(id: string | number) {
+    if (
+      !confirm(`Are you sure you want to delete this ${title.toLowerCase()}?`)
+    ) {
+      return;
+    }
+    setDeletingId(id);
+    startTransition(async () => {
+      try {
+        await deleteAction(id);
+      } catch {
+        alert(`Failed to delete ${title.toLowerCase()}.`);
+      } finally {
+        setDeletingId(null);
+      }
+    });
+  }
   function handleCreate(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -131,7 +149,7 @@ export default function ItemManager<T extends BaseItem>({
               placeholder={descPlaceholder}
             />
           </div>
-          <PhotoChecklist photos={allPhotos} />
+          <PhotoChecklist key="new" photos={allPhotos} />
           <div className="flex items-center gap-3">
             <SubmitButton
               isLoading={isPending}
@@ -189,6 +207,7 @@ export default function ItemManager<T extends BaseItem>({
                   />
                 </div>
                 <PhotoChecklist
+                  key={item.id}
                   photos={allPhotos}
                   linkedPhotos={item.photos}
                   initialCoverId={item.cover_photo_id}
@@ -228,9 +247,10 @@ export default function ItemManager<T extends BaseItem>({
                       type="button"
                       variant="danger"
                       size="sm"
-                      onClick={() => deleteAction(item.id)}
+                      disabled={deletingId === item.id || isPending}
+                      onClick={() => handleDelete(item.id)}
                     >
-                      Delete
+                      {deletingId === item.id ? "Deleting…" : "Delete"}
                     </Button>
                   </div>
                 </div>

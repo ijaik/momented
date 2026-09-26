@@ -1,28 +1,26 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState } from "react";
 import { loginAction } from "@/actions/auth";
 import { FormInput, SubmitButton } from "@/app/admin/_components/AdminForms";
+
+interface LoginState {
+  success: boolean;
+  error?: string;
+}
 export default function LoginForm() {
-  const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  async function handleSubmit(event: {
-    preventDefault: () => void;
-    currentTarget: HTMLFormElement | undefined;
-  }) {
-    event.preventDefault();
-    setIsLoading(true);
-    setError("");
-    const formData = new FormData(event.currentTarget);
+  async function handleLogin(
+    _prevState: LoginState,
+    formData: FormData,
+  ): Promise<LoginState> {
     const result = await loginAction(formData);
-    if (result.success) {
-      router.push("/admin");
-    } else {
-      setError(result.error || "An unexpected error occurred.");
-      setIsLoading(false);
-    }
+    if (result.success) router.push("/admin");
+    return result;
   }
+  const [state, formAction, isPending] = useActionState(handleLogin, {
+    success: false,
+  });
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-16">
       <div className="w-full max-w-sm">
@@ -35,11 +33,7 @@ export default function LoginForm() {
         <p className="mt-2 text-center text-sm text-muted">
           Enter the admin password to continue.
         </p>
-        <form
-          method="POST"
-          onSubmit={handleSubmit}
-          className="mt-8 flex flex-col gap-5"
-        >
+        <form action={formAction} className="mt-8 flex flex-col gap-5">
           <div>
             <label
               htmlFor="admin-password"
@@ -57,17 +51,17 @@ export default function LoginForm() {
             />
           </div>
           <SubmitButton
-            isLoading={isLoading}
+            isLoading={isPending}
             loadingText="Verifying…"
             text="Log in"
           />
         </form>
-        {error && (
+        {state.error && (
           <p
             role="alert"
             className="mt-4 rounded-md bg-danger-soft px-3 py-2.5 text-center text-sm font-medium text-danger"
           >
-            {error}
+            {state.error}
           </p>
         )}
       </div>

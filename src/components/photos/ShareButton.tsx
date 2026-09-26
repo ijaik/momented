@@ -1,7 +1,7 @@
 "use client";
 import { Share2 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useOptimistic, useRef, useState, useTransition } from "react";
 
 const ShareDialog = dynamic(() => import("./ShareDialog"), { ssr: false });
 export interface ShareButtonProps {
@@ -17,22 +17,21 @@ export default function ShareButton({
   shareCount = 0,
 }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [count, setCount] = useState(shareCount);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const prevShareCountRef = useRef(shareCount);
-  useEffect(() => {
-    if (prevShareCountRef.current !== shareCount) {
-      prevShareCountRef.current = shareCount;
-      setCount(shareCount);
-    }
-  }, [shareCount]);
-  const close = useCallback(() => {
+  const [, startTransition] = useTransition();
+  const [optimisticCount, setOptimisticCount] = useOptimistic(
+    shareCount,
+    (current, increment: number) => current + increment,
+  );
+  const close = () => {
     setIsOpen(false);
     triggerRef.current?.focus();
-  }, []);
-  const handleShareSuccess = useCallback((newCount?: number) => {
-    setCount((prev) => (typeof newCount === "number" ? newCount : prev + 1));
-  }, []);
+  };
+  const handleShareSuccess = () => {
+    startTransition(() => {
+      setOptimisticCount(1);
+    });
+  };
   return (
     <>
       <button
@@ -51,7 +50,7 @@ export default function ShareButton({
           aria-hidden="true"
           className="text-[13px] tabular-nums opacity-60"
         >
-          {count}
+          {optimisticCount}
         </span>
       </button>
       {isOpen && (

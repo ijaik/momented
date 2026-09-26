@@ -1,6 +1,6 @@
 "use client";
 import { Download } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { incrementDownload } from "@/actions/download";
 
 interface DownloadButtonProps {
@@ -11,52 +11,47 @@ interface DownloadButtonProps {
 export default function DownloadButton({
   photoId,
   cloudinaryUrl,
-  downloadCount: initialCount,
+  downloadCount,
 }: DownloadButtonProps) {
-  const [count, setCount] = useState(initialCount);
   const [isDownloading, setIsDownloading] = useState(false);
-  const prevCountRef = useRef(initialCount);
-  useEffect(() => {
-    if (prevCountRef.current !== initialCount) {
-      prevCountRef.current = initialCount;
-      setCount(initialCount);
-    }
-  }, [initialCount]);
+  const [, startTransition] = useTransition();
+  const [optimisticCount, setOptimisticCount] = useOptimistic(
+    downloadCount,
+    (current, increment: number) => current + increment,
+  );
   const handleDownload = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
-    try {
+    startTransition(async () => {
+      setOptimisticCount(1);
       try {
-        const updatedCount = await incrementDownload(String(photoId));
-        setCount(updatedCount);
+        await incrementDownload(String(photoId));
       } catch (countError) {
         console.warn("Failed to record download count:", countError);
       }
-      try {
-        const response = await fetch(cloudinaryUrl);
-        if (!response.ok)
-          throw new Error(`Download failed with status ${response.status}`);
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `momented-${photoId}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } catch {
-        const link = document.createElement("a");
-        link.href = cloudinaryUrl;
-        link.download = `momented-${photoId}.jpg`;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    } catch (error) {
-      console.error("Download failed:", error);
+    });
+    try {
+      const response = await fetch(cloudinaryUrl);
+      if (!response.ok)
+        throw new Error(`Download failed with status ${response.status}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `momented-${photoId}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      const link = document.createElement("a");
+      link.href = cloudinaryUrl;
+      link.download = `momented-${photoId}.jpg`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } finally {
       setIsDownloading(false);
     }
@@ -73,7 +68,7 @@ export default function DownloadButton({
         {isDownloading ? "Downloading…" : "High resolution"}
       </span>
       <span aria-hidden="true" className="text-[13px] tabular-nums text-faint">
-        {count}
+        {optimisticCount}
       </span>
     </button>
   );

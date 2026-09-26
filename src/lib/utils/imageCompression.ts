@@ -8,19 +8,13 @@ const fileToDataURL = (file: File): Promise<string> =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
-const dataURLtoFile = (
+const dataURLtoFile = async (
   dataurl: string,
   filename: string,
   mimeType: string,
-): File => {
-  const arr = dataurl.split(",");
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, { type: mimeType });
+): Promise<File> => {
+  const blob = await fetch(dataurl).then((r) => r.blob());
+  return new File([blob], filename, { type: mimeType });
 };
 export async function compressImageWithExif(
   file: File,
@@ -52,7 +46,7 @@ export async function compressImageWithExif(
         const exifBytes = dump(exifObj);
         const compressedDataURL = await fileToDataURL(compressedWithoutExif);
         const finalDataURL = insert(exifBytes, compressedDataURL);
-        return dataURLtoFile(finalDataURL, file.name, file.type);
+        return await dataURLtoFile(finalDataURL, file.name, file.type);
       }
       return compressedWithoutExif;
     } catch (manualExifError) {

@@ -15,7 +15,12 @@ export function getAdminDb(): SupabaseClient<Database> {
     throw new Error(
       "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SECRET_KEY environment variables.",
     );
-  cachedAdminDb = createClient(supabaseUrl, supabaseSecretKey);
+  cachedAdminDb = createClient(supabaseUrl, supabaseSecretKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
   return cachedAdminDb;
 }
 export async function syncJunction(
