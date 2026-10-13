@@ -49,11 +49,6 @@ export default async function PhotoDetail({
   const calendarCollections = typedPhoto.calendars || [];
   const standardCollections = typedPhoto.collections || [];
   const ruleCollections = typedPhoto.rules || [];
-  const hasCollections =
-    standardCollections.length > 0 ||
-    ruleCollections.length > 0 ||
-    calendarCollections.length > 0;
-  const hasStories = typedPhoto.stories && typedPhoto.stories.length > 0;
   const title = typedPhoto.title || "Untitled";
   const references: ReferenceLink[] = [
     ...standardCollections.map((c) => ({
@@ -73,12 +68,6 @@ export default async function PhotoDetail({
       title: c.title,
       href: `/collections/calendar/${c.id}`,
       kind: "Month",
-    })),
-    ...(typedPhoto.stories || []).map((s) => ({
-      id: s.id,
-      title: s.title,
-      href: `/stories/${s.id}`,
-      kind: "Story",
     })),
   ];
   return (
@@ -145,14 +134,8 @@ export default async function PhotoDetail({
             </dl>
           </section>
           {references.length > 0 && (
-            <section aria-label="Related collections and stories">
-              <h2 className="mb-1 text-sm font-medium text-ink">
-                {hasCollections && hasStories
-                  ? "Found in"
-                  : hasCollections
-                    ? "Part of"
-                    : "Written about in"}
-              </h2>
+            <section aria-label="Related collections">
+              <h2 className="mb-1 text-sm font-medium text-ink">Part of</h2>
               <ul className="divide-y divide-line border-y border-line last:border-b-0">
                 {references.map((ref) => (
                   <ReferenceRow key={`${ref.kind}-${ref.id}`} link={ref} />

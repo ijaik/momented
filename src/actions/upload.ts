@@ -18,7 +18,6 @@ export interface SavePhotoPayload {
   artistInput?: string;
   collectionIds?: string[];
   ruleIds?: string[];
-  storyIds?: string[];
   secure_url: string;
   public_id: string;
   width: number;
@@ -108,7 +107,7 @@ function assertSafeAsset(data: SavePhotoPayload): void {
     data.height > MAX_DIMENSION
   )
     throw new Error("Invalid image dimensions.");
-  for (const arr of [data.collectionIds, data.ruleIds, data.storyIds]) {
+  for (const arr of [data.collectionIds, data.ruleIds]) {
     if (arr && arr.length > MAX_JUNCTION_IDS)
       throw new Error("Too many junction IDs.");
     for (const id of arr ?? []) {
@@ -182,15 +181,6 @@ export async function savePhotoToDbAction(
       newPhoto.id,
       "rule_id",
       data.ruleIds ?? [],
-      { skipDelete: true },
-    ),
-    syncJunction(
-      db,
-      "photo_stories",
-      "photo_id",
-      newPhoto.id,
-      "story_id",
-      data.storyIds ?? [],
       { skipDelete: true },
     ),
   ]);

@@ -2,21 +2,15 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { getAllIds } from "@/lib/db/queries";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [photoIds, collectionIds, storyIds, ruleIds] = await Promise.all([
+  const [photoIds, collectionIds, ruleIds] = await Promise.all([
     getAllIds("photos"),
     getAllIds("collections"),
-    getAllIds("stories"),
     getAllIds("rule_collections"),
   ]);
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteConfig.url}/`, changeFrequency: "daily", priority: 1 },
     {
       url: `${siteConfig.url}/collections`,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${siteConfig.url}/stories`,
       changeFrequency: "weekly",
       priority: 0.8,
     },
@@ -52,10 +46,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     })),
     ...calendarRoutes,
-    ...storyIds.map((id) => ({
-      url: `${siteConfig.url}/stories/${id}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.6,
-    })),
   ];
 }

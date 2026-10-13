@@ -22,7 +22,6 @@ export interface PhotoItem {
   cloudinary_url: string;
   cloudinary_public_id?: string;
   collections?: { id: string | number; title: string }[];
-  stories?: { id: string | number; title: string }[];
   rules?: { id: string | number; title: string }[];
 }
 interface OptionItem {
@@ -33,13 +32,11 @@ interface PhotoManagerProps {
   photos: PhotoItem[];
   collections: OptionItem[];
   rules: OptionItem[];
-  stories: OptionItem[];
 }
 export default function PhotoManager({
   photos,
   collections,
   rules,
-  stories,
 }: PhotoManagerProps) {
   const [status, setStatus] = useState("");
   const [editingPhotoId, setEditingPhotoId] = useState<string | number | null>(
@@ -107,7 +104,6 @@ export default function PhotoManager({
           artistInput: artistInput.value,
           collectionIds: formDataNative.getAll("collection_ids").map(String),
           ruleIds: formDataNative.getAll("rule_ids").map(String),
-          storyIds: formDataNative.getAll("story_ids").map(String),
           secure_url: uploadData.secure_url,
           public_id: uploadData.public_id,
           width: uploadData.width,
@@ -134,7 +130,6 @@ export default function PhotoManager({
           formData.get("title") as string,
           formData.get("description") as string,
           formData.getAll("collection_ids").map(String),
-          formData.getAll("story_ids").map(String),
           formData.getAll("rule_ids").map(String),
         );
         setEditingPhotoId(null);
@@ -203,22 +198,6 @@ export default function PhotoManager({
               {rules?.map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.title}
-                </option>
-              ))}
-            </FormSelect>
-          </div>
-          <div>
-            <FieldLabel htmlFor="photo-stories">Stories</FieldLabel>
-            <FormSelect
-              id="photo-stories"
-              name="story_ids"
-              multiple
-              size={3}
-              className="h-auto min-h-20"
-            >
-              {stories.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.title}
                 </option>
               ))}
             </FormSelect>
@@ -316,22 +295,22 @@ export default function PhotoManager({
                       </FormSelect>
                     </div>
                     <div>
-                      <FieldLabel htmlFor={`edit-photo-stories-${photo.id}`}>
-                        Stories
+                      <FieldLabel htmlFor={`edit-photo-rules-${photo.id}`}>
+                        Rules
                       </FieldLabel>
                       <FormSelect
-                        id={`edit-photo-stories-${photo.id}`}
-                        name="story_ids"
+                        id={`edit-photo-rules-${photo.id}`}
+                        name="rule_ids"
                         multiple
                         size={4}
                         defaultValue={
-                          photo.stories?.map((s) => String(s.id)) || []
+                          photo.rules?.map((r) => String(r.id)) || []
                         }
                         className="h-auto min-h-28"
                       >
-                        {stories.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.title}
+                        {rules?.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.title}
                           </option>
                         ))}
                       </FormSelect>

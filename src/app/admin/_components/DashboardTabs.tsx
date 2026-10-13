@@ -11,35 +11,25 @@ import type { PhotoItem } from "./PhotoManager";
 const PhotoManager = dynamic(() => import("./PhotoManager"));
 const CollectionManager = dynamic(() => import("./CollectionManager"));
 const RuleManager = dynamic(() => import("./RuleManager"));
-const StoryManager = dynamic(() => import("./StoryManager"));
 const CalendarManager = dynamic(() => import("./CalendarManager"));
-type TabType = "photos" | "collections" | "rules" | "calendar" | "stories";
-const TAB_ORDER: TabType[] = [
-  "photos",
-  "collections",
-  "rules",
-  "calendar",
-  "stories",
-];
+type TabType = "photos" | "collections" | "rules" | "calendar";
+const TAB_ORDER: TabType[] = ["photos", "collections", "rules", "calendar"];
 const TAB_LABELS: Record<TabType, string> = {
   photos: "Photographs",
   collections: "Collections",
   rules: "Rules",
   calendar: "Calendar",
-  stories: "Stories",
 };
 interface DashboardTabsProps {
   photos: PhotoItem[];
   collections: BaseItem[];
   rules: BaseItem[];
-  stories: BaseItem[];
   calendars: CalendarItem[];
 }
 export default function DashboardTabs({
   photos,
   collections,
   rules,
-  stories,
   calendars,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("photos");
@@ -112,7 +102,6 @@ export default function DashboardTabs({
             photos={photos}
             collections={collections}
             rules={rules}
-            stories={stories}
           />
         )}
         {activeTab === "collections" && (
@@ -123,9 +112,6 @@ export default function DashboardTabs({
         )}
         {activeTab === "calendar" && (
           <CalendarManager calendars={calendars} allPhotos={photos} />
-        )}
-        {activeTab === "stories" && (
-          <StoryManager stories={stories} allPhotos={photos} />
         )}
       </div>
     </main>

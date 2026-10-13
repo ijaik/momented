@@ -98,47 +98,23 @@ export type Database = {
       rule_collections: {
         Row: {
           id: string;
+          created_at: string;
           title: string;
           description: string | null;
           cover_photo_id: string | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          description?: string | null;
-          cover_photo_id?: string | null;
-          created_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          description?: string | null;
-          cover_photo_id?: string | null;
-          created_at?: string | null;
-        };
-        Relationships: [];
-      };
-      stories: {
-        Row: {
-          id: string;
-          created_at: string;
-          title: string;
-          content: string;
-          cover_photo_id: string | null;
         };
         Insert: {
           id?: string;
           created_at?: string;
           title: string;
-          content: string;
+          description?: string | null;
           cover_photo_id?: string | null;
         };
         Update: {
           id?: string;
           created_at?: string;
           title?: string;
-          content?: string;
+          description?: string | null;
           cover_photo_id?: string | null;
         };
         Relationships: [];
@@ -220,36 +196,6 @@ export type Database = {
             columns: ["rule_id"];
             isOneToOne: false;
             referencedRelation: "rule_collections";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      photo_stories: {
-        Row: {
-          photo_id: string;
-          story_id: string;
-        };
-        Insert: {
-          photo_id: string;
-          story_id: string;
-        };
-        Update: {
-          photo_id?: string;
-          story_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "photo_stories_photo_id_fkey";
-            columns: ["photo_id"];
-            isOneToOne: false;
-            referencedRelation: "photos";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "photo_stories_story_id_fkey";
-            columns: ["story_id"];
-            isOneToOne: false;
-            referencedRelation: "stories";
             referencedColumns: ["id"];
           },
         ];

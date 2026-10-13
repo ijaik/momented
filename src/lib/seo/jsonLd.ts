@@ -1,6 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { getSocialShareImageUrl } from "@/lib/cloudinary/cloudinaryUtils";
-import type { Photo, Story } from "@/types";
+import type { Photo } from "@/types";
 
 type JsonLdValue =
   | string
@@ -70,23 +70,6 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     ...(photo.taken_at ? { dateCreated: photo.taken_at } : {}),
     author: personRef(photo.artist || siteConfig.author.name),
     copyrightHolder: personRef(photo.artist || siteConfig.author.name),
-  };
-}
-export function articleJsonLd(
-  story: Pick<Story, "id" | "title" | "content" | "created_at">,
-  coverImageUrl?: string | null,
-): JsonLdObject {
-  const url = `${siteConfig.url}/stories/${story.id}`;
-  return {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: story.title,
-    ...(coverImageUrl ? { image: getSocialShareImageUrl(coverImageUrl) } : {}),
-    datePublished: story.created_at,
-    dateModified: story.created_at,
-    author: personRef(siteConfig.author.name, siteConfig.author.github),
-    mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    articleBody: story.content,
   };
 }
 export function collectionPageJsonLd(

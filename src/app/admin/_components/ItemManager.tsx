@@ -18,7 +18,6 @@ export interface BaseItem {
   id: string | number;
   title: string;
   description?: string | null;
-  content?: string | null;
   cover_photo_id?: string | number | null;
   photos?: ChecklistPhoto[];
 }
@@ -144,7 +143,6 @@ export default function ItemManager<T extends BaseItem>({
             <FormTextarea
               id="new-desc"
               name={descName}
-              required={descName === "content"}
               rows={descRows}
               placeholder={descPlaceholder}
             />
@@ -197,12 +195,7 @@ export default function ItemManager<T extends BaseItem>({
                   <FormTextarea
                     id={`edit-desc-${item.id}`}
                     name={descName}
-                    defaultValue={
-                      (descName === "content"
-                        ? item.content
-                        : item.description) ?? ""
-                    }
-                    required={descName === "content"}
+                    defaultValue={item.description ?? ""}
                     rows={descRows}
                   />
                 </div>

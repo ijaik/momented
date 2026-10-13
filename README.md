@@ -33,10 +33,10 @@
 ## ✨ Features
 
 - **Masonry Photo Grid** — A beautiful, responsive gallery designed specifically for high-resolution images.
-- **Collections & Stories** — Group photos by thematic collections or write long-form narratives to accompany your visual stories.
+- **Collections** — Group photos by thematic collections, photography rules, or calendar months.
 - **High-Res Downloads** — Built-in functionality for visitors to download original, high-resolution images directly.
 - **Exif Data Extraction** — Automatically reads and displays camera metadata (Focal Length, Aperture, Shutter Speed, ISO, Camera Model) when viewing a photo.
-- **Secure Admin Dashboard** — A protected route (`/admin`) utilizing JWT authentication to upload photos, create collections, and write stories.
+- **Secure Admin Dashboard** — A protected route (`/admin`) utilizing JWT authentication to upload photos and curate collections.
 - **Direct Cloudinary Uploads** — Secure, signed image uploads directly from the admin dashboard to your Cloudinary storage.
 
 ---

@@ -19,7 +19,6 @@ export interface Photo {
   shares?: number;
   collections?: CollectionReference[];
   rules?: RuleCollectionReference[];
-  stories?: StoryReference[];
   calendars?: CalendarReference[];
   dayContext?: {
     current: number;
@@ -32,7 +31,6 @@ export interface EntityReference {
 }
 export type CollectionReference = EntityReference;
 export type RuleCollectionReference = EntityReference;
-export type StoryReference = EntityReference;
 export interface CalendarReference {
   id: number;
   title: string;
@@ -43,14 +41,6 @@ export interface BaseCollection {
   description?: string | null;
   cover_photo_id?: string | null;
   created_at?: string | null;
-  photos?: Pick<Photo, "id" | "cloudinary_url">[];
-}
-export interface Story {
-  id: string;
-  title: string;
-  content: string;
-  cover_photo_id?: string | null;
-  created_at: string;
   photos?: Pick<Photo, "id" | "cloudinary_url">[];
 }
 export type PageProps<

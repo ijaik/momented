@@ -43,7 +43,6 @@ interface AdminPhotoView {
   cloudinary_public_id: string;
   collections: { id: string | number; title: string }[];
   rules: { id: string | number; title: string }[];
-  stories: { id: string | number; title: string }[];
 }
 export async function getPhotosAction(): Promise<AdminPhotoView[]> {
   await verifyAdminSession();
@@ -51,7 +50,7 @@ export async function getPhotosAction(): Promise<AdminPhotoView[]> {
   const { data, error } = await db
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, cloudinary_public_id, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), stories!photo_stories(id, title)",
+      "id, title, description, cloudinary_url, cloudinary_public_id, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -63,7 +62,6 @@ export async function getPhotosAction(): Promise<AdminPhotoView[]> {
     cloudinary_public_id: row.cloudinary_public_id,
     collections: row.collections ?? [],
     rules: row.rules ?? [],
-    stories: row.stories ?? [],
   }));
 }
 export async function deletePhotoAction(
@@ -93,7 +91,6 @@ export async function editPhotoAction(
   title: string,
   description: string,
   collectionIds: string[],
-  storyIds: string[],
   ruleIds: string[],
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
@@ -101,10 +98,8 @@ export async function editPhotoAction(
   assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
   assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
   assertBoundedArray(collectionIds, MAX_PHOTO_IDS, "Collection IDs");
-  assertBoundedArray(storyIds, MAX_PHOTO_IDS, "Story IDs");
   assertBoundedArray(ruleIds, MAX_PHOTO_IDS, "Rule IDs");
   for (const cid of collectionIds) assertValidUUID(cid, "Collection ID");
-  for (const sid of storyIds) assertValidUUID(sid, "Story ID");
   for (const rid of ruleIds) assertValidUUID(rid, "Rule ID");
   const db = getAdminDb();
   const { error } = await db
@@ -129,7 +124,6 @@ export async function editPhotoAction(
       "rule_id",
       ruleIds,
     ),
-    syncJunction(db, "photo_stories", "photo_id", id, "story_id", storyIds),
   ]);
   revalidateAfterPhotoChange();
   return { success: true };

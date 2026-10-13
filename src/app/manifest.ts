@@ -69,13 +69,6 @@ export default function manifest(): MetadataRoute.Manifest {
         icons,
       },
       {
-        name: "Read Stories",
-        short_name: "Stories",
-        description: "Read the stories behind each captured moment.",
-        url: "/stories",
-        icons,
-      },
-      {
         name: "About Momented",
         short_name: "About",
         description: "Learn more about the momented.",

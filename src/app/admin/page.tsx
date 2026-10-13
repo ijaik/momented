@@ -6,7 +6,6 @@ import {
   getRuleCollectionsAction,
 } from "@/actions/collections";
 import { getPhotosAction } from "@/actions/photos";
-import { getStoriesAction } from "@/actions/stories";
 import { isAdminAuthed } from "@/lib/auth/auth";
 import DashboardTabs from "./_components/DashboardTabs";
 export const metadata: Metadata = {
@@ -16,11 +15,10 @@ export const metadata: Metadata = {
 export const instant = false;
 export default async function AdminDashboard() {
   if (!(await isAdminAuthed())) redirect("/admin/login");
-  const [photos, collections, rules, stories, calendars] = await Promise.all([
+  const [photos, collections, rules, calendars] = await Promise.all([
     getPhotosAction(),
     getCollectionsAction(),
     getRuleCollectionsAction(),
-    getStoriesAction(),
     getCalendarCollectionsAction(),
   ]);
   return (
@@ -28,7 +26,6 @@ export default async function AdminDashboard() {
       photos={photos}
       collections={collections}
       rules={rules}
-      stories={stories}
       calendars={calendars}
     />
   );

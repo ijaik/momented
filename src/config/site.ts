@@ -18,7 +18,7 @@ export const siteConfig: SiteConfig = {
   name: "Momented",
   author: {
     name: "Jai",
-    role: "An observer & narrator",
+    role: "An observer behind the lens",
     github: "https://github.com/ijaik",
   },
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://momented.vercel.app",
