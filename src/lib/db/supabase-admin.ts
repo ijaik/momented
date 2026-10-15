@@ -4,7 +4,8 @@ import type { Database } from "@/types/database.types";
 export type JunctionTable =
   | "photo_collections"
   | "photo_rule_collections"
-  | "photo_calendar_collections";
+  | "photo_calendar_collections"
+  | "series_photos";
 let cachedAdminDb: SupabaseClient<Database> | null = null;
 export function getAdminDb(): SupabaseClient<Database> {
   if (cachedAdminDb) return cachedAdminDb;

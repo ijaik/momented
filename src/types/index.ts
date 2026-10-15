@@ -20,6 +20,7 @@ export interface Photo {
   collections?: CollectionReference[];
   rules?: RuleCollectionReference[];
   calendars?: CalendarReference[];
+  series?: EntityReference[];
   dayContext?: {
     current: number;
     total: number;
@@ -42,6 +43,33 @@ export interface BaseCollection {
   cover_photo_id?: string | null;
   created_at?: string | null;
   photos?: Pick<Photo, "id" | "cloudinary_url">[];
+}
+export interface SeriesSlidePhoto extends Photo {
+  position: number;
+}
+export interface Series {
+  id: string;
+  title: string;
+  description?: string | null;
+  cover_photo_id?: string | null;
+  created_at: string;
+  photos: SeriesSlidePhoto[];
+}
+export interface SeriesListItem {
+  id: string;
+  title: string;
+  description?: string | null;
+  cover_photo_id?: string | null;
+  created_at: string;
+  photo_count: number;
+  cover_photo?: Pick<
+    Photo,
+    "id" | "cloudinary_url" | "width" | "height" | "title"
+  > | null;
+  preview_photos?: Pick<
+    Photo,
+    "id" | "cloudinary_url" | "width" | "height" | "title"
+  >[];
 }
 export type PageProps<
   TParams = Record<string, string>,

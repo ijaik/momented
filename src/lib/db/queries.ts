@@ -7,7 +7,8 @@ export type IdTable =
   | "photos"
   | "collections"
   | "rule_collections"
-  | "calendar_collections";
+  | "calendar_collections"
+  | "series";
 type PhotoJunction =
   | {
       table: "photo_collections";
@@ -35,7 +36,7 @@ const CALENDAR_JUNCTION: PhotoJunction = {
 };
 export async function getAllIds(table: IdTable): Promise<string[]> {
   "use cache";
-  cacheTag("photos", "collections");
+  cacheTag("photos", "collections", "series");
   cacheLife("weeks");
   const { data } = await supabase.from(table).select("id");
   return (data ?? []).map((row) => String(row.id));
@@ -51,12 +52,12 @@ export async function getHomePhotos() {
 }
 export async function getPhotoById(id: string) {
   "use cache";
-  cacheTag(`photo-${id}`, "photos");
+  cacheTag(`photo-${id}`, "photos", "series");
   cacheLife("weeks");
   return supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title)",
+      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
     )
     .eq("id", id)
     .single();
@@ -142,4 +143,27 @@ export async function getCalendarCollectionsList() {
     .from("calendar_collections")
     .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
     .order("id", { ascending: true });
+}
+export async function getSeriesList() {
+  "use cache";
+  cacheTag("series", "photos");
+  cacheLife("weeks");
+  return supabase
+    .from("series")
+    .select(
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url, width, height))",
+    )
+    .order("created_at", { ascending: false });
+}
+export async function getSeriesById(id: string) {
+  "use cache";
+  cacheTag(`series-${id}`, "series", "photos");
+  cacheLife("weeks");
+  return supabase
+    .from("series")
+    .select(
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
+    )
+    .eq("id", id)
+    .single();
 }

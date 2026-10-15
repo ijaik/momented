@@ -12,7 +12,7 @@ export default function PhotoCard({
     photo.width && photo.height ? photo.width / photo.height : 1;
   const title = photo.title || "Untitled";
   return (
-    <figure className="mb-10 break-inside-avoid">
+    <figure className="w-full">
       <Link
         href={`/photo/${photo.id}`}
         aria-label={`${title}${photo.camera_model ? `, shot on ${photo.camera_model}` : ""}`}

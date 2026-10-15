@@ -16,6 +16,9 @@ import type { PageProps, Photo } from "@/types";
 export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("calendar_collections");
+  if (ids.length === 0) {
+    return Array.from({ length: 12 }, (_, i) => ({ id: String(i + 1) }));
+  }
   return ids.map((id) => ({ id }));
 }
 export async function generateMetadata({

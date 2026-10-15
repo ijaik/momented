@@ -17,12 +17,21 @@ interface CoverCardProps {
   href: string;
   index: number;
   meta?: string;
+  countLabel?: { singular: string; plural: string };
 }
-export default function CoverCard({ item, href, index, meta }: CoverCardProps) {
+export default function CoverCard({
+  item,
+  href,
+  index,
+  meta,
+  countLabel,
+}: CoverCardProps) {
   const coverImage =
     item.photos?.find((p) => p.id === item.cover_photo_id)?.cloudinary_url ||
     item.photos?.[0]?.cloudinary_url;
   const photoCount = item.photos?.length || 0;
+  const singular = countLabel?.singular || "photograph";
+  const plural = countLabel?.plural || "photographs";
   return (
     <Link href={href} className="focus-media group block">
       <div className="relative aspect-4/3 overflow-hidden border border-line bg-soft">
@@ -52,7 +61,7 @@ export default function CoverCard({ item, href, index, meta }: CoverCardProps) {
       </div>
       {photoCount > 0 && (
         <p className="mt-1 text-[13px] text-muted">
-          {photoCount} {photoCount === 1 ? "photograph" : "photographs"}
+          {photoCount} {photoCount === 1 ? singular : plural}
         </p>
       )}
     </Link>

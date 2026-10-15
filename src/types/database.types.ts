@@ -230,6 +230,63 @@ export type Database = {
           },
         ];
       };
+      series: {
+        Row: {
+          id: string;
+          created_at: string;
+          title: string;
+          description: string | null;
+          cover_photo_id: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          title: string;
+          description?: string | null;
+          cover_photo_id?: string | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          title?: string;
+          description?: string | null;
+          cover_photo_id?: string | null;
+        };
+        Relationships: [];
+      };
+      series_photos: {
+        Row: {
+          series_id: string;
+          photo_id: string;
+          position: number;
+        };
+        Insert: {
+          series_id: string;
+          photo_id: string;
+          position?: number;
+        };
+        Update: {
+          series_id?: string;
+          photo_id?: string;
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "series_photos_series_id_fkey";
+            columns: ["series_id"];
+            isOneToOne: false;
+            referencedRelation: "series";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "series_photos_photo_id_fkey";
+            columns: ["photo_id"];
+            isOneToOne: false;
+            referencedRelation: "photos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

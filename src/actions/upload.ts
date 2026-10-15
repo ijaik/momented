@@ -117,7 +117,7 @@ function assertSafeAsset(data: SavePhotoPayload): void {
 }
 export async function savePhotoToDbAction(
   data: SavePhotoPayload,
-): Promise<{ success: boolean }> {
+): Promise<{ success: boolean; id: string }> {
   await verifyAdminSession();
   assertSafeAsset(data);
   const db = getAdminDb();
@@ -186,5 +186,5 @@ export async function savePhotoToDbAction(
   ]);
   updateTag("photos");
   revalidatePath("/");
-  return { success: true };
+  return { success: true, id: newPhoto.id };
 }

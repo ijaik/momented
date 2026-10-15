@@ -1,0 +1,690 @@
+"use client";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Info,
+  Maximize2,
+  Minimize2,
+  Share2,
+} from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
+import ShareDialog from "@/components/photos/ShareDialog";
+import { formatDisplayDate } from "@/lib/utils/dateUtils";
+import type { SeriesSlidePhoto } from "@/types";
+
+interface SeriesCarouselProps {
+  seriesTitle: string;
+  seriesDescription?: string | null;
+  photos: SeriesSlidePhoto[];
+}
+export default function SeriesCarousel({
+  seriesTitle,
+  seriesDescription,
+  photos,
+}: SeriesCarouselProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [showExifDrawer, setShowExifDrawer] = useState(false);
+  const [sharePhoto, setSharePhoto] = useState<SeriesSlidePhoto | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const totalSlides = photos.length;
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchStartTime = useRef(0);
+  const isHorizontalSwipe = useRef<boolean | null>(null);
+  const currentDragOffset = useRef(0);
+  const isMouseDown = useRef(false);
+  const mouseStartX = useRef(0);
+  const mouseStartTime = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const maxContainerRef = useRef<HTMLDivElement>(null);
+  const toggleMaximize = useCallback(async () => {
+    if (!isMaximized) {
+      setIsMaximized(true);
+      try {
+        if (
+          typeof document !== "undefined" &&
+          document.fullscreenEnabled &&
+          !document.fullscreenElement
+        ) {
+          await document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } catch {}
+    } else {
+      setIsMaximized(false);
+      try {
+        if (typeof document !== "undefined" && document.fullscreenElement) {
+          await document.exitFullscreen().catch(() => {});
+        }
+      } catch {}
+    }
+  }, [isMaximized]);
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (
+        typeof document !== "undefined" &&
+        !document.fullscreenElement &&
+        isMaximized
+      ) {
+        setIsMaximized(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, [isMaximized]);
+  useEffect(() => {
+    if (isMaximized) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMaximized]);
+  const goToSlide = useCallback(
+    (index: number) => {
+      const clamped = Math.max(0, Math.min(index, totalSlides - 1));
+      setActiveIndex(clamped);
+      setDragOffset(0);
+      currentDragOffset.current = 0;
+    },
+    [totalSlides],
+  );
+  useEffect(() => {
+    const onWindowKeyDown = (e: globalThis.KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === "Escape" && isMaximized) {
+        e.preventDefault();
+        toggleMaximize();
+        return;
+      }
+      if (
+        (e.key === "f" || e.key === "F") &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey
+      ) {
+        e.preventDefault();
+        toggleMaximize();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goToSlide(activeIndex - 1);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goToSlide(activeIndex + 1);
+      }
+    };
+    window.addEventListener("keydown", onWindowKeyDown);
+    return () => window.removeEventListener("keydown", onWindowKeyDown);
+  }, [activeIndex, goToSlide, isMaximized, toggleMaximize]);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (totalSlides <= 1) return;
+    const touch = e.touches[0];
+    touchStartX.current = touch.clientX;
+    touchStartY.current = touch.clientY;
+    touchStartTime.current = Date.now();
+    isHorizontalSwipe.current = null;
+    currentDragOffset.current = 0;
+    setIsDragging(true);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (totalSlides <= 1 || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - touchStartX.current;
+    const deltaY = touch.clientY - touchStartY.current;
+    if (isHorizontalSwipe.current === null) {
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 6) {
+        isHorizontalSwipe.current = false;
+        setIsDragging(false);
+        setDragOffset(0);
+        return;
+      }
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 6) {
+        isHorizontalSwipe.current = true;
+      }
+    }
+    if (!isHorizontalSwipe.current) return;
+    let dampenedOffset = deltaX;
+    if (activeIndex === 0 && deltaX > 0) {
+      dampenedOffset = deltaX * 0.28;
+    } else if (activeIndex === totalSlides - 1 && deltaX < 0) {
+      dampenedOffset = deltaX * 0.28;
+    }
+    currentDragOffset.current = dampenedOffset;
+    setDragOffset(dampenedOffset);
+  };
+  const handleTouchEnd = () => {
+    if (totalSlides <= 1 || !isDragging) return;
+    setIsDragging(false);
+    const deltaX = currentDragOffset.current;
+    const elapsed = Math.max(1, Date.now() - touchStartTime.current);
+    const velocity = Math.abs(deltaX) / elapsed;
+    if (deltaX < 0 && activeIndex < totalSlides - 1) {
+      if (deltaX < -40 || (deltaX < -20 && velocity > 0.25)) {
+        setActiveIndex((prev) => Math.min(totalSlides - 1, prev + 1));
+      }
+    } else if (deltaX > 0 && activeIndex > 0) {
+      if (deltaX > 40 || (deltaX > 20 && velocity > 0.25)) {
+        setActiveIndex((prev) => Math.max(0, prev - 1));
+      }
+    }
+    setDragOffset(0);
+    currentDragOffset.current = 0;
+    isHorizontalSwipe.current = null;
+  };
+  const handleTouchCancel = () => {
+    setIsDragging(false);
+    setDragOffset(0);
+    currentDragOffset.current = 0;
+    isHorizontalSwipe.current = null;
+  };
+  useEffect(() => {
+    const container = isMaximized
+      ? maxContainerRef.current
+      : containerRef.current;
+    if (!container || totalSlides <= 1) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+      isMouseDown.current = true;
+      mouseStartX.current = e.clientX;
+      mouseStartTime.current = Date.now();
+      currentDragOffset.current = 0;
+      setIsDragging(true);
+    };
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isMouseDown.current || totalSlides <= 1) return;
+      const deltaX = e.clientX - mouseStartX.current;
+      let dampenedOffset = deltaX;
+      if (activeIndex === 0 && deltaX > 0) {
+        dampenedOffset = deltaX * 0.28;
+      } else if (activeIndex === totalSlides - 1 && deltaX < 0) {
+        dampenedOffset = deltaX * 0.28;
+      }
+      currentDragOffset.current = dampenedOffset;
+      setDragOffset(dampenedOffset);
+    };
+    const handleMouseUp = () => {
+      if (!isMouseDown.current) return;
+      isMouseDown.current = false;
+      setIsDragging(false);
+      const deltaX = currentDragOffset.current;
+      const elapsed = Math.max(1, Date.now() - mouseStartTime.current);
+      const velocity = Math.abs(deltaX) / elapsed;
+      if (deltaX < 0 && activeIndex < totalSlides - 1) {
+        if (deltaX < -40 || (deltaX < -20 && velocity > 0.25)) {
+          setActiveIndex((prev) => Math.min(totalSlides - 1, prev + 1));
+        }
+      } else if (deltaX > 0 && activeIndex > 0) {
+        if (deltaX > 40 || (deltaX > 20 && velocity > 0.25)) {
+          setActiveIndex((prev) => Math.max(0, prev - 1));
+        }
+      }
+      setDragOffset(0);
+      currentDragOffset.current = 0;
+    };
+    container.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      container.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [activeIndex, totalSlides, isMaximized]);
+  const currentPhoto = photos[activeIndex] || photos[0];
+  if (!currentPhoto) return null;
+  const currentAspect =
+    currentPhoto.width && currentPhoto.height
+      ? currentPhoto.width / currentPhoto.height
+      : 4 / 3;
+  const currentAspectNum = Number(currentAspect.toFixed(4));
+  const maxPixelWidth = Math.round(680 * currentAspect);
+  const containerMaxWidth = `min(100%, calc(78vh * ${currentAspectNum}), ${maxPixelWidth}px)`;
+  async function handleDownloadActivePhoto() {
+    if (!currentPhoto || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const response = await fetch(currentPhoto.cloudinary_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Failed to download photograph.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+  const activeDisplayDate = formatDisplayDate(
+    currentPhoto.created_at,
+    currentPhoto.taken_at,
+  );
+  return (
+    <section
+      aria-label={`${seriesTitle} photo carousel`}
+      className="flex flex-col gap-5"
+    >
+      <div
+        className="relative mx-auto w-full overflow-hidden border border-line bg-soft shadow-xs touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
+        style={{
+          aspectRatio: `${currentAspect}`,
+          maxHeight: "min(78vh, 680px)",
+          maxWidth: containerMaxWidth,
+        }}
+      >
+        <div
+          ref={containerRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
+          className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
+          style={{
+            transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
+            transition: isDragging
+              ? "none"
+              : "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)",
+            willChange: isDragging ? "transform" : "auto",
+          }}
+        >
+          {photos.map((photo, index) => {
+            const isAdjacent = Math.abs(index - activeIndex) <= 1;
+            const slideTitle =
+              photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+            return (
+              <div
+                key={photo.id}
+                className="relative flex h-full w-full flex-none items-center justify-center select-none"
+              >
+                <div className="relative h-full w-full pointer-events-none select-none">
+                  <Image
+                    src={photo.cloudinary_url}
+                    alt={slideTitle}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                    className="object-cover pointer-events-none select-none"
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    loading={isAdjacent ? "eager" : "lazy"}
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {totalSlides > 1 && (
+        <div className="flex w-full items-center justify-between gap-4 px-1">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium tabular-nums text-muted">
+              {activeIndex + 1} / {totalSlides}
+            </span>
+            <nav
+              aria-label="Slide indicators"
+              className="flex items-center gap-1.5"
+            >
+              {photos.map((photo, idx) => (
+                <button
+                  key={`indicator-${photo.id}-${idx}`}
+                  type="button"
+                  onClick={() => goToSlide(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  aria-current={idx === activeIndex ? "true" : undefined}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === activeIndex
+                      ? "w-6 bg-signal"
+                      : "w-1.5 bg-line hover:bg-muted"
+                  }`}
+                />
+              ))}
+            </nav>
+          </div>
+          <div className="hidden lg:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => goToSlide(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Previous photograph"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronLeft size={18} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToSlide(activeIndex + 1)}
+              disabled={activeIndex === totalSlides - 1}
+              aria-label="Next photograph"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronRight size={18} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
+      <div className="flex w-full flex-col gap-4 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="font-serif text-xl font-medium tracking-tight text-ink sm:text-2xl">
+            {currentPhoto.title || `${seriesTitle} — Frame ${activeIndex + 1}`}
+          </h2>
+          {(currentPhoto.description || seriesDescription) && (
+            <p className="mt-1 text-sm text-muted">
+              {currentPhoto.description || seriesDescription}
+            </p>
+          )}
+          <p className="mt-1 text-xs text-muted">
+            {activeDisplayDate}
+            {currentPhoto.camera_model &&
+              ` · Shot on ${currentPhoto.camera_model}`}
+            {` · Frame ${activeIndex + 1} of ${totalSlides}`}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowExifDrawer((prev) => !prev)}
+            aria-expanded={showExifDrawer}
+            className={`inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm font-medium transition-colors ${
+              showExifDrawer
+                ? "border-signal/50 bg-signal/10 text-signal"
+                : "border-line bg-surface text-ink hover:bg-soft"
+            }`}
+          >
+            <Info size={16} aria-hidden="true" />
+            <span>{showExifDrawer ? "Hide details" : "Frame details"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadActivePhoto}
+            disabled={isDownloading}
+            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
+          >
+            <Download size={16} aria-hidden="true" />
+            <span>{isDownloading ? "Downloading…" : "Download"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSharePhoto(currentPhoto)}
+            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+          >
+            <Share2 size={16} aria-hidden="true" />
+            <span>Share</span>
+          </button>
+          <button
+            type="button"
+            onClick={toggleMaximize}
+            aria-label="Maximize series"
+            title="Maximize (F)"
+            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+          >
+            <Maximize2 size={16} aria-hidden="true" />
+            <span>Maximize</span>
+          </button>
+        </div>
+      </div>
+      {showExifDrawer && (
+        <aside
+          aria-label="Camera specifications for active frame"
+          className="w-full rounded-lg border border-line bg-surface/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs transition-all"
+        >
+          <div className="flex items-baseline justify-between border-b border-line pb-2.5">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+                Frame {activeIndex + 1} Specifications
+              </h3>
+              <span className="text-xs text-muted/60">·</span>
+              <span className="text-xs text-muted truncate">
+                {currentPhoto.title ||
+                  `Frame ${String(activeIndex + 1).padStart(2, "0")}`}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowExifDrawer(false)}
+              className="text-xs font-medium text-muted hover:text-ink transition-colors"
+            >
+              Close
+            </button>
+          </div>
+          <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
+            <div>
+              <dt className="text-muted">Camera</dt>
+              <dd
+                className="mt-0.5 font-medium text-ink truncate"
+                title={currentPhoto.camera_model || undefined}
+              >
+                {currentPhoto.camera_model || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Focal length</dt>
+              <dd className="mt-0.5 font-medium text-ink">
+                {currentPhoto.focal_length || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Aperture</dt>
+              <dd className="mt-0.5 font-medium text-ink">
+                {currentPhoto.aperture || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Shutter</dt>
+              <dd className="mt-0.5 font-medium text-ink">
+                {currentPhoto.shutter_speed || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">ISO</dt>
+              <dd className="mt-0.5 font-medium text-ink">
+                {currentPhoto.iso || "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Captured</dt>
+              <dd className="mt-0.5 font-medium text-ink truncate">
+                {activeDisplayDate}
+              </dd>
+            </div>
+          </dl>
+        </aside>
+      )}
+      {sharePhoto && (
+        <ShareDialog
+          photoId={sharePhoto.id}
+          title={`${seriesTitle} — Frame ${activeIndex + 1}`}
+          imageUrl={sharePhoto.cloudinary_url}
+          onClose={() => setSharePhoto(null)}
+        />
+      )}
+      {isMaximized && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${seriesTitle} fullscreen gallery`}
+          className="fixed inset-0 z-50 flex flex-col justify-between bg-paper p-4 sm:p-6 select-none animate-in fade-in duration-200"
+        >
+          <div className="flex w-full items-center justify-between gap-4 border-b border-line pb-3">
+            <div className="min-w-0">
+              <h2 className="truncate font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
+                {seriesTitle}
+              </h2>
+              <p className="truncate text-xs text-muted">
+                Frame {activeIndex + 1} of {totalSlides}
+                {currentPhoto.title ? ` · ${currentPhoto.title}` : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowExifDrawer((prev) => !prev)}
+                aria-expanded={showExifDrawer}
+                className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  showExifDrawer
+                    ? "border-signal/50 bg-signal/10 text-signal"
+                    : "border-line bg-surface text-ink hover:bg-soft"
+                }`}
+              >
+                <Info size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">
+                  {showExifDrawer ? "Hide details" : "Frame details"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadActivePhoto}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
+              >
+                <Download size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">
+                  {isDownloading ? "Downloading…" : "Download"}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSharePhoto(currentPhoto)}
+                className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft"
+              >
+                <Share2 size={14} aria-hidden="true" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+              <button
+                type="button"
+                onClick={toggleMaximize}
+                aria-label="Exit fullscreen (Esc)"
+                title="Minimize (Esc)"
+                className="inline-flex items-center gap-1.5 rounded-md border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-colors hover:bg-signal/20"
+              >
+                <Minimize2 size={15} aria-hidden="true" />
+                <span>Minimize</span>
+              </button>
+            </div>
+          </div>
+          <div className="relative my-auto flex h-[calc(100vh-170px)] w-full items-center justify-center overflow-hidden touch-pan-y select-none">
+            {totalSlides > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => goToSlide(activeIndex - 1)}
+                  disabled={activeIndex === 0}
+                  aria-label="Previous photograph"
+                  className="absolute left-3 sm:left-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+                >
+                  <ChevronLeft size={22} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToSlide(activeIndex + 1)}
+                  disabled={activeIndex === totalSlides - 1}
+                  aria-label="Next photograph"
+                  className="absolute right-3 sm:right-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+                >
+                  <ChevronRight size={22} aria-hidden="true" />
+                </button>
+              </>
+            )}
+            <div
+              ref={maxContainerRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchCancel}
+              className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
+              style={{
+                transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
+                transition: isDragging
+                  ? "none"
+                  : "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)",
+                willChange: isDragging ? "transform" : "auto",
+              }}
+            >
+              {photos.map((photo, index) => {
+                const isAdjacent = Math.abs(index - activeIndex) <= 1;
+                const slideTitle =
+                  photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+                return (
+                  <div
+                    key={`max-slide-${photo.id}`}
+                    className="relative flex h-full w-full flex-none items-center justify-center select-none p-1 sm:p-4"
+                  >
+                    <div className="relative h-full w-full pointer-events-none select-none">
+                      <Image
+                        src={photo.cloudinary_url}
+                        alt={slideTitle}
+                        fill
+                        sizes="100vw"
+                        className="object-contain pointer-events-none select-none"
+                        fetchPriority={index === 0 ? "high" : "auto"}
+                        loading={isAdjacent ? "eager" : "lazy"}
+                        draggable={false}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex w-full flex-col gap-2 border-t border-line pt-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="truncate font-serif text-base font-medium text-ink">
+                {currentPhoto.title ||
+                  `${seriesTitle} — Frame ${activeIndex + 1}`}
+              </p>
+              {(currentPhoto.description || seriesDescription) && (
+                <p className="mt-0.5 line-clamp-1 text-xs text-muted">
+                  {currentPhoto.description || seriesDescription}
+                </p>
+              )}
+            </div>
+            {totalSlides > 1 && (
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <span className="text-xs font-medium tabular-nums text-muted">
+                  {activeIndex + 1} / {totalSlides}
+                </span>
+                <nav
+                  aria-label="Slide indicators"
+                  className="flex items-center gap-1.5"
+                >
+                  {photos.map((photo, idx) => (
+                    <button
+                      key={`max-ind-${photo.id}-${idx}`}
+                      type="button"
+                      onClick={() => goToSlide(idx)}
+                      aria-label={`Go to slide ${idx + 1}`}
+                      aria-current={idx === activeIndex ? "true" : undefined}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        idx === activeIndex
+                          ? "w-6 bg-signal"
+                          : "w-1.5 bg-line hover:bg-muted"
+                      }`}
+                    />
+                  ))}
+                </nav>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

@@ -11,6 +11,7 @@ interface NavLink {
 const links: NavLink[] = [
   { name: "Photographs", href: "/" },
   { name: "Collections", href: "/collections" },
+  { name: "Series", href: "/series" },
   { name: "About", href: "/about" },
 ];
 function isActivePath(pathname: string, href: string): boolean {

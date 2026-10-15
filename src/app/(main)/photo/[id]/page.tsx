@@ -16,12 +16,14 @@ import type { PageProps, Photo } from "@/types";
 export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("photos");
+  if (ids.length === 0) return [{ id: "_" }];
   return ids.map((id) => ({ id }));
 }
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
+  if (id === "_") return { title: "Photographs" };
   const { data: photo } = await getPhotoById(id);
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title || "Photography Gallery";
@@ -39,6 +41,14 @@ export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
+  if (id === "_") {
+    return (
+      <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
+        <BackButton label="All photographs" className="mb-8 md:mb-10" />
+        <EmptyState description="Photograph not found." />
+      </main>
+    );
+  }
   const { data: photo } = await getPhotoById(id);
   if (!photo) return <EmptyState description="Photo not found." />;
   const typedPhoto: Photo = photo;
@@ -49,6 +59,7 @@ export default async function PhotoDetail({
   const calendarCollections = typedPhoto.calendars || [];
   const standardCollections = typedPhoto.collections || [];
   const ruleCollections = typedPhoto.rules || [];
+  const seriesList = typedPhoto.series || [];
   const title = typedPhoto.title || "Untitled";
   const references: ReferenceLink[] = [
     ...standardCollections.map((c) => ({
@@ -68,6 +79,12 @@ export default async function PhotoDetail({
       title: c.title,
       href: `/collections/calendar/${c.id}`,
       kind: "Month",
+    })),
+    ...seriesList.map((s) => ({
+      id: s.id,
+      title: s.title,
+      href: `/series/${s.id}`,
+      kind: "Series",
     })),
   ];
   return (
@@ -100,7 +117,6 @@ export default async function PhotoDetail({
               className="block h-auto w-full"
               fetchPriority="high"
               loading="eager"
-              preload={true}
             />
           </div>
           <figcaption className="mt-6">

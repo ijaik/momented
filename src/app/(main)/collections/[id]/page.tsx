@@ -15,12 +15,14 @@ import type { PageProps } from "@/types";
 export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("collections");
+  if (ids.length === 0) return [{ id: "_" }];
   return ids.map((id) => ({ id }));
 }
 export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
+  if (id === "_") return { title: "Collections" };
   const [{ data: collection }, { data: photos }] = await Promise.all([
     getCollectionById(id),
     getPhotosForCollection(id),
@@ -37,6 +39,16 @@ export default async function SingleCollectionPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
+  if (id === "_") {
+    return (
+      <DetailLayout
+        title="Collection"
+        description="A curated selection of photographs."
+      >
+        <EmptyState description="No collection found." />
+      </DetailLayout>
+    );
+  }
   const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
     getCollectionById(id),
     getPhotosForCollection(id),

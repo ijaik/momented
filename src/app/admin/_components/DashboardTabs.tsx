@@ -7,30 +7,41 @@ import Button from "@/components/ui/Button";
 import type { CalendarItem } from "./CalendarManager";
 import type { BaseItem } from "./ItemManager";
 import type { PhotoItem } from "./PhotoManager";
+import type { SeriesAdminItem } from "./SeriesManager";
 
 const PhotoManager = dynamic(() => import("./PhotoManager"));
+const SeriesManager = dynamic(() => import("./SeriesManager"));
 const CollectionManager = dynamic(() => import("./CollectionManager"));
 const RuleManager = dynamic(() => import("./RuleManager"));
 const CalendarManager = dynamic(() => import("./CalendarManager"));
-type TabType = "photos" | "collections" | "rules" | "calendar";
-const TAB_ORDER: TabType[] = ["photos", "collections", "rules", "calendar"];
+type TabType = "photos" | "collections" | "rules" | "calendar" | "series";
+const TAB_ORDER: TabType[] = [
+  "photos",
+  "collections",
+  "rules",
+  "calendar",
+  "series",
+];
 const TAB_LABELS: Record<TabType, string> = {
   photos: "Photographs",
   collections: "Collections",
   rules: "Rules",
   calendar: "Calendar",
+  series: "Series",
 };
 interface DashboardTabsProps {
   photos: PhotoItem[];
   collections: BaseItem[];
   rules: BaseItem[];
   calendars: CalendarItem[];
+  series: SeriesAdminItem[];
 }
 export default function DashboardTabs({
   photos,
   collections,
   rules,
   calendars,
+  series,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("photos");
   const router = useRouter();
@@ -112,6 +123,9 @@ export default function DashboardTabs({
         )}
         {activeTab === "calendar" && (
           <CalendarManager calendars={calendars} allPhotos={photos} />
+        )}
+        {activeTab === "series" && (
+          <SeriesManager series={series} allPhotos={photos} />
         )}
       </div>
     </main>

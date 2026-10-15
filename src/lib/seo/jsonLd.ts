@@ -103,3 +103,36 @@ export function collectionPageJsonLd(
     },
   };
 }
+export function seriesPageJsonLd(
+  series: { title: string; description?: string | null; created_at?: string },
+  url: string,
+  photos: { id: string; title?: string | null; cloudinary_url: string }[] = [],
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    name: series.title,
+    ...(series.description ? { description: series.description } : {}),
+    ...(series.created_at ? { datePublished: series.created_at } : {}),
+    url,
+    ...(photos[0]
+      ? { image: getSocialShareImageUrl(photos[0].cloudinary_url) }
+      : {}),
+    author: personRef(siteConfig.author.name),
+    isPartOf: {
+      "@type": "WebSite",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: photos.length,
+      itemListElement: photos.map((photo, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: photo.title || `Frame ${index + 1}`,
+        image: getSocialShareImageUrl(photo.cloudinary_url),
+      })),
+    },
+  };
+}
