@@ -9,12 +9,16 @@ export interface ShareButtonProps {
   photoId?: string | number;
   imageUrl?: string;
   shareCount?: number;
+  variant?: "default" | "compact";
+  className?: string;
 }
 export default function ShareButton({
   title = "",
   photoId,
   imageUrl,
   shareCount = 0,
+  variant = "default",
+  className,
 }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -34,25 +38,47 @@ export default function ShareButton({
   };
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setIsOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        className="inline-flex w-full items-center justify-between gap-3 rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85"
-      >
-        <span className="inline-flex items-center gap-2">
-          <Share2 size={16} aria-hidden="true" />
-          Share
-        </span>
-        <span
-          aria-hidden="true"
-          className="text-[13px] tabular-nums opacity-60"
+      {variant === "compact" ? (
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          aria-label="Share photograph"
+          title="Share"
+          className={
+            className ||
+            "inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft"
+          }
         >
-          {optimisticCount}
-        </span>
-      </button>
+          <Share2 size={14} aria-hidden="true" className="shrink-0" />
+          <span className="hidden sm:inline">Share</span>
+        </button>
+      ) : (
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          className={
+            className ||
+            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-md bg-solid px-4 py-2 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 sm:px-5"
+          }
+        >
+          <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">
+            <Share2 size={16} aria-hidden="true" className="shrink-0" />
+            Share
+          </span>
+          <span
+            aria-hidden="true"
+            className="shrink-0 text-[13px] tabular-nums opacity-60"
+          >
+            {optimisticCount}
+          </span>
+        </button>
+      )}
       {isOpen && (
         <ShareDialog
           title={title}

@@ -13,9 +13,11 @@ export default function PhotoGrid({
   if (!photos || photos.length === 0)
     return <EmptyState description={emptyMessage} />;
   return (
-    <section className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 items-start">
+    <section className="columns-1 gap-8 sm:columns-2 sm:gap-10 lg:columns-3">
       {photos.map((photo, index) => (
-        <PhotoCard key={photo.id} photo={photo} index={index} />
+        <div key={photo.id} className="mb-8 break-inside-avoid sm:mb-10">
+          <PhotoCard photo={photo} index={index} />
+        </div>
       ))}
     </section>
   );

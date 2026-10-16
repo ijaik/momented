@@ -1,16 +1,11 @@
 "use client";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Info,
-  Maximize2,
-  Minimize2,
-  Share2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Maximize2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import ShareDialog from "@/components/photos/ShareDialog";
+import DownloadButton from "@/components/photos/DownloadButton";
+import ShareButton from "@/components/photos/ShareButton";
+import FullscreenDialog from "@/components/ui/FullscreenDialog";
+import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import type { SeriesSlidePhoto } from "@/types";
 
@@ -27,10 +22,8 @@ export default function SeriesCarousel({
   const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
+  const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
   const [showExifDrawer, setShowExifDrawer] = useState(false);
-  const [sharePhoto, setSharePhoto] = useState<SeriesSlidePhoto | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
   const totalSlides = photos.length;
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -42,50 +35,6 @@ export default function SeriesCarousel({
   const mouseStartTime = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const maxContainerRef = useRef<HTMLDivElement>(null);
-  const toggleMaximize = useCallback(async () => {
-    if (!isMaximized) {
-      setIsMaximized(true);
-      try {
-        if (
-          typeof document !== "undefined" &&
-          document.fullscreenEnabled &&
-          !document.fullscreenElement
-        ) {
-          await document.documentElement.requestFullscreen().catch(() => {});
-        }
-      } catch {}
-    } else {
-      setIsMaximized(false);
-      try {
-        if (typeof document !== "undefined" && document.fullscreenElement) {
-          await document.exitFullscreen().catch(() => {});
-        }
-      } catch {}
-    }
-  }, [isMaximized]);
-  useEffect(() => {
-    const onFullscreenChange = () => {
-      if (
-        typeof document !== "undefined" &&
-        !document.fullscreenElement &&
-        isMaximized
-      ) {
-        setIsMaximized(false);
-      }
-    };
-    document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, [isMaximized]);
-  useEffect(() => {
-    if (isMaximized) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isMaximized]);
   const goToSlide = useCallback(
     (index: number) => {
       const clamped = Math.max(0, Math.min(index, totalSlides - 1));
@@ -106,21 +55,6 @@ export default function SeriesCarousel({
       ) {
         return;
       }
-      if (e.key === "Escape" && isMaximized) {
-        e.preventDefault();
-        toggleMaximize();
-        return;
-      }
-      if (
-        (e.key === "f" || e.key === "F") &&
-        !e.metaKey &&
-        !e.ctrlKey &&
-        !e.altKey
-      ) {
-        e.preventDefault();
-        toggleMaximize();
-        return;
-      }
       if (e.key === "ArrowLeft") {
         e.preventDefault();
         goToSlide(activeIndex - 1);
@@ -131,7 +65,7 @@ export default function SeriesCarousel({
     };
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activeIndex, goToSlide, isMaximized, toggleMaximize]);
+  }, [activeIndex, goToSlide]);
   const handleTouchStart = (e: React.TouchEvent) => {
     if (totalSlides <= 1) return;
     const touch = e.touches[0];
@@ -255,26 +189,6 @@ export default function SeriesCarousel({
   const currentAspectNum = Number(currentAspect.toFixed(4));
   const maxPixelWidth = Math.round(680 * currentAspect);
   const containerMaxWidth = `min(100%, calc(78vh * ${currentAspectNum}), ${maxPixelWidth}px)`;
-  async function handleDownloadActivePhoto() {
-    if (!currentPhoto || isDownloading) return;
-    setIsDownloading(true);
-    try {
-      const response = await fetch(currentPhoto.cloudinary_url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch {
-      alert("Failed to download photograph.");
-    } finally {
-      setIsDownloading(false);
-    }
-  }
   const activeDisplayDate = formatDisplayDate(
     currentPhoto.created_at,
     currentPhoto.taken_at,
@@ -412,23 +326,20 @@ export default function SeriesCarousel({
             <Info size={16} aria-hidden="true" />
             <span>{showExifDrawer ? "Hide details" : "Frame details"}</span>
           </button>
-          <button
-            type="button"
-            onClick={handleDownloadActivePhoto}
-            disabled={isDownloading}
+          <DownloadButton
+            photoId={currentPhoto.id}
+            cloudinaryUrl={currentPhoto.cloudinary_url}
+            fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
             className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
-          >
-            <Download size={16} aria-hidden="true" />
-            <span>{isDownloading ? "Downloading…" : "Download"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSharePhoto(currentPhoto)}
+            variant="compact"
+          />
+          <ShareButton
+            title={`${seriesTitle} — Frame ${activeIndex + 1}`}
+            photoId={currentPhoto.id}
+            imageUrl={currentPhoto.cloudinary_url}
             className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
-          >
-            <Share2 size={16} aria-hidden="true" />
-            <span>Share</span>
-          </button>
+            variant="compact"
+          />
           <button
             type="button"
             onClick={toggleMaximize}
@@ -465,186 +376,98 @@ export default function SeriesCarousel({
               Close
             </button>
           </div>
-          <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
-            <div>
-              <dt className="text-muted">Camera</dt>
-              <dd
-                className="mt-0.5 font-medium text-ink truncate"
-                title={currentPhoto.camera_model || undefined}
-              >
-                {currentPhoto.camera_model || "—"}
-              </dd>
+          {currentPhoto.camera_model ||
+          currentPhoto.focal_length ||
+          currentPhoto.aperture ||
+          currentPhoto.shutter_speed ||
+          currentPhoto.iso ? (
+            <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
+              <div>
+                <dt className="text-muted">Camera</dt>
+                <dd
+                  className="mt-0.5 font-medium text-ink truncate"
+                  title={currentPhoto.camera_model || undefined}
+                >
+                  {currentPhoto.camera_model || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted">Focal length</dt>
+                <dd className="mt-0.5 font-medium text-ink">
+                  {currentPhoto.focal_length || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted">Aperture</dt>
+                <dd className="mt-0.5 font-medium text-ink">
+                  {currentPhoto.aperture || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted">Shutter</dt>
+                <dd className="mt-0.5 font-medium text-ink">
+                  {currentPhoto.shutter_speed || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted">ISO</dt>
+                <dd className="mt-0.5 font-medium text-ink">
+                  {currentPhoto.iso || "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted">Captured</dt>
+                <dd className="mt-0.5 font-medium text-ink truncate">
+                  {activeDisplayDate}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm sm:text-base md:text-lg font-medium text-muted">
+                I lost it 😭
+              </p>
+              {activeDisplayDate && (
+                <p className="text-xs sm:text-sm text-muted">
+                  Captured{" "}
+                  <span className="font-medium text-ink">
+                    {activeDisplayDate}
+                  </span>
+                </p>
+              )}
             </div>
-            <div>
-              <dt className="text-muted">Focal length</dt>
-              <dd className="mt-0.5 font-medium text-ink">
-                {currentPhoto.focal_length || "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">Aperture</dt>
-              <dd className="mt-0.5 font-medium text-ink">
-                {currentPhoto.aperture || "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">Shutter</dt>
-              <dd className="mt-0.5 font-medium text-ink">
-                {currentPhoto.shutter_speed || "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">ISO</dt>
-              <dd className="mt-0.5 font-medium text-ink">
-                {currentPhoto.iso || "—"}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted">Captured</dt>
-              <dd className="mt-0.5 font-medium text-ink truncate">
-                {activeDisplayDate}
-              </dd>
-            </div>
-          </dl>
+          )}
         </aside>
       )}
-      {sharePhoto && (
-        <ShareDialog
-          photoId={sharePhoto.id}
-          title={`${seriesTitle} — Frame ${activeIndex + 1}`}
-          imageUrl={sharePhoto.cloudinary_url}
-          onClose={() => setSharePhoto(null)}
-        />
-      )}
-      {isMaximized && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${seriesTitle} fullscreen gallery`}
-          className="fixed inset-0 z-50 flex flex-col justify-between bg-paper p-4 sm:p-6 select-none animate-in fade-in duration-200"
-        >
-          <div className="flex w-full items-center justify-between gap-4 border-b border-line pb-3">
-            <div className="min-w-0">
-              <h2 className="truncate font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
-                {seriesTitle}
-              </h2>
-              <p className="truncate text-xs text-muted">
-                Frame {activeIndex + 1} of {totalSlides}
-                {currentPhoto.title ? ` · ${currentPhoto.title}` : ""}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowExifDrawer((prev) => !prev)}
-                aria-expanded={showExifDrawer}
-                className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  showExifDrawer
-                    ? "border-signal/50 bg-signal/10 text-signal"
-                    : "border-line bg-surface text-ink hover:bg-soft"
-                }`}
-              >
-                <Info size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">
-                  {showExifDrawer ? "Hide details" : "Frame details"}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadActivePhoto}
-                disabled={isDownloading}
-                className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
-              >
-                <Download size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">
-                  {isDownloading ? "Downloading…" : "Download"}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSharePhoto(currentPhoto)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft"
-              >
-                <Share2 size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">Share</span>
-              </button>
-              <button
-                type="button"
-                onClick={toggleMaximize}
-                aria-label="Exit fullscreen (Esc)"
-                title="Minimize (Esc)"
-                className="inline-flex items-center gap-1.5 rounded-md border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-colors hover:bg-signal/20"
-              >
-                <Minimize2 size={15} aria-hidden="true" />
-                <span>Minimize</span>
-              </button>
-            </div>
-          </div>
-          <div className="relative my-auto flex h-[calc(100vh-170px)] w-full items-center justify-center overflow-hidden touch-pan-y select-none">
-            {totalSlides > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => goToSlide(activeIndex - 1)}
-                  disabled={activeIndex === 0}
-                  aria-label="Previous photograph"
-                  className="absolute left-3 sm:left-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
-                >
-                  <ChevronLeft size={22} aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => goToSlide(activeIndex + 1)}
-                  disabled={activeIndex === totalSlides - 1}
-                  aria-label="Next photograph"
-                  className="absolute right-3 sm:right-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
-                >
-                  <ChevronRight size={22} aria-hidden="true" />
-                </button>
-              </>
-            )}
-            <div
-              ref={maxContainerRef}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchCancel}
-              className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
-              style={{
-                transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
-                transition: isDragging
-                  ? "none"
-                  : "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)",
-                willChange: isDragging ? "transform" : "auto",
-              }}
-            >
-              {photos.map((photo, index) => {
-                const isAdjacent = Math.abs(index - activeIndex) <= 1;
-                const slideTitle =
-                  photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
-                return (
-                  <div
-                    key={`max-slide-${photo.id}`}
-                    className="relative flex h-full w-full flex-none items-center justify-center select-none p-1 sm:p-4"
-                  >
-                    <div className="relative h-full w-full pointer-events-none select-none">
-                      <Image
-                        src={photo.cloudinary_url}
-                        alt={slideTitle}
-                        fill
-                        sizes="100vw"
-                        className="object-contain pointer-events-none select-none"
-                        fetchPriority={index === 0 ? "high" : "auto"}
-                        loading={isAdjacent ? "eager" : "lazy"}
-                        draggable={false}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex w-full flex-col gap-2 border-t border-line pt-3 sm:flex-row sm:items-center sm:justify-between">
+      <FullscreenDialog
+        isOpen={isMaximized}
+        onClose={exitMaximize}
+        ariaLabel={`${seriesTitle} fullscreen gallery`}
+        title={seriesTitle}
+        subtitle={
+          <>
+            Frame {activeIndex + 1} of {totalSlides}
+            {currentPhoto.title ? ` · ${currentPhoto.title}` : ""}
+          </>
+        }
+        actions={
+          <>
+            <DownloadButton
+              photoId={currentPhoto.id}
+              cloudinaryUrl={currentPhoto.cloudinary_url}
+              fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
+              variant="compact"
+            />
+            <ShareButton
+              title={`${seriesTitle} — Frame ${activeIndex + 1}`}
+              photoId={currentPhoto.id}
+              imageUrl={currentPhoto.cloudinary_url}
+              variant="compact"
+            />
+          </>
+        }
+        footer={
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="truncate font-serif text-base font-medium text-ink">
                 {currentPhoto.title ||
@@ -683,8 +506,71 @@ export default function SeriesCarousel({
               </div>
             )}
           </div>
+        }
+      >
+        {totalSlides > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => goToSlide(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Previous photograph"
+              className="absolute left-3 sm:left-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+            >
+              <ChevronLeft size={22} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToSlide(activeIndex + 1)}
+              disabled={activeIndex === totalSlides - 1}
+              aria-label="Next photograph"
+              className="absolute right-3 sm:right-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+            >
+              <ChevronRight size={22} aria-hidden="true" />
+            </button>
+          </>
+        )}
+        <div
+          ref={maxContainerRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
+          className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
+          style={{
+            transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
+            transition: isDragging
+              ? "none"
+              : "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)",
+            willChange: isDragging ? "transform" : "auto",
+          }}
+        >
+          {photos.map((photo, index) => {
+            const isAdjacent = Math.abs(index - activeIndex) <= 1;
+            const slideTitle =
+              photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+            return (
+              <div
+                key={`max-slide-${photo.id}`}
+                className="relative flex h-full w-full flex-none items-center justify-center select-none p-1 sm:p-4"
+              >
+                <div className="relative h-full w-full pointer-events-none select-none">
+                  <Image
+                    src={photo.cloudinary_url}
+                    alt={slideTitle}
+                    fill
+                    sizes="100vw"
+                    className="object-contain pointer-events-none select-none"
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    loading={isAdjacent ? "eager" : "lazy"}
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
+      </FullscreenDialog>
     </section>
   );
 }

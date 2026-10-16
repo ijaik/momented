@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import DownloadButton from "@/components/photos/DownloadButton";
-import InfoItem from "@/components/photos/InfoItem";
-import ShareButton from "@/components/photos/ShareButton";
+import PhotoDetailView from "@/components/photos/PhotoDetailView";
 import JsonLd from "@/components/seo/JsonLd";
 import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
-import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
+import type { ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
 import { getAllIds, getPhotoById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
@@ -88,7 +85,7 @@ export default async function PhotoDetail({
     })),
   ];
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
+    <main className="mx-auto w-full max-w-6xl px-5 py-6 sm:px-8 sm:py-8 md:py-10">
       <JsonLd
         data={[
           photographJsonLd(typedPhoto),
@@ -104,79 +101,12 @@ export default async function PhotoDetail({
           ]),
         ]}
       />
-      <BackButton label="All photographs" className="mb-8 md:mb-10" />
-      <div className="grid grid-cols-1 gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-        <figure className="min-w-0 lg:sticky lg:top-24">
-          <div className="overflow-hidden border border-line bg-soft">
-            <Image
-              src={typedPhoto.cloudinary_url}
-              alt={title}
-              width={typedPhoto.width}
-              height={typedPhoto.height}
-              sizes="(min-width: 1024px) 60vw, 100vw"
-              className="block h-auto w-full"
-              fetchPriority="high"
-              loading="eager"
-            />
-          </div>
-          <figcaption className="mt-6">
-            <h1 className="font-serif text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl">
-              {title}
-            </h1>
-            {typedPhoto.description && (
-              <p className="mt-3 max-w-xl whitespace-pre-wrap text-[15px] leading-relaxed text-muted">
-                {typedPhoto.description}
-              </p>
-            )}
-            <p className="mt-3 text-sm text-muted">
-              {displayDate}
-              {typedPhoto.camera_model &&
-                ` · shot on ${typedPhoto.camera_model}`}
-              {` · by ${typedPhoto.artist || siteConfig.author.name}`}
-            </p>
-          </figcaption>
-        </figure>
-        <aside className="flex min-w-0 flex-col gap-10">
-          <section aria-label="Photograph details">
-            <h2 className="mb-1 text-sm font-medium text-ink">Details</h2>
-            <dl className="border-t border-line">
-              <InfoItem label="Focal length" value={typedPhoto.focal_length} />
-              <InfoItem label="Aperture" value={typedPhoto.aperture} />
-              <InfoItem
-                label="Shutter speed"
-                value={typedPhoto.shutter_speed}
-              />
-              <InfoItem label="ISO" value={typedPhoto.iso?.toString()} />
-            </dl>
-          </section>
-          {references.length > 0 && (
-            <section aria-label="Related collections">
-              <h2 className="mb-1 text-sm font-medium text-ink">Part of</h2>
-              <ul className="divide-y divide-line border-y border-line last:border-b-0">
-                {references.map((ref) => (
-                  <ReferenceRow key={`${ref.kind}-${ref.id}`} link={ref} />
-                ))}
-              </ul>
-            </section>
-          )}
-          <section
-            aria-label="Download and share"
-            className="grid grid-cols-1 gap-3 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2"
-          >
-            <ShareButton
-              title={typedPhoto.title || ""}
-              photoId={typedPhoto.id}
-              imageUrl={typedPhoto.cloudinary_url}
-              shareCount={typedPhoto.shares || 0}
-            />
-            <DownloadButton
-              photoId={typedPhoto.id}
-              cloudinaryUrl={typedPhoto.cloudinary_url}
-              downloadCount={typedPhoto.downloads || 0}
-            />
-          </section>
-        </aside>
-      </div>
+      <BackButton label="All photographs" className="mb-5 md:mb-6" />
+      <PhotoDetailView
+        photo={typedPhoto}
+        displayDate={displayDate}
+        references={references}
+      />
     </main>
   );
 }
