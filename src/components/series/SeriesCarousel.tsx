@@ -362,11 +362,6 @@ export default function SeriesCarousel({
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
                 Frame {activeIndex + 1} Specifications
               </h3>
-              <span className="text-xs text-muted/60">·</span>
-              <span className="text-xs text-muted truncate">
-                {currentPhoto.title ||
-                  `Frame ${String(activeIndex + 1).padStart(2, "0")}`}
-              </span>
             </div>
             <button
               type="button"
@@ -381,11 +376,11 @@ export default function SeriesCarousel({
           currentPhoto.aperture ||
           currentPhoto.shutter_speed ||
           currentPhoto.iso ? (
-            <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:grid-cols-3 md:grid-cols-6">
-              <div>
+            <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:flex sm:items-start sm:justify-between">
+              <div className="col-span-2 sm:col-span-1">
                 <dt className="text-muted">Camera</dt>
                 <dd
-                  className="mt-0.5 font-medium text-ink truncate"
+                  className="mt-0.5 font-medium text-ink truncate sm:max-w-[220px]"
                   title={currentPhoto.camera_model || undefined}
                 >
                   {currentPhoto.camera_model || "—"}
@@ -409,16 +404,10 @@ export default function SeriesCarousel({
                   {currentPhoto.shutter_speed || "—"}
                 </dd>
               </div>
-              <div>
+              <div className="sm:text-right">
                 <dt className="text-muted">ISO</dt>
                 <dd className="mt-0.5 font-medium text-ink">
                   {currentPhoto.iso || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Captured</dt>
-                <dd className="mt-0.5 font-medium text-ink truncate">
-                  {activeDisplayDate}
                 </dd>
               </div>
             </dl>
@@ -427,14 +416,6 @@ export default function SeriesCarousel({
               <p className="text-sm sm:text-base md:text-lg font-medium text-muted">
                 I lost it 😭
               </p>
-              {activeDisplayDate && (
-                <p className="text-xs sm:text-sm text-muted">
-                  Captured{" "}
-                  <span className="font-medium text-ink">
-                    {activeDisplayDate}
-                  </span>
-                </p>
-              )}
             </div>
           )}
         </aside>

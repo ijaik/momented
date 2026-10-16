@@ -19,6 +19,10 @@ export function parsePhotoDate(dateStr?: string | null): Date | null {
   const parsed = new Date(trimmed);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
+export function isPhotoUndated(photo: { taken_at?: string | null }): boolean {
+  const parsed = parsePhotoDate(photo.taken_at);
+  return !parsed || parsed.getUTCFullYear() <= 1970;
+}
 export function getPhotoDate(photo: {
   taken_at?: string | null;
   created_at?: string | null;
