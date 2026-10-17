@@ -29,7 +29,7 @@ function isTransformSegment(segment: string): boolean {
   return Boolean(match && TRANSFORM_OPS.has(match[1]));
 }
 export function buildCloudinaryUrl(
-  url: string,
+  url: string | null | undefined,
   transformations: string[] = [],
 ): string {
   if (!url || typeof url !== "string") return "";

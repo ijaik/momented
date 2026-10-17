@@ -44,11 +44,7 @@ export default async function SeriesPage() {
       <PageHeader
         title="Series"
         description="Ordered sequences of moments captured in the same continuum of light, movement, and time."
-        meta={
-          count > 0
-            ? `${count} ${count === 1 ? "series" : "series"}`
-            : undefined
-        }
+        meta={count > 0 ? `${count} series` : undefined}
       />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">

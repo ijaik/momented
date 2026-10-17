@@ -2,24 +2,13 @@
 import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb } from "@/lib/db/supabase-admin";
+import {
+  assertBoundedString,
+  assertValidUUID,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_TITLE_LENGTH,
+} from "@/lib/utils/validation";
 
-const MAX_TITLE_LENGTH = 200;
-const MAX_DESCRIPTION_LENGTH = 5_000;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function assertValidUUID(id: string | number, label = "ID"): void {
-  if (typeof id === "number") return;
-  if (typeof id !== "string" || !UUID_PATTERN.test(id))
-    throw new Error(`Invalid ${label}.`);
-}
-function assertBoundedString(
-  value: string,
-  maxLength: number,
-  label: string,
-): void {
-  if (value.length > maxLength)
-    throw new Error(`${label} exceeds maximum length of ${maxLength}.`);
-}
 function revalidateAfterCalendarChange() {
   updateTag("collections");
   updateTag("photos");

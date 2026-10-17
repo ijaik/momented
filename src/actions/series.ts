@@ -2,35 +2,15 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb } from "@/lib/db/supabase-admin";
+import {
+  assertBoundedArray,
+  assertBoundedString,
+  assertValidUUID,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_SERIES_PHOTO_IDS,
+  MAX_TITLE_LENGTH,
+} from "@/lib/utils/validation";
 
-const MAX_TITLE_LENGTH = 200;
-const MAX_DESCRIPTION_LENGTH = 5_000;
-const MAX_PHOTO_IDS = 100;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function assertValidUUID(id: string, label = "ID"): void {
-  if (typeof id !== "string" || !UUID_PATTERN.test(id)) {
-    throw new Error(`Invalid ${label}.`);
-  }
-}
-function assertBoundedString(
-  value: string,
-  maxLength: number,
-  label: string,
-): void {
-  if (value.length > maxLength) {
-    throw new Error(`${label} exceeds maximum length of ${maxLength}.`);
-  }
-}
-function assertBoundedArray(
-  arr: unknown[],
-  maxLength: number,
-  label: string,
-): void {
-  if (arr.length > maxLength) {
-    throw new Error(`${label} exceeds maximum of ${maxLength} items.`);
-  }
-}
 function revalidateAfterSeriesChange(id?: string) {
   updateTag("series");
   updateTag("photos");
@@ -84,7 +64,7 @@ export async function createSeriesAction(
     assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
   }
   if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_PHOTO_IDS, "Photo IDs");
+  assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
   for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
   const db = getAdminDb();
   const coverId = coverPhotoRaw || photoIds[0] || null;
@@ -134,7 +114,7 @@ export async function editSeriesAction(
     assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
   }
   if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_PHOTO_IDS, "Photo IDs");
+  assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
   for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
   const db = getAdminDb();
   const coverId = coverPhotoRaw || photoIds[0] || null;

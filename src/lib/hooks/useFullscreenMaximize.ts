@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseFullscreenMaximizeOptions {
   onMaximize?: () => void;
@@ -7,9 +7,13 @@ interface UseFullscreenMaximizeOptions {
 }
 export function useFullscreenMaximize(options?: UseFullscreenMaximizeOptions) {
   const [isMaximized, setIsMaximized] = useState(false);
+  const optionsRef = useRef(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  });
   const enterMaximize = useCallback(async () => {
     setIsMaximized(true);
-    options?.onMaximize?.();
+    optionsRef.current?.onMaximize?.();
     try {
       if (
         typeof document !== "undefined" &&
@@ -19,16 +23,16 @@ export function useFullscreenMaximize(options?: UseFullscreenMaximizeOptions) {
         await document.documentElement.requestFullscreen().catch(() => {});
       }
     } catch {}
-  }, [options]);
+  }, []);
   const exitMaximize = useCallback(async () => {
     setIsMaximized(false);
-    options?.onMinimize?.();
+    optionsRef.current?.onMinimize?.();
     try {
       if (typeof document !== "undefined" && document.fullscreenElement) {
         await document.exitFullscreen().catch(() => {});
       }
     } catch {}
-  }, [options]);
+  }, []);
   const toggleMaximize = useCallback(async () => {
     if (isMaximized) {
       await exitMaximize();
@@ -44,13 +48,13 @@ export function useFullscreenMaximize(options?: UseFullscreenMaximizeOptions) {
         isMaximized
       ) {
         setIsMaximized(false);
-        options?.onMinimize?.();
+        optionsRef.current?.onMinimize?.();
       }
     };
     document.addEventListener("fullscreenchange", onFullscreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, [isMaximized, options]);
+  }, [isMaximized]);
   useEffect(() => {
     if (isMaximized) {
       const originalOverflow = document.body.style.overflow;

@@ -6,10 +6,9 @@ import { getAdminDb } from "@/lib/db/supabase-admin";
 
 const STAT_WINDOW_MS = 60 * 60 * 1000;
 const STAT_MAX_REQUESTS = 120;
-const PHOTO_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-function assertValidPhotoId(photoId: string): void {
-  if (!PHOTO_ID_PATTERN.test(photoId)) throw new Error("Invalid photo id.");
-}
+
+import { assertValidPhotoId } from "@/lib/utils/validation";
+
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
   return (

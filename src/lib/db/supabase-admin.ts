@@ -32,16 +32,29 @@ export async function syncJunction(
   targetIds: string[],
   { skipDelete = false }: { skipDelete?: boolean } = {},
 ): Promise<void> {
-  if (!skipDelete)
-    await db
+  if (!skipDelete) {
+    const { error: deleteError } = await db
       .from(table)
       .delete()
       .eq(mainCol as never, mainId as never);
+    if (deleteError) {
+      throw new Error(
+        `Failed to clear junction table ${table}: ${deleteError.message}`,
+      );
+    }
+  }
   if (targetIds?.length > 0) {
     const inserts = targetIds.map((targetId) => ({
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));
-    await db.from(table).insert(inserts as never);
+    const { error: insertError } = await db
+      .from(table)
+      .insert(inserts as never);
+    if (insertError) {
+      throw new Error(
+        `Failed to update junction table ${table}: ${insertError.message}`,
+      );
+    }
   }
 }

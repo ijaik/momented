@@ -61,11 +61,32 @@ function getLoginLimiter(r: Redis): Ratelimit {
   }
   return _loginLimiter;
 }
+const MAX_MEM_CACHE_SIZE = 1_000;
 const memStatStore = new Map<string, { count: number; resetAt: number }>();
 const memLoginFailures = new Map<
   string,
   { failures: number; resetAt: number; lockedUntil?: number }
 >();
+function pruneExpiredMapEntries<T extends { resetAt: number }>(
+  map: Map<string, T>,
+  now: number,
+): void {
+  if (map.size <= MAX_MEM_CACHE_SIZE) return;
+  for (const [k, v] of map.entries()) {
+    if (now > v.resetAt) {
+      map.delete(k);
+    }
+  }
+  if (map.size > MAX_MEM_CACHE_SIZE) {
+    const keysToDelete = Array.from(map.keys()).slice(
+      0,
+      Math.floor(MAX_MEM_CACHE_SIZE / 2),
+    );
+    for (const k of keysToDelete) {
+      map.delete(k);
+    }
+  }
+}
 export async function checkRateLimit(
   key: string,
   _maxRequests: number = STAT_MAX_REQUESTS,
@@ -86,6 +107,7 @@ export async function checkRateLimit(
   const now = Date.now();
   const entry = memStatStore.get(key);
   if (!entry || now > entry.resetAt) {
+    pruneExpiredMapEntries(memStatStore, now);
     memStatStore.set(key, { count: 1, resetAt: now + _windowMs });
     return { limited: false, retryAfterSeconds: 0 };
   }
@@ -141,6 +163,7 @@ export async function recordLoginFailure(
   const now = Date.now();
   const entry = memLoginFailures.get(key);
   if (!entry || now > entry.resetAt) {
+    pruneExpiredMapEntries(memLoginFailures, now);
     memLoginFailures.set(key, {
       failures: 1,
       resetAt: now + LOGIN_WINDOW_MS,

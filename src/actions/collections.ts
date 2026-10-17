@@ -6,33 +6,15 @@ import {
   type JunctionTable,
   syncJunction,
 } from "@/lib/db/supabase-admin";
+import {
+  assertBoundedArray,
+  assertBoundedString,
+  assertValidUUID,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_PHOTO_IDS,
+  MAX_TITLE_LENGTH,
+} from "@/lib/utils/validation";
 
-const MAX_TITLE_LENGTH = 200;
-const MAX_DESCRIPTION_LENGTH = 5_000;
-const MAX_PHOTO_IDS = 500;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-function assertValidUUID(id: string | number, label = "ID"): void {
-  if (typeof id === "number") return;
-  if (typeof id !== "string" || !UUID_PATTERN.test(id))
-    throw new Error(`Invalid ${label}.`);
-}
-function assertBoundedString(
-  value: string,
-  maxLength: number,
-  label: string,
-): void {
-  if (value.length > maxLength)
-    throw new Error(`${label} exceeds maximum length of ${maxLength}.`);
-}
-function assertBoundedArray(
-  arr: unknown[],
-  maxLength: number,
-  label: string,
-): void {
-  if (arr.length > maxLength)
-    throw new Error(`${label} exceeds maximum of ${maxLength} items.`);
-}
 function parseFormData(formData: FormData) {
   const title = (formData.get("title") as string) || "";
   const description = (formData.get("description") as string) || "";
@@ -177,11 +159,9 @@ async function getCollections(
   return (data ?? []).map((row) => ({
     id: row.id,
     title: row.title,
-    description: (row as Record<string, unknown>).description as string | null,
-    cover_photo_id: (row as Record<string, unknown>).cover_photo_id as
-      | string
-      | number
-      | null,
+    description: (row as { description: string | null }).description,
+    cover_photo_id: (row as { cover_photo_id: string | number | null })
+      .cover_photo_id,
     photos: (
       (row.photos ?? []) as {
         id: string | number;

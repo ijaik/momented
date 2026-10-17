@@ -5,6 +5,16 @@ import { verifyAdminSession } from "@/lib/auth/auth";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
 import { parsePhotoDate } from "@/lib/utils/dateUtils";
+import {
+  CLOUDINARY_PUBLIC_ID_PATTERN,
+  CLOUDINARY_URL_PATTERN,
+  MAX_ARTIST_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_DIMENSION,
+  MAX_PHOTO_IDS,
+  MAX_TITLE_LENGTH,
+  UUID_PATTERN,
+} from "@/lib/utils/validation";
 export interface CloudinarySignatureResponse {
   timestamp: number;
   folder: string;
@@ -72,15 +82,6 @@ export async function getCloudinarySignatureAction(): Promise<CloudinarySignatur
     cloudName,
   };
 }
-const CLOUDINARY_URL_PATTERN = /^https:\/\/res\.cloudinary\.com\/[^\s]+$/;
-const CLOUDINARY_PUBLIC_ID_PATTERN = /^[A-Za-z0-9_/-]{1,200}$/;
-const MAX_TITLE_LENGTH = 200;
-const MAX_DESCRIPTION_LENGTH = 5_000;
-const MAX_ARTIST_LENGTH = 200;
-const MAX_DIMENSION = 30_000;
-const MAX_JUNCTION_IDS = 500;
-const UUID_PATTERN =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function assertSafeAsset(data: SavePhotoPayload): void {
   if (
     typeof data.secure_url !== "string" ||
@@ -108,7 +109,7 @@ function assertSafeAsset(data: SavePhotoPayload): void {
   )
     throw new Error("Invalid image dimensions.");
   for (const arr of [data.collectionIds, data.ruleIds]) {
-    if (arr && arr.length > MAX_JUNCTION_IDS)
+    if (arr && arr.length > MAX_PHOTO_IDS)
       throw new Error("Too many junction IDs.");
     for (const id of arr ?? []) {
       if (!UUID_PATTERN.test(id)) throw new Error("Invalid junction ID.");
