@@ -45,22 +45,24 @@ export async function getHomePhotos() {
   "use cache";
   cacheTag("photos");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("photos")
     .select("id, title, cloudinary_url, width, height, camera_model")
     .order("created_at", { ascending: false });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getPhotoById(id: string) {
   "use cache";
   cacheTag(`photo-${id}`, "photos", "series");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("photos")
     .select(
       "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
     )
     .eq("id", id)
     .single();
+  return { data: data ?? null, error: error?.message ?? null };
 }
 export interface AdjacentPhotoSummary {
   id: string;
@@ -104,13 +106,14 @@ async function getPhotosForEntity(
   "use cache";
   cacheTag("photos", "collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("photos")
     .select(
       `${PHOTO_CARD_COLUMNS}, ${junction.table}!inner(${junction.column})`,
     )
     .eq(`${junction.table}.${junction.column}`, entityId)
     .order("created_at", { ascending });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export function getPhotosForCollection(collectionId: string) {
   return getPhotosForEntity(COLLECTION_JUNCTION, collectionId);
@@ -125,79 +128,87 @@ export async function getCollectionById(id: string) {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("collections")
     .select("title, description")
     .eq("id", id)
     .single();
+  return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getRuleCollectionById(id: string) {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("rule_collections")
     .select("title, description")
     .eq("id", id)
     .single();
+  return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getCalendarMonthById(monthIndex: number) {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("calendar_collections")
     .select("title, description")
     .eq("id", monthIndex)
     .single();
+  return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getCuratedCollections() {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("collections")
     .select("*, photos!photo_collections(id, cloudinary_url)")
     .order("created_at", { ascending: false });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getRuleCollectionsList() {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("rule_collections")
     .select("*, photos!photo_rule_collections(id, cloudinary_url)")
     .order("created_at", { ascending: false });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getCalendarCollectionsList() {
   "use cache";
   cacheTag("collections");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("calendar_collections")
     .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
     .order("id", { ascending: true });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesList() {
   "use cache";
   cacheTag("series", "photos");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("series")
     .select(
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url, width, height))",
     )
     .order("created_at", { ascending: false });
+  return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesById(id: string) {
   "use cache";
   cacheTag(`series-${id}`, "series", "photos");
   cacheLife("weeks");
-  return supabase
+  const { data, error } = await supabase
     .from("series")
     .select(
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
     )
     .eq("id", id)
     .single();
+  return { data: data ?? null, error: error?.message ?? null };
 }

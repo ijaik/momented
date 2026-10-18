@@ -26,8 +26,9 @@ export default function PhotoCard({
         height={photo.height || 600}
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-        fetchPriority={index < 3 ? "high" : index < 12 ? "auto" : "low"}
-        loading={index < 12 ? "eager" : "lazy"}
+        priority={index === 0}
+        loading={index === 0 ? "eager" : "lazy"}
+        fetchPriority={index === 0 ? "high" : "low"}
       />
       <div
         aria-hidden="true"

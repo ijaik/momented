@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/cloudinary/cloudinaryLoader.ts",
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
   async headers() {
     return [

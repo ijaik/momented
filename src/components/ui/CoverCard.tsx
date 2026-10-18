@@ -40,12 +40,13 @@ export default function CoverCard({
           <>
             <Image
               src={coverImage}
-              alt=""
+              alt={`cover image for ${item.title}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-              fetchPriority={index === 0 ? "high" : index < 6 ? "auto" : "low"}
-              loading={index < 6 ? "eager" : "lazy"}
+              priority={index === 0}
+              fetchPriority={index === 0 ? "high" : "low"}
+              loading={index === 0 ? "eager" : "lazy"}
             />
             {photoCount > 0 && (
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">

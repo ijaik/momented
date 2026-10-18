@@ -10,7 +10,6 @@ export const metadata: Metadata = {
     "Ordered sequences of moments captured in the same frame of time — continuous visual narratives on Momented.",
   alternates: { canonical: "/series" },
 };
-export const instant = false;
 interface RawSeriesPhoto {
   position: number;
   photos: {

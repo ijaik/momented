@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
@@ -9,7 +10,7 @@ import {
   getRuleCollectionsList,
 } from "@/lib/db/queries";
 import type { BaseCollection, PageProps } from "@/types";
-export const instant = false;
+
 function resolveTab(tab?: string): keyof typeof TAB_TITLES {
   return tab === "calendar"
     ? "calendar"
@@ -56,9 +57,34 @@ const TAB_LABELS: { key: string; name: string; href: string }[] = [
   { key: "rules", name: "Rules", href: "/collections?tab=rules" },
   { key: "calendar", name: "Calendar", href: "/collections?tab=calendar" },
 ];
-export default async function CollectionsPage({
+function CollectionsFallback() {
+  return (
+    <div className="animate-pulse">
+      <div className="mb-8 space-y-3">
+        <div className="h-8 w-44 rounded-xs bg-muted/20" />
+        <div className="h-4 w-80 rounded-xs bg-muted/15" />
+      </div>
+      <div className="mb-10 flex gap-8 border-b border-line pb-3">
+        <div className="h-4 w-16 rounded-xs bg-muted/20" />
+        <div className="h-4 w-16 rounded-xs bg-muted/15" />
+        <div className="h-4 w-16 rounded-xs bg-muted/15" />
+      </div>
+      <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="aspect-4/3 rounded-xs border border-line/60 bg-soft/70"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+async function CollectionsView({
   searchParams,
-}: PageProps<Record<string, never>, { tab?: string }>) {
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { tab } = await searchParams;
   const activeTab = resolveTab(tab);
   let displayCollections: BaseCollection[] | null = null;
@@ -81,7 +107,7 @@ export default async function CollectionsPage({
   };
   const count = displayCollections?.length ?? 0;
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
+    <>
       <PageHeader
         title={TAB_TITLES[activeTab].title}
         description={TAB_TITLES[activeTab].description}
@@ -124,6 +150,17 @@ export default async function CollectionsPage({
       ) : (
         <EmptyState description="Nothing here yet — this view is still waiting for its first collection." />
       )}
+    </>
+  );
+}
+export default function CollectionsPage({
+  searchParams,
+}: PageProps<Record<string, never>, { tab?: string }>) {
+  return (
+    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
+      <Suspense fallback={<CollectionsFallback />}>
+        <CollectionsView searchParams={searchParams} />
+      </Suspense>
     </main>
   );
 }
