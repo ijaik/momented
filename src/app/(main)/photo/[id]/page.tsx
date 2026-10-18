@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
 import type { ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
-import { getAllIds, getPhotoById } from "@/lib/db/queries";
+import { getAdjacentPhotos, getAllIds, getPhotoById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
@@ -46,7 +46,10 @@ export default async function PhotoDetail({
       </main>
     );
   }
-  const { data: photo } = await getPhotoById(id);
+  const [{ data: photo }, adjacent] = await Promise.all([
+    getPhotoById(id),
+    getAdjacentPhotos(id),
+  ]);
   if (!photo) return <EmptyState description="Photo not found." />;
   const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(
@@ -106,6 +109,7 @@ export default async function PhotoDetail({
         photo={typedPhoto}
         displayDate={displayDate}
         references={references}
+        adjacent={adjacent}
       />
     </main>
   );

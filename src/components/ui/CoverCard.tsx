@@ -1,3 +1,4 @@
+import { ArrowUpRight, Layers } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -34,17 +35,31 @@ export default function CoverCard({
   const plural = countLabel?.plural || "photographs";
   return (
     <Link href={href} className="focus-media group block">
-      <div className="relative aspect-4/3 overflow-hidden border border-line bg-soft">
+      <div className="relative aspect-4/3 overflow-hidden rounded-xs border border-line/70 bg-soft shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-500 group-hover:border-signal/50 group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.09)]">
         {coverImage ? (
-          <Image
-            src={coverImage}
-            alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-            fetchPriority={index === 0 ? "high" : index < 6 ? "auto" : "low"}
-            loading={index < 6 ? "eager" : "lazy"}
-          />
+          <>
+            <Image
+              src={coverImage}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              fetchPriority={index === 0 ? "high" : index < 6 ? "auto" : "low"}
+              loading={index < 6 ? "eager" : "lazy"}
+            />
+            {photoCount > 0 && (
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">
+                <Layers
+                  size={12}
+                  aria-hidden="true"
+                  className="shrink-0 text-white/80"
+                />
+                <span>
+                  {photoCount} {photoCount === 1 ? singular : plural}
+                </span>
+              </span>
+            )}
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-sm text-muted">No cover yet</span>
@@ -52,16 +67,21 @@ export default function CoverCard({
         )}
       </div>
       <div className="mt-4 flex items-baseline justify-between gap-4">
-        <h2 className="font-serif text-2xl font-medium leading-tight tracking-tight text-ink transition-opacity group-hover:opacity-70">
-          {item.title}
+        <h2 className="flex items-center gap-1.5 font-serif text-2xl font-medium leading-tight tracking-tight text-ink transition-colors group-hover:text-signal">
+          <span>{item.title}</span>
+          <ArrowUpRight
+            size={16}
+            aria-hidden="true"
+            className="shrink-0 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
+          />
         </h2>
         {meta && (
           <span className="shrink-0 text-[13px] text-muted">{meta}</span>
         )}
       </div>
-      {photoCount > 0 && (
-        <p className="mt-1 text-[13px] text-muted">
-          {photoCount} {photoCount === 1 ? singular : plural}
+      {item.description && (
+        <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted">
+          {item.description}
         </p>
       )}
     </Link>

@@ -91,7 +91,7 @@ export default async function CollectionsPage({
             : undefined
         }
       />
-      <div className="mb-10 -mt-2 flex gap-7 overflow-x-auto overflow-y-hidden border-b border-line">
+      <div className="mb-10 -mt-2 flex gap-8 overflow-x-auto overflow-y-hidden border-b border-line">
         {TAB_LABELS.map((t) => {
           const isActive = t.key === activeTab;
           return (
@@ -99,10 +99,10 @@ export default async function CollectionsPage({
               key={t.key}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm transition-colors ${
+              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-all ${
                 isActive
-                  ? "border-ink font-medium text-ink"
-                  : "border-transparent text-muted hover:border-ink/30 hover:text-ink"
+                  ? "border-signal text-ink font-semibold"
+                  : "border-transparent text-muted hover:border-line hover:text-ink"
               }`}
             >
               {t.name}

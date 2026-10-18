@@ -25,6 +25,9 @@ const schibsted = Schibsted_Grotesk({
 });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  verification: {
+    google: "GMp5Gc1BgPdvcJHZzWt8tXY79MP_U0BLy4pu-0-QNgA",
+  },
   title: {
     default: "Momented",
     template: "%s | Momented",
@@ -95,15 +98,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${leckerli.variable} ${fraunces.variable} ${schibsted.variable}`}
     >
       <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
-        <a
-          href="#main-content"
-          className="fixed left-4 top-4 z-200 -translate-y-20 rounded-md bg-solid px-4 py-2 text-sm font-medium text-on-solid opacity-0 transition-none focus:translate-y-0 focus:opacity-100"
-        >
-          Skip to content
-        </a>
-        <div className="grow" id="main-content" tabIndex={-1}>
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );

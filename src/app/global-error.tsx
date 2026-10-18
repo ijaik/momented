@@ -17,7 +17,7 @@ export default function GlobalError({
         <h1 className="mt-6 font-serif text-3xl font-medium tracking-tight sm:text-4xl">
           Something went wrong
         </h1>
-        <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#5c5750]">
+        <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
           An unexpected error occurred while loading this page. Please try
           again.
         </p>

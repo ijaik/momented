@@ -90,7 +90,7 @@ export default function CalendarMonthView({
                 onClick={() => handleTabChange(tab.key)}
                 className={`relative whitespace-nowrap pb-3 text-sm font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
                   isActive
-                    ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-ink"
+                    ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-ink"
                     : "text-muted hover:text-ink"
                 }`}
               >

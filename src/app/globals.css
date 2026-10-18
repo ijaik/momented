@@ -6,22 +6,20 @@
   --font-serif:
     var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
   --font-script: var(--font-leckerli), "Comic Sans MS", cursive;
-  /* Light theme */
-  --color-paper: #faf9f6; /* gallery wall */
-  --color-surface: #ffffff; /* raised: inputs, dialogs, admin rows */
-  --color-ink: #201e1a; /* strongest text */
-  --color-muted: #5c5750; /* secondary text (passes AA on paper) */
-  --color-faint: #949089; /* decorative only — never for text */
-  --color-line: #e7e3db; /* hairlines & borders */
-  --color-soft: #f0ede7; /* quiet fills: tag bg, hover bg */
+  --color-paper: #faf9f6;
+  --color-surface: #ffffff;
+  --color-ink: #201e1a;
+  --color-muted: #5c5750;
+  --color-faint: #949089;
+  --color-line: #e7e3db;
+  --color-soft: #f0ede7;
   --color-soft-strong: #e2ddd3;
-  --color-solid: #201e1a; /* solid control fill */
-  --color-on-solid: #faf9f6; /* text on solid fill */
-  --color-signal: #6f5300; /* darkroom amber — functional accents only */
+  --color-solid: #201e1a;
+  --color-on-solid: #faf9f6;
+  --color-signal: #6f5300;
   --color-danger: #a3271f;
   --color-danger-soft: #f7e6e2;
 }
-/* Dark theme — matte charcoal instead of pure black for warmth */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-paper: #171614;
@@ -58,18 +56,14 @@
     background-color: var(--color-ink);
     color: var(--color-paper);
   }
-  /* One consistent keyboard-focus language across every control */
   :focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
-  /* Remove the cosmetic focus outline on links over imagery; the browser
-     default (above) is reintroduced via `.focus-ring-media` when needed. */
   summary {
     cursor: pointer;
   }
 }
-/* Focus ring that stays visible over photographs */
 .focus-media:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -2px;
@@ -77,8 +71,6 @@
     0 0 0 4px rgb(0 0 0 / 35%),
     0 0 0 1px rgb(255 255 255 / 90%) inset;
 }
-/* Respect reduced-motion: collapse transitions/animations. Unlayered so it
-   outranks Tailwind's layered utilities without needing !important. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -89,7 +81,6 @@
     scroll-behavior: auto;
   }
 }
-/* Dialog entrance — subtle, single orchestrated moment */
 @keyframes dialog-backdrop-in {
   from {
     opacity: 0;
@@ -107,4 +98,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

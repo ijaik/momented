@@ -2,7 +2,7 @@ import { type ReactNode, Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <>
       <Suspense
         fallback={
           <div className="fixed inset-x-0 top-0 z-50 h-16 border-b border-line bg-paper/85 backdrop-blur-md" />
@@ -21,6 +21,6 @@ export default function MainLayout({ children }: { children: ReactNode }) {
           </p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

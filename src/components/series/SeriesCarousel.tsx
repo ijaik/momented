@@ -1,5 +1,14 @@
 "use client";
-import { ChevronLeft, ChevronRight, Info, Maximize2 } from "lucide-react";
+import {
+  Camera,
+  ChevronLeft,
+  ChevronRight,
+  CircleDot,
+  Clock,
+  Film,
+  Info,
+  Maximize2,
+} from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
@@ -61,11 +70,17 @@ export default function SeriesCarousel({
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
         goToSlide(activeIndex + 1);
+      } else if (e.code === "Space" && !isMaximized) {
+        e.preventDefault();
+        goToSlide(activeIndex < totalSlides - 1 ? activeIndex + 1 : 0);
+      } else if (e.key.toLowerCase() === "f" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        toggleMaximize();
       }
     };
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activeIndex, goToSlide]);
+  }, [activeIndex, goToSlide, isMaximized, toggleMaximize, totalSlides]);
   const handleTouchStart = (e: React.TouchEvent) => {
     if (totalSlides <= 1) return;
     const touch = e.touches[0];
@@ -357,60 +372,71 @@ export default function SeriesCarousel({
           aria-label="Camera specifications for active frame"
           className="w-full rounded-lg border border-line bg-surface/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs transition-all"
         >
-          <div className="flex items-baseline justify-between border-b border-line pb-2.5">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-                Frame {activeIndex + 1} Specifications
-              </h3>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowExifDrawer(false)}
-              className="text-xs font-medium text-muted hover:text-ink transition-colors"
-            >
-              Close
-            </button>
-          </div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted border-b border-line pb-2.5">
+            Frame {activeIndex + 1} Details
+          </h3>
           {currentPhoto.camera_model ||
           currentPhoto.focal_length ||
           currentPhoto.aperture ||
           currentPhoto.shutter_speed ||
           currentPhoto.iso ? (
-            <dl className="mt-3.5 grid grid-cols-2 gap-x-6 gap-y-3 text-xs sm:flex sm:items-start sm:justify-between">
-              <div className="col-span-2 sm:col-span-1">
-                <dt className="text-muted">Camera</dt>
-                <dd
-                  className="mt-0.5 font-medium text-ink truncate sm:max-w-[220px]"
-                  title={currentPhoto.camera_model || undefined}
-                >
-                  {currentPhoto.camera_model || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Focal length</dt>
-                <dd className="mt-0.5 font-medium text-ink">
-                  {currentPhoto.focal_length || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Aperture</dt>
-                <dd className="mt-0.5 font-medium text-ink">
-                  {currentPhoto.aperture || "—"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">Shutter</dt>
-                <dd className="mt-0.5 font-medium text-ink">
-                  {currentPhoto.shutter_speed || "—"}
-                </dd>
-              </div>
-              <div className="sm:text-right">
-                <dt className="text-muted">ISO</dt>
-                <dd className="mt-0.5 font-medium text-ink">
-                  {currentPhoto.iso || "—"}
-                </dd>
-              </div>
-            </dl>
+            <div className="mt-3.5 space-y-3">
+              {currentPhoto.camera_model && (
+                <div className="flex items-center gap-2.5 border-b border-line pb-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-xs border border-line bg-soft text-ink">
+                    <Camera size={14} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">
+                      Camera
+                    </span>
+                    <p className="truncate text-xs font-medium text-ink">
+                      {currentPhoto.camera_model}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <CircleDot size={11} aria-hidden="true" />
+                    <span>Focal</span>
+                  </dt>
+                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
+                    {currentPhoto.focal_length || "—"}
+                  </dd>
+                </div>
+                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <span className="font-serif text-xs font-bold leading-none">
+                      ƒ
+                    </span>
+                    <span>Aperture</span>
+                  </dt>
+                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
+                    {currentPhoto.aperture || "—"}
+                  </dd>
+                </div>
+                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <Clock size={11} aria-hidden="true" />
+                    <span>Shutter</span>
+                  </dt>
+                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
+                    {currentPhoto.shutter_speed || "—"}
+                  </dd>
+                </div>
+                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <Film size={11} aria-hidden="true" />
+                    <span>ISO</span>
+                  </dt>
+                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
+                    {currentPhoto.iso ? `ISO ${currentPhoto.iso}` : "—"}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           ) : (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm sm:text-base md:text-lg font-medium text-muted">

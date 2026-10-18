@@ -62,6 +62,40 @@ export async function getPhotoById(id: string) {
     .eq("id", id)
     .single();
 }
+export interface AdjacentPhotoSummary {
+  id: string;
+  title: string | null;
+  cloudinary_url: string;
+}
+export interface AdjacentPhotos {
+  prev: AdjacentPhotoSummary | null;
+  next: AdjacentPhotoSummary | null;
+}
+export async function getAdjacentPhotos(
+  currentId: string,
+): Promise<AdjacentPhotos> {
+  "use cache";
+  cacheTag("photos");
+  cacheLife("weeks");
+  const { data: photos } = await supabase
+    .from("photos")
+    .select("id, title, cloudinary_url")
+    .order("created_at", { ascending: false });
+  if (!photos || photos.length === 0) return { prev: null, next: null };
+  const currentIndex = photos.findIndex(
+    (p) => String(p.id) === String(currentId),
+  );
+  if (currentIndex === -1) return { prev: null, next: null };
+  const prev =
+    currentIndex > 0
+      ? (photos[currentIndex - 1] as AdjacentPhotoSummary)
+      : null;
+  const next =
+    currentIndex < photos.length - 1
+      ? (photos[currentIndex + 1] as AdjacentPhotoSummary)
+      : null;
+  return { prev, next };
+}
 async function getPhotosForEntity(
   junction: PhotoJunction,
   entityId: string | number,
