@@ -1,7 +1,8 @@
 "use client";
 import { Check, Download, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { incrementDownload } from "@/actions/download";
+import { useEffect, useRef, useState } from "react";
+import { getDownloadUrlAction } from "@/actions/download";
+import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export interface DownloadButtonProps {
   photoId: string | number;
   cloudinaryUrl: string;
@@ -20,7 +21,6 @@ export default function DownloadButton({
   fileName,
 }: DownloadButtonProps) {
   const [status, setStatus] = useState<DownloadStatus>("idle");
-  const [, startTransition] = useTransition();
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
@@ -32,37 +32,28 @@ export default function DownloadButton({
   const handleDownload = async () => {
     if (status === "downloading") return;
     setStatus("downloading");
-    startTransition(async () => {
-      try {
-        await incrementDownload(String(photoId));
-      } catch (countError) {
-        console.warn("Failed to record download count:", countError);
-      }
-    });
     const targetFileName = fileName || `momented-${photoId}.jpg`;
     try {
-      const response = await fetch(cloudinaryUrl);
-      if (!response.ok)
-        throw new Error(`Download failed with status ${response.status}`);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const { downloadUrl } = await getDownloadUrlAction({
+        photoId,
+        cloudinaryUrl,
+        fileName: targetFileName,
+      });
       const link = document.createElement("a");
-      link.href = url;
+      link.href = downloadUrl;
       link.download = targetFileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
       setStatus("success");
       resetTimerRef.current = setTimeout(() => {
         setStatus("idle");
       }, 2400);
     } catch {
+      const fallbackUrl = buildCloudinaryUrl(cloudinaryUrl, ["fl_attachment"]);
       const link = document.createElement("a");
-      link.href = cloudinaryUrl;
+      link.href = fallbackUrl;
       link.download = targetFileName;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

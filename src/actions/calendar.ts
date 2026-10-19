@@ -53,7 +53,13 @@ export async function editCalendarCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  assertValidUUID(id, "Calendar ID");
+  const calendarId =
+    typeof id === "number" ? id : Number.parseInt(String(id), 10);
+  if (!Number.isInteger(calendarId) || calendarId < 1 || calendarId > 12) {
+    throw new Error(
+      "Invalid Calendar ID: must be an integer between 1 and 12.",
+    );
+  }
   const title = (formData.get("title") as string) || "";
   const description = (formData.get("description") as string) || "";
   const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
@@ -64,7 +70,7 @@ export async function editCalendarCollectionAction(
   const { error } = await db
     .from("calendar_collections")
     .update({ title, description, cover_photo_id: coverPhotoRaw })
-    .eq("id", id as never);
+    .eq("id", calendarId as never);
   if (error) throw new Error(error.message);
   revalidateAfterCalendarChange();
   return { success: true };

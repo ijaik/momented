@@ -44,7 +44,9 @@ export async function syncJunction(
     }
   }
   if (targetIds?.length > 0) {
-    const inserts = targetIds.map((targetId) => ({
+    const uniqueTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
+    if (uniqueTargetIds.length === 0) return;
+    const inserts = uniqueTargetIds.map((targetId) => ({
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));

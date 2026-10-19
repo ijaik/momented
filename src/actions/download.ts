@@ -2,13 +2,12 @@
 import { updateTag } from "next/cache";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
+import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb } from "@/lib/db/supabase-admin";
+import { assertValidPhotoId } from "@/lib/utils/validation";
 
 const STAT_WINDOW_MS = 60 * 60 * 1000;
 const STAT_MAX_REQUESTS = 120;
-
-import { assertValidPhotoId } from "@/lib/utils/validation";
-
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
   return (
@@ -19,7 +18,47 @@ async function isStatRateLimited(action: string): Promise<boolean> {
     )
   ).limited;
 }
-export async function incrementDownload(photoId: string): Promise<number> {
+export async function getDownloadUrlAction({
+  photoId,
+  cloudinaryUrl,
+  fileName,
+}: {
+  photoId: string | number;
+  cloudinaryUrl: string;
+  fileName?: string;
+}): Promise<{ downloadUrl: string }> {
+  const idStr = String(photoId);
+  try {
+    await incrementDownload(idStr);
+  } catch (err) {
+    console.warn("Could not increment download count:", err);
+  }
+  try {
+    const uploadIndex = cloudinaryUrl.indexOf("/upload/");
+    if (uploadIndex !== -1) {
+      const afterUpload = cloudinaryUrl.substring(uploadIndex + 8);
+      const parts = afterUpload.split("/");
+      const vIndex = parts.findIndex((p) => /^v\d+$/.test(p));
+      const publicIdParts = vIndex !== -1 ? parts.slice(vIndex + 1) : parts;
+      const publicId = publicIdParts.join("/").replace(/\.[^/.]+$/, "");
+      const cleanBaseName = (fileName || `momented-${idStr}`)
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+      if (publicId) {
+        const signedUrl = cloudinary.url(publicId, {
+          sign_url: true,
+          flags: cleanBaseName ? `attachment:${cleanBaseName}` : "attachment",
+          secure: true,
+        });
+        return { downloadUrl: signedUrl };
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to generate signed Cloudinary download URL:", err);
+  }
+  return { downloadUrl: cloudinaryUrl };
+}
+async function incrementDownload(photoId: string): Promise<number> {
   assertValidPhotoId(photoId);
   if (await isStatRateLimited("download"))
     throw new Error("Rate limit exceeded. Try again later.");

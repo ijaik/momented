@@ -186,6 +186,8 @@ export async function savePhotoToDbAction(
     ),
   ]);
   updateTag("photos");
+  updateTag("collections");
   revalidatePath("/");
+  revalidatePath("/collections");
   return { success: true, id: newPhoto.id };
 }

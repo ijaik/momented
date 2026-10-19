@@ -14,6 +14,7 @@ import {
 
 function revalidateAfterPhotoChange() {
   updateTag("photos");
+  updateTag("collections");
   revalidatePath("/");
   revalidatePath("/collections");
 }
