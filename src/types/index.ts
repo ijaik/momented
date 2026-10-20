@@ -55,22 +55,6 @@ export interface Series {
   created_at: string;
   photos: SeriesSlidePhoto[];
 }
-export interface SeriesListItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | null;
-  created_at: string;
-  photo_count: number;
-  cover_photo?: Pick<
-    Photo,
-    "id" | "cloudinary_url" | "width" | "height" | "title"
-  > | null;
-  preview_photos?: Pick<
-    Photo,
-    "id" | "cloudinary_url" | "width" | "height" | "title"
-  >[];
-}
 export type PageProps<
   TParams = Record<string, string>,
   TSearchParams = Record<string, string | string[] | undefined>,

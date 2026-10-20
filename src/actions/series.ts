@@ -13,6 +13,7 @@ import {
 
 function revalidateAfterSeriesChange(id?: string) {
   updateTag("series");
+  updateTag("series-ids");
   updateTag("photos");
   revalidatePath("/series");
   revalidatePath("/");
@@ -57,12 +58,13 @@ export async function createSeriesAction(
   const description =
     ((formData.get("description") as string) || "").trim() || null;
   const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = formData.getAll("photo_ids").map(String);
+  const photoIds = Array.from(
+    new Set(formData.getAll("photo_ids").map(String)),
+  );
   if (!title) throw new Error("Series title is required.");
   assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  if (description) {
+  if (description)
     assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  }
   if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
   assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
   for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
@@ -79,9 +81,8 @@ export async function createSeriesAction(
     ])
     .select("id")
     .single();
-  if (insertError || !newSeries) {
+  if (insertError || !newSeries)
     throw new Error(insertError?.message || "Failed to create series.");
-  }
   if (photoIds.length > 0) {
     const seriesPhotoInserts = photoIds.map((pid, index) => ({
       series_id: newSeries.id,
@@ -91,7 +92,6 @@ export async function createSeriesAction(
     const { error: junctionError } = await db
       .from("series_photos")
       .insert(seriesPhotoInserts);
-
     if (junctionError) throw new Error(junctionError.message);
   }
   revalidateAfterSeriesChange(newSeries.id);
@@ -107,12 +107,13 @@ export async function editSeriesAction(
   const description =
     ((formData.get("description") as string) || "").trim() || null;
   const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = formData.getAll("photo_ids").map(String);
+  const photoIds = Array.from(
+    new Set(formData.getAll("photo_ids").map(String)),
+  );
   if (!title) throw new Error("Series title is required.");
   assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  if (description) {
+  if (description)
     assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  }
   if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
   assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
   for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
@@ -127,6 +128,10 @@ export async function editSeriesAction(
     })
     .eq("id", id);
   if (updateError) throw new Error(updateError.message);
+  const { data: previousJunction } = await db
+    .from("series_photos")
+    .select("photo_id, position")
+    .eq("series_id", id);
   await db.from("series_photos").delete().eq("series_id", id);
   if (photoIds.length > 0) {
     const seriesPhotoInserts = photoIds.map((pid, index) => ({
@@ -137,7 +142,18 @@ export async function editSeriesAction(
     const { error: junctionError } = await db
       .from("series_photos")
       .insert(seriesPhotoInserts);
-    if (junctionError) throw new Error(junctionError.message);
+    if (junctionError) {
+      if (previousJunction && previousJunction.length > 0) {
+        await db.from("series_photos").insert(
+          previousJunction.map((p) => ({
+            series_id: id,
+            photo_id: p.photo_id,
+            position: p.position,
+          })),
+        );
+      }
+      throw new Error(junctionError.message);
+    }
   }
   revalidateAfterSeriesChange(id);
   return { success: true };

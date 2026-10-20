@@ -1,32 +1,9 @@
-const TRANSFORM_OPS = new Set([
-  "a",
-  "ar",
-  "b",
-  "c",
-  "cs",
-  "d",
-  "dpr",
-  "e",
-  "f",
-  "fl",
-  "g",
-  "h",
-  "if",
-  "l",
-  "o",
-  "q",
-  "r",
-  "t",
-  "u",
-  "w",
-  "x",
-  "y",
-]);
+const TRANSFORM_PATTERN =
+  /^(?:[a-z]{1,3}_(?:auto|\d+|[a-z0-9_-]+:[a-z0-9_-]+)|c_(?:fill|limit|fit|scale|crop|thumb|pad|auto)|f_(?:auto|jpg|jpeg|png|webp|avif)|q_(?:auto|\d+)|fl_[a-z0-9_]+|t_[a-z0-9_-]+|[wh]_\d+)$/i;
 function isTransformSegment(segment: string): boolean {
   if (!segment) return false;
   if (segment.includes(",")) return true;
-  const match = /^([a-z]+)_(.+)$/.exec(segment);
-  return Boolean(match && TRANSFORM_OPS.has(match[1]));
+  return TRANSFORM_PATTERN.test(segment);
 }
 export function buildCloudinaryUrl(
   url: string | null | undefined,

@@ -128,7 +128,8 @@ export async function savePhotoToDbAction(
     ? `${rawFocal.toString().replace(/[^0-9.]/g, "")}mm`
     : null;
   const rawIso = meta.ISOSpeedRatings || meta.ISO;
-  const cleanIso = rawIso ? parseInt(rawIso.toString(), 10) : null;
+  const parsedIso = rawIso ? parseInt(rawIso.toString(), 10) : null;
+  const cleanIso = Number.isInteger(parsedIso) ? parsedIso : null;
   const exifArtist =
     meta.Artist || meta.Copyright || meta.Creator || meta.Byline || null;
   const rawExifDate = (meta.DateTimeOriginal ||

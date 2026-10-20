@@ -34,8 +34,11 @@ function parseFormData(formData: FormData) {
 }
 function revalidateAfterCollectionChange() {
   updateTag("collections");
+  updateTag("collections-ids");
+  updateTag("rule_collections-ids");
   updateTag("photos");
   revalidatePath("/collections");
+  revalidatePath("/");
 }
 type ContentTable = "collections" | "rule_collections";
 interface CollectionSpec {

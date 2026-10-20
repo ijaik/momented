@@ -1,5 +1,4 @@
 "use server";
-import { updateTag } from "next/cache";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
@@ -34,24 +33,23 @@ export async function getDownloadUrlAction({
     console.warn("Could not increment download count:", err);
   }
   try {
-    const uploadIndex = cloudinaryUrl.indexOf("/upload/");
-    if (uploadIndex !== -1) {
-      const afterUpload = cloudinaryUrl.substring(uploadIndex + 8);
-      const parts = afterUpload.split("/");
-      const vIndex = parts.findIndex((p) => /^v\d+$/.test(p));
-      const publicIdParts = vIndex !== -1 ? parts.slice(vIndex + 1) : parts;
-      const publicId = publicIdParts.join("/").replace(/\.[^/.]+$/, "");
+    const db = getAdminDb();
+    const { data: photo } = await db
+      .from("photos")
+      .select("cloudinary_public_id")
+      .eq("id", idStr)
+      .single();
+    const publicId = photo?.cloudinary_public_id;
+    if (publicId) {
       const cleanBaseName = (fileName || `momented-${idStr}`)
         .replace(/\.[^/.]+$/, "")
         .replace(/[^a-zA-Z0-9_-]/g, "_");
-      if (publicId) {
-        const signedUrl = cloudinary.url(publicId, {
-          sign_url: true,
-          flags: cleanBaseName ? `attachment:${cleanBaseName}` : "attachment",
-          secure: true,
-        });
-        return { downloadUrl: signedUrl };
-      }
+      const signedUrl = cloudinary.url(publicId, {
+        sign_url: true,
+        flags: cleanBaseName ? `attachment:${cleanBaseName}` : "attachment",
+        secure: true,
+      });
+      return { downloadUrl: signedUrl };
     }
   } catch (err) {
     console.warn("Failed to generate signed Cloudinary download URL:", err);
@@ -70,7 +68,6 @@ async function incrementDownload(photoId: string): Promise<number> {
     console.error("Increment downloads error:", error);
     throw new Error("Could not update download count");
   }
-  updateTag(`photo-${photoId}`);
   return data as number;
 }
 export async function incrementShare(
@@ -88,6 +85,5 @@ export async function incrementShare(
     console.error("Increment shares error:", error);
     throw new Error("Could not update share count");
   }
-  updateTag(`photo-${idStr}`);
   return data as number;
 }

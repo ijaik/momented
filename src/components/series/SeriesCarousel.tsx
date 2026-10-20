@@ -73,14 +73,11 @@ export default function SeriesCarousel({
       } else if (e.code === "Space" && !isMaximized) {
         e.preventDefault();
         goToSlide(activeIndex < totalSlides - 1 ? activeIndex + 1 : 0);
-      } else if (e.key.toLowerCase() === "f" && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        toggleMaximize();
       }
     };
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activeIndex, goToSlide, isMaximized, toggleMaximize, totalSlides]);
+  }, [activeIndex, goToSlide, isMaximized, totalSlides]);
   const handleTouchStart = (e: React.TouchEvent) => {
     if (totalSlides <= 1) return;
     const touch = e.touches[0];

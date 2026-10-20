@@ -9,7 +9,7 @@ function buildCsp(): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://res.cloudinary.com",
     "font-src 'self' data:",
-    `connect-src 'self' https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`,
+    `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`.trim(),
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",

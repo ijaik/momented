@@ -60,14 +60,11 @@ export default function PhotoDetailView({
       } else if (e.key === "ArrowRight" && adjacent?.next) {
         e.preventDefault();
         router.push(`/photo/${adjacent.next.id}`);
-      } else if (e.key.toLowerCase() === "f" && !e.metaKey && !e.ctrlKey) {
-        e.preventDefault();
-        toggleMaximize();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [adjacent, router, toggleMaximize]);
+  }, [adjacent, router]);
   return (
     <>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16">

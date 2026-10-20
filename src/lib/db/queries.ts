@@ -36,7 +36,7 @@ const CALENDAR_JUNCTION: PhotoJunction = {
 };
 export async function getAllIds(table: IdTable): Promise<string[]> {
   "use cache";
-  cacheTag("photos", "collections", "series");
+  cacheTag(`${table}-ids`, table);
   cacheLife("weeks");
   const { data } = await supabase.from(table).select("id");
   return (data ?? []).map((row) => String(row.id));
@@ -79,23 +79,28 @@ export async function getAdjacentPhotos(
   "use cache";
   cacheTag("photos");
   cacheLife("weeks");
-  const { data: photos } = await supabase
+  const { data: current } = await supabase
     .from("photos")
-    .select("id, title, cloudinary_url")
-    .order("created_at", { ascending: false });
-  if (!photos || photos.length === 0) return { prev: null, next: null };
-  const currentIndex = photos.findIndex(
-    (p) => String(p.id) === String(currentId),
-  );
-  if (currentIndex === -1) return { prev: null, next: null };
-  const prev =
-    currentIndex > 0
-      ? (photos[currentIndex - 1] as AdjacentPhotoSummary)
-      : null;
-  const next =
-    currentIndex < photos.length - 1
-      ? (photos[currentIndex + 1] as AdjacentPhotoSummary)
-      : null;
+    .select("created_at")
+    .eq("id", currentId)
+    .single();
+  if (!current?.created_at) return { prev: null, next: null };
+  const [{ data: prevData }, { data: nextData }] = await Promise.all([
+    supabase
+      .from("photos")
+      .select("id, title, cloudinary_url")
+      .gt("created_at", current.created_at)
+      .order("created_at", { ascending: true })
+      .limit(1),
+    supabase
+      .from("photos")
+      .select("id, title, cloudinary_url")
+      .lt("created_at", current.created_at)
+      .order("created_at", { ascending: false })
+      .limit(1),
+  ]);
+  const prev = prevData?.[0] ? (prevData[0] as AdjacentPhotoSummary) : null;
+  const next = nextData?.[0] ? (nextData[0] as AdjacentPhotoSummary) : null;
   return { prev, next };
 }
 async function getPhotosForEntity(
@@ -196,7 +201,8 @@ export async function getSeriesList() {
     .select(
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url, width, height))",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("position", { referencedTable: "series_photos", ascending: true });
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesById(id: string) {
@@ -209,6 +215,7 @@ export async function getSeriesById(id: string) {
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
     )
     .eq("id", id)
+    .order("position", { referencedTable: "series_photos", ascending: true })
     .single();
   return { data: data ?? null, error: error?.message ?? null };
 }

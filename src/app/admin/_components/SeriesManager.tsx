@@ -14,6 +14,7 @@ import {
   useState,
   useTransition,
 } from "react";
+import { deletePhotoAction } from "@/actions/photos";
 import {
   createSeriesAction,
   deleteSeriesAction,
@@ -207,8 +208,8 @@ export default function SeriesManager({
       return;
     }
     startTransition(async () => {
+      const uploadedPhotos: { id: string; publicId: string }[] = [];
       try {
-        const uploadedPhotoIds: string[] = [];
         const total = queuedFiles.length;
         for (let i = 0; i < total; i++) {
           const item = queuedFiles[i];
@@ -246,24 +247,30 @@ export default function SeriesManager({
             height: uploadData.height,
             image_metadata: uploadData.image_metadata,
           });
-          if (!saveResult.id) {
+          if (!saveResult.id)
             throw new Error(`Failed to save slide ${i + 1} to database.`);
-          }
-          uploadedPhotoIds.push(saveResult.id);
+          uploadedPhotos.push({
+            id: saveResult.id,
+            publicId: uploadData.public_id,
+          });
         }
         setUploadStatus("Assembling photo series…");
         const seriesFormData = new FormData();
         seriesFormData.append("title", title);
         if (description) seriesFormData.append("description", description);
-        if (uploadedPhotoIds[0]) {
-          seriesFormData.append("cover_photo_id", uploadedPhotoIds[0]);
-        }
-        for (const pid of uploadedPhotoIds) {
-          seriesFormData.append("photo_ids", pid);
-        }
+        if (uploadedPhotos[0])
+          seriesFormData.append("cover_photo_id", uploadedPhotos[0].id);
+        for (const p of uploadedPhotos)
+          seriesFormData.append("photo_ids", p.id);
         await createSeriesAction(seriesFormData);
         closeForm();
       } catch (err) {
+        if (uploadedPhotos.length > 0) {
+          setUploadStatus("Rolling back incomplete uploads…");
+          await Promise.allSettled(
+            uploadedPhotos.map((p) => deletePhotoAction(p.id, p.publicId)),
+          );
+        }
         alert(err instanceof Error ? err.message : "Failed to create series.");
       } finally {
         setUploadStatus("");
