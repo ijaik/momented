@@ -1,6 +1,12 @@
 "use client";
 import { Check, Download, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { getDownloadUrlAction } from "@/actions/download";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export interface DownloadButtonProps {
@@ -21,47 +27,55 @@ export default function DownloadButton({
   fileName,
 }: DownloadButtonProps) {
   const [status, setStatus] = useState<DownloadStatus>("idle");
+  const [optimisticCount, setOptimisticCount] = useOptimistic(
+    downloadCount,
+    (current: number) => current + 1,
+  );
+  const [, startTransition] = useTransition();
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     return () => {
-      if (resetTimerRef.current) {
-        clearTimeout(resetTimerRef.current);
-      }
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     };
   }, []);
-  const handleDownload = async () => {
+  const handleDownload = () => {
     if (status === "downloading") return;
     setStatus("downloading");
     const targetFileName = fileName || `momented-${photoId}.jpg`;
-    try {
-      const { downloadUrl } = await getDownloadUrlAction({
-        photoId,
-        cloudinaryUrl,
-        fileName: targetFileName,
-      });
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.download = targetFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setStatus("success");
-      resetTimerRef.current = setTimeout(() => {
-        setStatus("idle");
-      }, 2400);
-    } catch {
-      const fallbackUrl = buildCloudinaryUrl(cloudinaryUrl, ["fl_attachment"]);
-      const link = document.createElement("a");
-      link.href = fallbackUrl;
-      link.download = targetFileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setStatus("success");
-      resetTimerRef.current = setTimeout(() => {
-        setStatus("idle");
-      }, 2400);
-    }
+    startTransition(async () => {
+      setOptimisticCount(1);
+      try {
+        const { downloadUrl } = await getDownloadUrlAction({
+          photoId,
+          cloudinaryUrl,
+          fileName: targetFileName,
+        });
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = targetFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setStatus("success");
+        resetTimerRef.current = setTimeout(() => {
+          setStatus("idle");
+        }, 2400);
+      } catch {
+        const fallbackUrl = buildCloudinaryUrl(cloudinaryUrl, [
+          "fl_attachment",
+        ]);
+        const link = document.createElement("a");
+        link.href = fallbackUrl;
+        link.download = targetFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setStatus("success");
+        resetTimerRef.current = setTimeout(() => {
+          setStatus("idle");
+        }, 2400);
+      }
+    });
   };
   const isDownloading = status === "downloading";
   const isSuccess = status === "success";
@@ -149,7 +163,7 @@ export default function DownloadButton({
           isSuccess ? "text-emerald-500" : "text-faint"
         }`}
       >
-        {isSuccess ? "Ready" : `${downloadCount + (isSuccess ? 1 : 0)}`}
+        {isSuccess ? "Ready" : `${optimisticCount}`}
       </span>
     </button>
   );

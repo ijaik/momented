@@ -1,6 +1,5 @@
 "use client";
 import { Check, Copy, Share2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
 import { copyText, imageUrlToFile } from "@/lib/utils/share";
@@ -10,7 +9,7 @@ export interface ShareDialogProps {
   url?: string;
   imageUrl?: string;
   onClose: () => void;
-  onShareSuccess?: (count?: number) => void;
+  onTrackShare?: () => void | Promise<void>;
 }
 export default function ShareDialog({
   title = "",
@@ -18,9 +17,8 @@ export default function ShareDialog({
   url,
   imageUrl,
   onClose,
-  onShareSuccess,
+  onTrackShare,
 }: ShareDialogProps) {
-  const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,13 +84,15 @@ export default function ShareDialog({
     if (!photoId || hasTrackedRef.current) return;
     hasTrackedRef.current = true;
     try {
-      const updatedCount = await incrementShare(photoId);
-      onShareSuccess?.(updatedCount);
-      router.refresh();
+      if (onTrackShare) {
+        await onTrackShare();
+      } else {
+        await incrementShare(photoId);
+      }
     } catch (err) {
       console.error("Failed to track share:", err);
     }
-  }, [photoId, onShareSuccess, router]);
+  }, [photoId, onTrackShare]);
   const getShareFile = useCallback(async (): Promise<File | null> => {
     if (!imageUrl) return null;
     if (shareFileRef.current !== undefined) return shareFileRef.current;

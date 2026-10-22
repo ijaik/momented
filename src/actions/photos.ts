@@ -25,6 +25,8 @@ interface AdminPhotoView {
   description: string | null;
   cloudinary_url: string;
   cloudinary_public_id: string;
+  downloads: number;
+  shares: number;
   collections: { id: string | number; title: string }[];
   rules: { id: string | number; title: string }[];
 }
@@ -34,7 +36,7 @@ export async function getPhotosAction(): Promise<AdminPhotoView[]> {
   const { data, error } = await db
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, cloudinary_public_id, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title)",
+      "id, title, description, cloudinary_url, cloudinary_public_id, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -44,6 +46,8 @@ export async function getPhotosAction(): Promise<AdminPhotoView[]> {
     description: row.description,
     cloudinary_url: row.cloudinary_url,
     cloudinary_public_id: row.cloudinary_public_id,
+    downloads: row.downloads ?? 0,
+    shares: row.shares ?? 0,
     collections: row.collections ?? [],
     rules: row.rules ?? [],
   }));

@@ -1,4 +1,5 @@
 "use server";
+import { revalidatePath, updateTag } from "next/cache";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
@@ -25,10 +26,13 @@ export async function getDownloadUrlAction({
   photoId: string | number;
   cloudinaryUrl: string;
   fileName?: string;
-}): Promise<{ downloadUrl: string }> {
+}): Promise<{ downloadUrl: string; downloadCount?: number }> {
   const idStr = String(photoId);
+  let updatedCount: number | undefined;
   try {
-    await incrementDownload(idStr);
+    updatedCount = await incrementDownload(idStr);
+    updateTag(`photo-${idStr}`);
+    revalidatePath(`/photo/${idStr}`);
   } catch (err) {
     console.warn("Could not increment download count:", err);
   }
@@ -49,12 +53,12 @@ export async function getDownloadUrlAction({
         flags: cleanBaseName ? `attachment:${cleanBaseName}` : "attachment",
         secure: true,
       });
-      return { downloadUrl: signedUrl };
+      return { downloadUrl: signedUrl, downloadCount: updatedCount };
     }
   } catch (err) {
     console.warn("Failed to generate signed Cloudinary download URL:", err);
   }
-  return { downloadUrl: cloudinaryUrl };
+  return { downloadUrl: cloudinaryUrl, downloadCount: updatedCount };
 }
 async function incrementDownload(photoId: string): Promise<number> {
   assertValidPhotoId(photoId);
@@ -85,5 +89,7 @@ export async function incrementShare(
     console.error("Increment shares error:", error);
     throw new Error("Could not update share count");
   }
+  updateTag(`photo-${idStr}`);
+  revalidatePath(`/photo/${idStr}`);
   return data as number;
 }

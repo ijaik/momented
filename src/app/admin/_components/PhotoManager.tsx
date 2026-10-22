@@ -21,6 +21,8 @@ export interface PhotoItem {
   description?: string | null;
   cloudinary_url: string;
   cloudinary_public_id?: string;
+  downloads?: number;
+  shares?: number;
   collections?: { id: string | number; title: string }[];
   rules?: { id: string | number; title: string }[];
 }
@@ -334,9 +336,15 @@ export default function PhotoManager({
                 </form>
               ) : (
                 <div>
-                  <h3 className="font-serif text-xl font-medium leading-snug tracking-tight text-ink">
-                    {photo.title}
-                  </h3>
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 className="font-serif text-xl font-medium leading-snug tracking-tight text-ink">
+                      {photo.title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs text-muted font-mono">
+                      <span title="Downloads">↓ {photo.downloads ?? 0}</span>
+                      <span title="Shares">↗ {photo.shares ?? 0}</span>
+                    </div>
+                  </div>
                   {photo.description && (
                     <p className="mt-1 text-[15px] text-muted line-clamp-2">
                       {photo.description}

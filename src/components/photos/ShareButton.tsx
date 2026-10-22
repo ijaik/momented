@@ -2,6 +2,7 @@
 import { Share2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useOptimistic, useRef, useState, useTransition } from "react";
+import { incrementShare } from "@/actions/download";
 
 const ShareDialog = dynamic(() => import("./ShareDialog"), { ssr: false });
 export interface ShareButtonProps {
@@ -21,19 +22,25 @@ export default function ShareButton({
   className,
 }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [, startTransition] = useTransition();
   const [optimisticCount, setOptimisticCount] = useOptimistic(
     shareCount,
-    (current, increment: number) => current + increment,
+    (current: number) => current + 1,
   );
+  const [, startTransition] = useTransition();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const close = () => {
     setIsOpen(false);
     triggerRef.current?.focus();
   };
-  const handleShareSuccess = () => {
-    startTransition(() => {
+  const handleTrackShare = () => {
+    startTransition(async () => {
       setOptimisticCount(1);
+      if (photoId)
+        try {
+          await incrementShare(photoId);
+        } catch (err) {
+          console.error("Failed to track share:", err);
+        }
     });
   };
   return (
@@ -85,7 +92,7 @@ export default function ShareButton({
           photoId={photoId}
           imageUrl={imageUrl}
           onClose={close}
-          onShareSuccess={handleShareSuccess}
+          onTrackShare={handleTrackShare}
         />
       )}
     </>
