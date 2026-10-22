@@ -57,7 +57,7 @@ export function breadcrumbJsonLd(
   };
 }
 export function photographJsonLd(photo: Photo): JsonLdObject {
-  const name = photo.title || "Untitled";
+  const name = photo.title || "Untitled Momented";
   return {
     "@context": "https://schema.org",
     "@type": "Photograph",

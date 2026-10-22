@@ -64,7 +64,7 @@ export default function PhotoChecklist({
                     <label className="group relative block aspect-square cursor-pointer overflow-hidden rounded-sm bg-soft">
                       <Image
                         src={p.cloudinary_url}
-                        alt={p.title || "Photograph"}
+                        alt={p.title || "A Momented Photograph"}
                         fill
                         className={`object-cover transition-opacity ${
                           isChecked ? "" : "opacity-60"

@@ -239,7 +239,7 @@ export default function PhotoManager({
           >
             <Image
               src={photo.cloudinary_url}
-              alt={photo.title}
+              alt={photo.title || "A Momented Photograph"}
               width={200}
               height={200}
               className="h-32 w-full shrink-0 rounded-sm border border-line object-cover bg-soft sm:w-32"

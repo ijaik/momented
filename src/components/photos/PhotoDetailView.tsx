@@ -35,7 +35,8 @@ export default function PhotoDetailView({
 }: PhotoDetailViewProps) {
   const router = useRouter();
   const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
-  const title = photo.title || "Untitled";
+  const title = photo.title || "Untitled Momented";
+  const alt = photo.description || photo.title || "A Momented photograph";
   const hasExif = Boolean(
     photo.camera_model ||
       photo.focal_length ||
@@ -81,7 +82,7 @@ export default function PhotoDetailView({
           >
             <Image
               src={photo.cloudinary_url}
-              alt={title}
+              alt={alt}
               width={photo.width}
               height={photo.height}
               sizes="(min-width: 1024px) 60vw, 100vw"
@@ -246,7 +247,7 @@ export default function PhotoDetailView({
               <Link
                 href={`/photo/${adjacent.prev.id}`}
                 className="group flex items-center gap-3.5 transition-opacity hover:opacity-85"
-                aria-label={`Previous photograph: ${adjacent.prev.title || "Untitled"}`}
+                aria-label={`Previous photograph: ${adjacent.prev.title || "Untitled Momented"}`}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-ink transition-transform duration-300 group-hover:-translate-x-1">
                   <ChevronLeft size={18} aria-hidden="true" />
@@ -254,7 +255,7 @@ export default function PhotoDetailView({
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xs border border-line bg-soft">
                   <Image
                     src={adjacent.prev.cloudinary_url}
-                    alt=""
+                    alt={adjacent.prev.title || "A Momented photograph"}
                     fill
                     sizes="48px"
                     className="object-cover"
@@ -265,7 +266,7 @@ export default function PhotoDetailView({
                     Previous moment
                   </span>
                   <p className="truncate font-serif text-sm font-medium text-ink">
-                    {adjacent.prev.title || "Untitled"}
+                    {adjacent.prev.title || "Untitled Momented"}
                   </p>
                 </div>
               </Link>
@@ -286,20 +287,20 @@ export default function PhotoDetailView({
               <Link
                 href={`/photo/${adjacent.next.id}`}
                 className="group flex items-center justify-end gap-3.5 text-right transition-opacity hover:opacity-85 sm:self-auto"
-                aria-label={`Next photograph: ${adjacent.next.title || "Untitled"}`}
+                aria-label={`Next photograph: ${adjacent.next.title || "Untitled Momented"}`}
               >
                 <div className="min-w-0">
                   <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted">
                     Next moment
                   </span>
                   <p className="truncate font-serif text-sm font-medium text-ink">
-                    {adjacent.next.title || "Untitled"}
+                    {adjacent.next.title || "Untitled Momented"}
                   </p>
                 </div>
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xs border border-line bg-soft">
                   <Image
                     src={adjacent.next.cloudinary_url}
-                    alt=""
+                    alt={adjacent.next.title || "A Momented photograph"}
                     fill
                     sizes="48px"
                     className="object-cover"
@@ -363,7 +364,7 @@ export default function PhotoDetailView({
         >
           <Image
             src={photo.cloudinary_url}
-            alt={title}
+            alt={alt}
             fill
             sizes="100vw"
             className="object-contain pointer-events-none select-none"

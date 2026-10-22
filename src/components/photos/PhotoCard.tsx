@@ -11,7 +11,8 @@ export default function PhotoCard({
 }) {
   const aspectRatio =
     photo.width && photo.height ? photo.width / photo.height : 1;
-  const title = photo.title || "Untitled";
+  const title = photo.title || "Untitled Momented";
+  const alt = photo.description || photo.title || "A Momented photograph";
   return (
     <Link
       href={`/photo/${photo.id}`}
@@ -21,7 +22,7 @@ export default function PhotoCard({
     >
       <Image
         src={photo.cloudinary_url}
-        alt={title}
+        alt={alt}
         width={photo.width || 800}
         height={photo.height || 600}
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

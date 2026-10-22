@@ -2,7 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { supabase } from "@/lib/db/supabase";
 export const PHOTO_CARD_COLUMNS =
-  "id, title, cloudinary_url, width, height, camera_model, taken_at";
+  "id, title, description, cloudinary_url, width, height, camera_model, taken_at";
 export type IdTable =
   | "photos"
   | "collections"
@@ -47,7 +47,9 @@ export async function getHomePhotos() {
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("photos")
-    .select("id, title, cloudinary_url, width, height, camera_model")
+    .select(
+      "id, title, description, cloudinary_url, width, height, camera_model",
+    )
     .order("created_at", { ascending: false });
   return { data: data ?? [], error: error?.message ?? null };
 }
@@ -199,7 +201,7 @@ export async function getSeriesList() {
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url, width, height))",
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height))",
     )
     .order("created_at", { ascending: false })
     .order("position", { referencedTable: "series_photos", ascending: true });

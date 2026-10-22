@@ -8,7 +8,7 @@ interface PhotoThumbnailsProps {
 }
 export default function PhotoThumbnails({
   photos,
-  fallbackTitle = "",
+  fallbackTitle = "A Momented Photograph",
   className = "mt-6",
 }: PhotoThumbnailsProps) {
   if (!photos || photos.length === 0) return null;

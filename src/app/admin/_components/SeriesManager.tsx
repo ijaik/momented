@@ -454,7 +454,7 @@ export default function SeriesManager({
                             <Image
                               unoptimized
                               src={item.preview}
-                              alt=""
+                              alt={item.title || "A Momented Photograph"}
                               fill
                               sizes="96px"
                               className="object-cover"
@@ -614,7 +614,7 @@ export default function SeriesManager({
                           <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-line">
                             <Image
                               src={photo.cloudinary_url}
-                              alt=""
+                              alt={photo.title || "A Momented Photograph"}
                               fill
                               sizes="150px"
                               className="object-cover"
@@ -717,7 +717,7 @@ export default function SeriesManager({
                           <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-line">
                             <Image
                               src={photo.cloudinary_url}
-                              alt=""
+                              alt={photo.title || "A Momented Photograph"}
                               fill
                               sizes="120px"
                               className="object-cover"
@@ -729,7 +729,7 @@ export default function SeriesManager({
                             )}
                           </div>
                           <span className="mt-1.5 truncate text-[11px] font-medium text-ink">
-                            {photo.title || "Untitled"}
+                            {photo.title || "Untitled Momented"}
                           </span>
                         </button>
                       );
@@ -794,7 +794,7 @@ export default function SeriesManager({
                         {coverPhoto ? (
                           <Image
                             src={coverPhoto.cloudinary_url}
-                            alt=""
+                            alt={coverPhoto.title || "A Momented Photograph"}
                             fill
                             sizes="56px"
                             className="object-cover"

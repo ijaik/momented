@@ -237,6 +237,7 @@ export default function SeriesCarousel({
             const isAdjacent = Math.abs(index - activeIndex) <= 1;
             const slideTitle =
               photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+            const slideAlt = photo.description || photo.title || slideTitle;
             return (
               <div
                 key={photo.id}
@@ -245,7 +246,7 @@ export default function SeriesCarousel({
                 <div className="relative h-full w-full pointer-events-none select-none">
                   <Image
                     src={photo.cloudinary_url}
-                    alt={slideTitle}
+                    alt={slideAlt}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                     className="object-cover pointer-events-none select-none"
@@ -553,6 +554,7 @@ export default function SeriesCarousel({
             const isAdjacent = Math.abs(index - activeIndex) <= 1;
             const slideTitle =
               photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+            const slideAlt = photo.description || photo.title || slideTitle;
             return (
               <div
                 key={`max-slide-${photo.id}`}
@@ -561,7 +563,7 @@ export default function SeriesCarousel({
                 <div className="relative h-full w-full pointer-events-none select-none">
                   <Image
                     src={photo.cloudinary_url}
-                    alt={slideTitle}
+                    alt={slideAlt}
                     fill
                     sizes="100vw"
                     className="object-contain pointer-events-none select-none"

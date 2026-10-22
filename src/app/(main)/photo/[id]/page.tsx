@@ -60,7 +60,7 @@ export default async function PhotoDetail({
   const standardCollections = typedPhoto.collections || [];
   const ruleCollections = typedPhoto.rules || [];
   const seriesList = typedPhoto.series || [];
-  const title = typedPhoto.title || "Untitled";
+  const title = typedPhoto.title || "Untitled Momented";
   const references: ReferenceLink[] = [
     ...standardCollections.map((c) => ({
       id: c.id,
