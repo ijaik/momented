@@ -5,11 +5,13 @@ import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { getHomePhotos } from "@/lib/db/queries";
 import { websiteJsonLd } from "@/lib/seo/jsonLd";
-export const metadata: Metadata = {
+import { buildPageMetadata } from "@/lib/seo/metadata";
+export const metadata: Metadata = buildPageMetadata({
+  title: "Momented — Minimalist Photography Journal & Gallery",
   description:
-    "Explore the latest captured moments on Momented — a journal of light, shadow, and moments in between by Jai.",
-  alternates: { canonical: "/" },
-};
+    "Explore the latest captured moments on Momented — a minimalist photography journal of light, shadow, and moments in between by Jai.",
+  path: "/",
+});
 export default async function Home() {
   const { data: photos, error } = await getHomePhotos();
   if (error)

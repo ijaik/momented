@@ -3,13 +3,14 @@ import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { getSeriesList } from "@/lib/db/queries";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Series",
   description:
     "Ordered sequences of moments captured in the same frame of time — continuous visual narratives on Momented.",
-  alternates: { canonical: "/series" },
-};
+  path: "/series",
+});
 interface RawSeriesPhoto {
   position: number;
   photos: {

@@ -1,61 +1,97 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
-import { getAllIds } from "@/lib/db/queries";
+import {
+  getCalendarCollectionsList,
+  getCuratedCollections,
+  getRuleCollectionsList,
+  getSeriesList,
+  getSitemapPhotos,
+} from "@/lib/db/queries";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [photoIds, collectionIds, ruleIds, seriesIds] = await Promise.all([
-    getAllIds("photos"),
-    getAllIds("collections"),
-    getAllIds("rule_collections"),
-    getAllIds("series"),
-  ]);
+  const [photos, curatedRes, rulesRes, calendarsRes, seriesRes] =
+    await Promise.all([
+      getSitemapPhotos(),
+      getCuratedCollections(),
+      getRuleCollectionsList(),
+      getCalendarCollectionsList(),
+      getSeriesList(),
+    ]);
+  const latestPhotoDate = photos[0]?.created_at
+    ? new Date(photos[0].created_at)
+    : new Date();
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${siteConfig.url}/`, changeFrequency: "daily", priority: 1 },
+    {
+      url: `${siteConfig.url}/`,
+      lastModified: latestPhotoDate,
+      changeFrequency: "daily",
+      priority: 1.0,
+    },
     {
       url: `${siteConfig.url}/series`,
+      lastModified: latestPhotoDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${siteConfig.url}/collections`,
+      lastModified: latestPhotoDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: `${siteConfig.url}/about`,
+      lastModified: new Date("2026-01-01"),
       changeFrequency: "monthly",
       priority: 0.5,
     },
   ];
-  const calendarRoutes: MetadataRoute.Sitemap = Array.from(
-    { length: 12 },
-    (_, i) => ({
-      url: `${siteConfig.url}/collections/calendar/${i + 1}`,
-      changeFrequency: "monthly",
+  const photoRoutes: MetadataRoute.Sitemap = photos.map((p) => ({
+    url: `${siteConfig.url}/photo/${p.id}`,
+    lastModified: p.created_at ? new Date(p.created_at) : undefined,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+  const collectionRoutes: MetadataRoute.Sitemap = (curatedRes.data ?? [])
+    .filter((c) => c.photos && c.photos.length > 0)
+    .map((c) => ({
+      url: `${siteConfig.url}/collections/${c.id}`,
+      lastModified: c.created_at ? new Date(c.created_at) : undefined,
+      changeFrequency: "weekly" as const,
       priority: 0.6,
-    }),
-  );
+    }));
+  const ruleRoutes: MetadataRoute.Sitemap = (rulesRes.data ?? [])
+    .filter((r) => r.photos && r.photos.length > 0)
+    .map((r) => ({
+      url: `${siteConfig.url}/collections/rules/${r.id}`,
+      lastModified: r.created_at ? new Date(r.created_at) : undefined,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+  const seriesRoutes: MetadataRoute.Sitemap = (seriesRes.data ?? [])
+    .filter(
+      (s) =>
+        s.series_photos &&
+        (s.series_photos as unknown as { position: number }[]).length > 0,
+    )
+    .map((s) => ({
+      url: `${siteConfig.url}/series/${s.id}`,
+      lastModified: s.created_at ? new Date(s.created_at) : undefined,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+  const activeCalendarRoutes: MetadataRoute.Sitemap = (calendarsRes.data ?? [])
+    .filter((cal) => cal.photos && cal.photos.length > 0)
+    .map((cal) => ({
+      url: `${siteConfig.url}/collections/calendar/${cal.id}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
   return [
     ...staticRoutes,
-    ...photoIds.map((id) => ({
-      url: `${siteConfig.url}/photo/${id}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
-    ...collectionIds.map((id) => ({
-      url: `${siteConfig.url}/collections/${id}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
-    ...ruleIds.map((id) => ({
-      url: `${siteConfig.url}/collections/rules/${id}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
-    ...seriesIds.map((id) => ({
-      url: `${siteConfig.url}/series/${id}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...calendarRoutes,
+    ...photoRoutes,
+    ...seriesRoutes,
+    ...collectionRoutes,
+    ...ruleRoutes,
+    ...activeCalendarRoutes,
   ];
 }

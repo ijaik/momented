@@ -4,13 +4,14 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteConfig } from "@/config/site";
-import { personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
-export const metadata: Metadata = {
+import { aboutPageJsonLd, personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
+import { buildPageMetadata } from "@/lib/seo/metadata";
+export const metadata: Metadata = buildPageMetadata({
   title: "About",
   description:
-    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between.",
-  alternates: { canonical: "/about" },
-};
+    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented.",
+  path: "/about",
+});
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <h2 className="text-xs font-mono uppercase tracking-widest text-signal">
@@ -21,7 +22,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 export default function AboutPage() {
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-24">
-      <JsonLd data={[personJsonLd(), websiteJsonLd()]} />
+      <JsonLd data={[aboutPageJsonLd(), personJsonLd(), websiteJsonLd()]} />
       <div className="max-w-3xl">
         <header className="mb-16 border-b border-line pb-14 md:mb-20 md:pb-16">
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">

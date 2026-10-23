@@ -12,7 +12,10 @@ export default function PhotoCard({
   const aspectRatio =
     photo.width && photo.height ? photo.width / photo.height : 1;
   const title = photo.title || "Untitled Momented";
-  const alt = photo.description || photo.title || "A Momented photograph";
+  const alt =
+    photo.description && photo.title && photo.description !== photo.title
+      ? `${photo.title} — ${photo.description}`
+      : photo.title || photo.description || "A Momented photograph";
   return (
     <Link
       href={`/photo/${photo.id}`}

@@ -9,6 +9,7 @@ import {
   getCuratedCollections,
   getRuleCollectionsList,
 } from "@/lib/db/queries";
+import { buildPageMetadata } from "@/lib/seo/metadata";
 import type { BaseCollection, PageProps } from "@/types";
 
 function resolveTab(tab?: string): keyof typeof TAB_TITLES {
@@ -41,16 +42,13 @@ export async function generateMetadata({
   const { tab } = await searchParams;
   const activeTab = resolveTab(tab);
   const { title, description } = TAB_TITLES[activeTab];
-  return {
+  const path =
+    activeTab === "curated" ? "/collections" : `/collections?tab=${activeTab}`;
+  return buildPageMetadata({
     title,
     description,
-    alternates: {
-      canonical:
-        activeTab === "curated"
-          ? "/collections"
-          : `/collections?tab=${activeTab}`,
-    },
-  };
+    path,
+  });
 }
 const TAB_LABELS: { key: string; name: string; href: string }[] = [
   { key: "curated", name: "Curated", href: "/collections" },

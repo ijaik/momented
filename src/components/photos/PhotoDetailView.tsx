@@ -36,7 +36,10 @@ export default function PhotoDetailView({
   const router = useRouter();
   const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
   const title = photo.title || "Untitled Momented";
-  const alt = photo.description || photo.title || "A Momented photograph";
+  const alt =
+    photo.description && photo.title && photo.description !== photo.title
+      ? `${photo.title} — ${photo.description}`
+      : photo.title || photo.description || "A Momented photograph";
   const hasExif = Boolean(
     photo.camera_model ||
       photo.focal_length ||

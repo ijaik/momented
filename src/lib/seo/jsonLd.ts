@@ -9,7 +9,6 @@ type JsonLdValue =
   | null
   | JsonLdValue[]
   | { [key: string]: JsonLdValue };
-
 export type JsonLdObject = {
   "@context": "https://schema.org";
   "@type": string;
@@ -26,10 +25,13 @@ export function websiteJsonLd(): JsonLdObject {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: siteConfig.name,
+    alternateName: ["Momented Photography", "Momented Journal"],
     url: siteConfig.url,
     description: siteConfig.description,
-    inLanguage: "en",
+    inLanguage: "en-US",
     author: personRef(siteConfig.author.name, siteConfig.author.github),
+    publisher: personRef(siteConfig.author.name, siteConfig.author.github),
+    license: "https://creativecommons.org/publicdomain/zero/1.0/",
   };
 }
 export function personJsonLd(): JsonLdObject {
@@ -37,9 +39,25 @@ export function personJsonLd(): JsonLdObject {
     "@context": "https://schema.org",
     "@type": "Person",
     name: siteConfig.author.name,
-    description: siteConfig.author.role,
+    jobTitle: siteConfig.author.role,
+    description: siteConfig.description,
     url: siteConfig.url,
     sameAs: [siteConfig.author.github],
+  };
+}
+export function aboutPageJsonLd(): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: `About ${siteConfig.name} — ${siteConfig.author.name}`,
+    description: siteConfig.description,
+    url: `${siteConfig.url}/about`,
+    mainEntity: personJsonLd(),
+    isPartOf: {
+      "@type": "WebSite",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
   };
 }
 export function breadcrumbJsonLd(
@@ -57,19 +75,77 @@ export function breadcrumbJsonLd(
   };
 }
 export function photographJsonLd(photo: Photo): JsonLdObject {
-  const name = photo.title || "Untitled Momented";
+  const name = photo.title || "A Momented Photograph";
+  const artistName = photo.artist || siteConfig.author.name;
   return {
     "@context": "https://schema.org",
-    "@type": "Photograph",
+    "@type": "ImageObject",
     name,
-    ...(photo.description ? { description: photo.description } : {}),
-    image: getSocialShareImageUrl(photo.cloudinary_url),
+    caption: photo.description || name,
+    description:
+      photo.description ||
+      `Photograph "${name}" exploring light and shadow by ${artistName}.`,
     contentUrl: photo.cloudinary_url,
     url: `${siteConfig.url}/photo/${photo.id}`,
+    image: getSocialShareImageUrl(photo.cloudinary_url),
     ...(photo.created_at ? { datePublished: photo.created_at } : {}),
     ...(photo.taken_at ? { dateCreated: photo.taken_at } : {}),
-    author: personRef(photo.artist || siteConfig.author.name),
-    copyrightHolder: personRef(photo.artist || siteConfig.author.name),
+    creator: personRef(artistName, siteConfig.author.github),
+    author: personRef(artistName, siteConfig.author.github),
+    copyrightHolder: personRef(artistName, siteConfig.author.github),
+    creditText: `${artistName} / Momented`,
+    copyrightNotice: "CC0 1.0 Universal Public Domain Dedication",
+    license: "https://creativecommons.org/publicdomain/zero/1.0/",
+    acquireLicensePage: `${siteConfig.url}/about`,
+    ...(photo.width ? { width: photo.width } : {}),
+    ...(photo.height ? { height: photo.height } : {}),
+    ...(photo.camera_model
+      ? {
+          exifData: [
+            {
+              "@type": "PropertyValue",
+              name: "Camera",
+              value: photo.camera_model,
+            },
+            ...(photo.focal_length
+              ? [
+                  {
+                    "@type": "PropertyValue",
+                    name: "Focal Length",
+                    value: photo.focal_length,
+                  },
+                ]
+              : []),
+            ...(photo.aperture
+              ? [
+                  {
+                    "@type": "PropertyValue",
+                    name: "Aperture",
+                    value: photo.aperture,
+                  },
+                ]
+              : []),
+            ...(photo.shutter_speed
+              ? [
+                  {
+                    "@type": "PropertyValue",
+                    name: "Shutter Speed",
+                    value: photo.shutter_speed,
+                  },
+                ]
+              : []),
+            ...(photo.iso
+              ? [
+                  {
+                    "@type": "PropertyValue",
+                    name: "ISO",
+                    value: String(photo.iso),
+                  },
+                ]
+              : []),
+          ],
+        }
+      : {}),
   };
 }
 export function collectionPageJsonLd(

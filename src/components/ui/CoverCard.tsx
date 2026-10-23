@@ -41,7 +41,13 @@ export default function CoverCard({
             <Image
               src={coverImage}
               alt={
-                item.description || item.title || "A Momented Collection Cover"
+                item.description &&
+                item.title &&
+                item.description !== item.title
+                  ? `${item.title} — ${item.description}`
+                  : item.title ||
+                    item.description ||
+                    "A Momented collection cover"
               }
               fill
               sizes="(max-width: 768px) 100vw, 50vw"

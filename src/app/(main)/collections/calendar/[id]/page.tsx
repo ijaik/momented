@@ -37,6 +37,7 @@ export async function generateMetadata({
     description: collection.description || undefined,
     path: `/collections/calendar/${id}`,
     imageUrl: photos?.[0]?.cloudinary_url,
+    noIndex: (photos?.length ?? 0) === 0,
   });
 }
 export default async function CalendarMonthPage({

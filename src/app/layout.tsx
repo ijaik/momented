@@ -29,11 +29,23 @@ export const metadata: Metadata = {
     google: "GMp5Gc1BgPdvcJHZzWt8tXY79MP_U0BLy4pu-0-QNgA",
   },
   title: {
-    default: "Momented",
+    default: "Momented — Minimalist Photography Journal & Gallery",
     template: "%s | Momented",
   },
   description:
-    "A momented journal by Jai, exploring light, shadow, and moments in between.",
+    "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+  keywords: [
+    "photography",
+    "minimalist photography",
+    "photo journal",
+    "photography portfolio",
+    "street photography",
+    "architecture photography",
+    "nature photography",
+    "high-resolution downloads",
+    "CC0 photography",
+    "momented",
+  ],
   authors: [{ name: siteConfig.author.name, url: siteConfig.author.github }],
   creator: siteConfig.author.name,
   publisher: siteConfig.name,
@@ -42,23 +54,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteConfig.url,
     siteName: "Momented",
-    title: "Momented",
+    title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A momented journal by Jai, exploring light, shadow, and moments in between.",
+      "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
     images: [
       {
         url: "/screenshots/desktop.png",
         width: 1280,
         height: 720,
-        alt: "Momented",
+        alt: "Momented — Minimalist Photography Journal & Gallery",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Momented",
+    title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A momented journal by Jai, exploring light, shadow, and moments in between.",
+      "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
     images: ["/screenshots/desktop.png"],
   },
   icons: {

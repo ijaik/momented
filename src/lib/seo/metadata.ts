@@ -9,6 +9,8 @@ interface BuildPageMetadataOptions {
   imageUrl?: string | null;
   type?: "website" | "article";
   publishedTime?: string;
+  keywords?: string[];
+  noIndex?: boolean;
 }
 export function buildPageMetadata({
   title,
@@ -17,9 +19,13 @@ export function buildPageMetadata({
   imageUrl,
   type = "website",
   publishedTime,
+  keywords,
+  noIndex = false,
 }: BuildPageMetadataOptions): Metadata {
   const url = `${siteConfig.url}${path}`;
-  const fullTitle = `${title} | ${siteConfig.name}`;
+  const fullTitle = title.includes(siteConfig.name)
+    ? title
+    : `${title} | ${siteConfig.name}`;
   const ogImage = imageUrl
     ? {
         url: getSocialShareImageUrl(imageUrl),
@@ -27,12 +33,19 @@ export function buildPageMetadata({
         height: 630,
         alt: title,
       }
-    : undefined;
+    : {
+        url: "/screenshots/desktop.png",
+        width: 1280,
+        height: 720,
+        alt: fullTitle,
+      };
   return {
     metadataBase: new URL(siteConfig.url),
     title,
     description,
+    ...(keywords && keywords.length > 0 ? { keywords } : {}),
     alternates: { canonical: url },
+    ...(noIndex ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type,
       locale: "en_US",
@@ -40,14 +53,18 @@ export function buildPageMetadata({
       siteName: siteConfig.name,
       title: fullTitle,
       description,
-      ...(ogImage ? { images: [ogImage] } : {}),
+      images: [ogImage],
       ...(type === "article" && publishedTime ? { publishedTime } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
-      ...(imageUrl ? { images: [getSocialShareImageUrl(imageUrl)] } : {}),
+      images: [
+        imageUrl
+          ? getSocialShareImageUrl(imageUrl)
+          : "/screenshots/desktop.png",
+      ],
     },
   };
 }
