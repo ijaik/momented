@@ -10,9 +10,11 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       >
         <Navbar />
       </Suspense>
-      <div className="grow pt-16">{children}</div>
+      <main className="grow mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-20 xl:max-w-7xl xl:py-24 2xl:max-w-360 2xl:py-28">
+        {children}
+      </main>
       <footer className="border-t border-line py-8">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-center px-5 sm:px-8">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-center px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360">
           <p className="text-sm text-muted">
             <span className="font-script text-base tracking-tight text-ink">
               Momented

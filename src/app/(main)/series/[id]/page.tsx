@@ -48,23 +48,21 @@ export default async function SeriesDetailPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  if (id === "_") {
+  if (id === "_")
     return (
-      <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
-        <BackButton label="All series" className="mb-8" />
+      <>
+        <BackButton label="All series" />
         <EmptyState description="No series curated yet." />
-      </main>
+      </>
     );
-  }
   const { data: series } = await getSeriesById(id);
-  if (!series) {
+  if (!series)
     return (
-      <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
-        <BackButton label="All series" className="mb-8" />
+      <>
+        <BackButton label="All series" />
         <EmptyState description="Series not found." />
-      </main>
+      </>
     );
-  }
   const rawPhotos =
     (series.series_photos as unknown as RawSeriesPhotoJoin[]) || [];
   const sortedPhotos: SeriesSlidePhoto[] = [...rawPhotos]
@@ -79,7 +77,7 @@ export default async function SeriesDetailPage({
   const url = `${siteConfig.url}/series/${id}`;
   const displayDate = formatDisplayDate(series.created_at);
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
+    <>
       <JsonLd
         data={[
           seriesPageJsonLd(series, url, sortedPhotos),
@@ -89,7 +87,7 @@ export default async function SeriesDetailPage({
           ]),
         ]}
       />
-      <BackButton label="All series" className="mb-8 md:mb-10" />
+      <BackButton label="All series" />
       <header className="mb-8 max-w-3xl border-b border-line pb-8 sm:mb-10">
         <h1 className="font-serif text-3xl font-medium leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">
           {series.title}
@@ -112,6 +110,6 @@ export default async function SeriesDetailPage({
       ) : (
         <EmptyState description="No photographs added to this series yet." />
       )}
-    </main>
+    </>
   );
 }

@@ -40,7 +40,7 @@ export default async function SeriesPage() {
   });
   const count = seriesList.length;
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
+    <>
       <PageHeader
         title="Series"
         description="Ordered sequences of moments captured in the same continuum of light, movement, and time."
@@ -62,6 +62,6 @@ export default async function SeriesPage() {
       ) : (
         <EmptyState description="No photo series have been curated yet." />
       )}
-    </main>
+    </>
   );
 }

@@ -19,7 +19,7 @@ export default async function Home() {
       <EmptyState description="The photographs failed to load. Please try again in a moment." />
     );
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
+    <>
       <JsonLd data={websiteJsonLd()} />
       <PageHeader
         title="Photographs"
@@ -27,6 +27,6 @@ export default async function Home() {
         meta={`${photos?.length ?? 0} ${(photos?.length ?? 0) === 1 ? "moment" : "moments"} so far`}
       />
       <PhotoGrid photos={photos || []} />
-    </main>
+    </>
   );
 }

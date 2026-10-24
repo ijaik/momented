@@ -38,14 +38,13 @@ export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  if (id === "_") {
+  if (id === "_")
     return (
-      <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
-        <BackButton label="All photographs" className="mb-8 md:mb-10" />
+      <>
+        <BackButton label="All photographs" />
         <EmptyState description="Photograph not found." />
-      </main>
+      </>
     );
-  }
   const [{ data: photo }, adjacent] = await Promise.all([
     getPhotoById(id),
     getAdjacentPhotos(id),
@@ -88,7 +87,7 @@ export default async function PhotoDetail({
     })),
   ];
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-6 sm:px-8 sm:py-8 md:py-10">
+    <>
       <JsonLd
         data={[
           photographJsonLd(typedPhoto),
@@ -104,13 +103,13 @@ export default async function PhotoDetail({
           ]),
         ]}
       />
-      <BackButton label="All photographs" className="mb-5 md:mb-6" />
+      <BackButton label="All photographs" />
       <PhotoDetailView
         photo={typedPhoto}
         displayDate={displayDate}
         references={references}
         adjacent={adjacent}
       />
-    </main>
+    </>
   );
 }

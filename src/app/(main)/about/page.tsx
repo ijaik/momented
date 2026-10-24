@@ -21,9 +21,9 @@ function SectionLabel({ children }: { children: ReactNode }) {
 }
 export default function AboutPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-24">
+    <>
       <JsonLd data={[aboutPageJsonLd(), personJsonLd(), websiteJsonLd()]} />
-      <div className="max-w-3xl">
+      <div className="mx-auto w-full max-w-6xl 2xl:max-w-360 py-16 md:py-24">
         <header className="mb-16 border-b border-line pb-14 md:mb-20 md:pb-16">
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
             <span
@@ -165,6 +165,6 @@ export default function AboutPage() {
           </a>
         </div>
       </div>
-    </main>
+    </>
   );
 }

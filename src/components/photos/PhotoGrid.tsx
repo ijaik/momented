@@ -13,9 +13,9 @@ export default function PhotoGrid({
   if (!photos || photos.length === 0)
     return <EmptyState description={emptyMessage} />;
   return (
-    <section className="columns-1 sm:columns-2 gap-5 lg:columns-3">
+    <section className="columns-1 sm:columns-2 gap-5 lg:columns-3 xl:gap-8">
       {photos.map((photo, index) => (
-        <div key={photo.id} className="break-inside-avoid mb-5">
+        <div key={photo.id} className="break-inside-avoid mb-5 xl:mb-8">
           <PhotoCard photo={photo} index={index} />
         </div>
       ))}

@@ -41,7 +41,7 @@ export function buildPageMetadata({
       };
   return {
     metadataBase: new URL(siteConfig.url),
-    title,
+    title: title.includes(siteConfig.name) ? { absolute: title } : title,
     description,
     ...(keywords && keywords.length > 0 ? { keywords } : {}),
     alternates: { canonical: url },

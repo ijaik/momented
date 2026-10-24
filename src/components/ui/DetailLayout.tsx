@@ -16,8 +16,8 @@ export default function DetailLayout({
   children,
 }: DetailLayoutProps) {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
-      <BackButton className="mb-8 md:mb-10" />
+    <>
+      <BackButton />
       {header ?? (
         <header className="mb-12 border-b border-line pb-8">
           <h1 className="max-w-3xl font-serif text-4xl font-medium leading-[1.08] tracking-tight text-ink sm:text-5xl">
@@ -32,6 +32,6 @@ export default function DetailLayout({
         </header>
       )}
       {children}
-    </main>
+    </>
   );
 }

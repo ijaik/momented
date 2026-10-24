@@ -61,7 +61,7 @@ export default function DashboardTabs({
     document.getElementById(`tab-${next}`)?.focus();
   };
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16">
+    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16 2xl:max-w-360">
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-4 border-b border-line pb-6">
         <div>
           <p className="font-script text-2xl leading-none tracking-tight text-ink">

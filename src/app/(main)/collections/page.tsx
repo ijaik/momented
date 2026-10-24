@@ -57,7 +57,7 @@ const TAB_LABELS: { key: string; name: string; href: string }[] = [
 ];
 function CollectionsFallback() {
   return (
-    <div className="animate-pulse">
+    <div className="my-16 animate-pulse">
       <div className="mb-8 space-y-3">
         <div className="h-8 w-44 rounded-xs bg-muted/20" />
         <div className="h-4 w-80 rounded-xs bg-muted/15" />
@@ -155,10 +155,8 @@ export default function CollectionsPage({
   searchParams,
 }: PageProps<Record<string, never>, { tab?: string }>) {
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-14 sm:px-8 md:py-20">
-      <Suspense fallback={<CollectionsFallback />}>
-        <CollectionsView searchParams={searchParams} />
-      </Suspense>
-    </main>
+    <Suspense fallback={<CollectionsFallback />}>
+      <CollectionsView searchParams={searchParams} />
+    </Suspense>
   );
 }

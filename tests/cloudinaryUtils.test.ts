@@ -31,7 +31,6 @@ describe("cloudinaryUtils", () => {
       const url =
         "https://res.cloudinary.com/demo/image/upload/b_street/photo.jpg";
       const transformed = buildCloudinaryUrl(url, ["w_400"]);
-      // b_street should remain as the folder path and NOT be treated as a transform segment
       expect(transformed).toBe(
         "https://res.cloudinary.com/demo/image/upload/w_400/b_street/photo.jpg",
       );
