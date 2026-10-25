@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 export default function BackButton({ label = "Back" }: { label?: string }) {
   const router = useRouter();
   const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1)
+    if (
+      typeof document !== "undefined" &&
+      document.referrer.startsWith(window.location.origin)
+    )
       router.back();
     else router.push("/");
   };
