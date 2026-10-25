@@ -342,6 +342,7 @@ export default function SeriesCarousel({
           <DownloadButton
             photoId={currentPhoto.id}
             cloudinaryUrl={currentPhoto.cloudinary_url}
+            cloudinaryPublicId={currentPhoto.cloudinary_public_id}
             fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
             className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
             variant="compact"
@@ -460,6 +461,7 @@ export default function SeriesCarousel({
             <DownloadButton
               photoId={currentPhoto.id}
               cloudinaryUrl={currentPhoto.cloudinary_url}
+              cloudinaryPublicId={currentPhoto.cloudinary_public_id}
               fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
               variant="compact"
             />

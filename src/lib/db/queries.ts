@@ -38,7 +38,9 @@ export async function getAllIds(table: IdTable): Promise<string[]> {
   "use cache";
   cacheTag(`${table}-ids`, table);
   cacheLife("weeks");
-  const { data } = await supabase.from(table).select("id");
+  const { data, error } = await supabase.from(table).select("id");
+  if (error)
+    throw new Error(`Failed to fetch IDs for ${table}: ${error.message}`);
   return (data ?? []).map((row) => String(row.id));
 }
 export async function getSitemapPhotos(): Promise<
@@ -72,7 +74,7 @@ export async function getPhotoById(id: string) {
   const { data, error } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
+      "id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
     )
     .eq("id", id)
     .single();
@@ -88,28 +90,23 @@ export interface AdjacentPhotos {
   next: AdjacentPhotoSummary | null;
 }
 export async function getAdjacentPhotos(
-  currentId: string,
+  currentCreatedAt: string,
 ): Promise<AdjacentPhotos> {
   "use cache";
   cacheTag("photos");
   cacheLife("weeks");
-  const { data: current } = await supabase
-    .from("photos")
-    .select("created_at")
-    .eq("id", currentId)
-    .single();
-  if (!current?.created_at) return { prev: null, next: null };
+  if (!currentCreatedAt) return { prev: null, next: null };
   const [{ data: prevData }, { data: nextData }] = await Promise.all([
     supabase
       .from("photos")
       .select("id, title, cloudinary_url")
-      .gt("created_at", current.created_at)
+      .gt("created_at", currentCreatedAt)
       .order("created_at", { ascending: true })
       .limit(1),
     supabase
       .from("photos")
       .select("id, title, cloudinary_url")
-      .lt("created_at", current.created_at)
+      .lt("created_at", currentCreatedAt)
       .order("created_at", { ascending: false })
       .limit(1),
   ]);
@@ -121,9 +118,10 @@ async function getPhotosForEntity(
   junction: PhotoJunction,
   entityId: string | number,
   ascending = false,
+  tag = "collections",
 ) {
   "use cache";
-  cacheTag("photos", "collections");
+  cacheTag("photos", tag);
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("photos")
@@ -135,13 +133,18 @@ async function getPhotosForEntity(
   return { data: data ?? [], error: error?.message ?? null };
 }
 export function getPhotosForCollection(collectionId: string) {
-  return getPhotosForEntity(COLLECTION_JUNCTION, collectionId);
+  return getPhotosForEntity(
+    COLLECTION_JUNCTION,
+    collectionId,
+    false,
+    "collections",
+  );
 }
 export function getPhotosForRule(ruleId: string) {
-  return getPhotosForEntity(RULE_JUNCTION, ruleId);
+  return getPhotosForEntity(RULE_JUNCTION, ruleId, false, "rules");
 }
 export function getPhotosForCalendarMonth(monthIndex: number) {
-  return getPhotosForEntity(CALENDAR_JUNCTION, monthIndex);
+  return getPhotosForEntity(CALENDAR_JUNCTION, monthIndex, false, "calendar");
 }
 export async function getCollectionById(id: string) {
   "use cache";
@@ -156,7 +159,7 @@ export async function getCollectionById(id: string) {
 }
 export async function getRuleCollectionById(id: string) {
   "use cache";
-  cacheTag("collections");
+  cacheTag("rules");
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("rule_collections")
@@ -167,7 +170,7 @@ export async function getRuleCollectionById(id: string) {
 }
 export async function getCalendarMonthById(monthIndex: number) {
   "use cache";
-  cacheTag("collections");
+  cacheTag("calendar");
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("calendar_collections")
@@ -226,7 +229,7 @@ export async function getSeriesById(id: string) {
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
     )
     .eq("id", id)
     .order("position", { referencedTable: "series_photos", ascending: true })

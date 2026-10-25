@@ -13,6 +13,7 @@ import {
 
 function revalidateAfterCalendarChange(id?: string | number) {
   updateTag("collections");
+  updateTag("calendar");
   updateTag("calendar_collections");
   updateTag("calendar_collections-ids");
   updateTag("photos");

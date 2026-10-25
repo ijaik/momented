@@ -15,13 +15,13 @@ import {
 import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
 import PhotoThumbnails from "./PhotoThumbnails";
 export interface BaseItem {
-  id: string | number;
+  id: string;
   title: string;
   description?: string | null;
-  cover_photo_id?: string | number | null;
+  cover_photo_id?: string | null;
   photos?: ChecklistPhoto[];
 }
-interface ItemManagerProps<T extends BaseItem> {
+interface ItemManagerProps<T extends BaseItem = BaseItem> {
   items: T[];
   allPhotos: ChecklistPhoto[];
   title: string;
@@ -32,11 +32,8 @@ interface ItemManagerProps<T extends BaseItem> {
   descPlaceholder: string;
   descRows?: number;
   createAction: (formData: FormData) => Promise<{ success: boolean }>;
-  editAction: (
-    id: string | number,
-    formData: FormData,
-  ) => Promise<{ success: boolean }>;
-  deleteAction: (id: string | number) => Promise<{ success: boolean }>;
+  editAction: (id: string, formData: FormData) => Promise<{ success: boolean }>;
+  deleteAction: (id: string) => Promise<{ success: boolean }>;
   renderContent: (item: T) => ReactNode;
 }
 export default function ItemManager<T extends BaseItem>({
@@ -55,10 +52,10 @@ export default function ItemManager<T extends BaseItem>({
   renderContent,
 }: ItemManagerProps<T>) {
   const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState<string | number | null>(null);
-  const [deletingId, setDeletingId] = useState<string | number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  function handleDelete(id: string | number) {
+  function handleDelete(id: string) {
     if (
       !confirm(`Are you sure you want to delete this ${title.toLowerCase()}?`)
     ) {
@@ -90,10 +87,7 @@ export default function ItemManager<T extends BaseItem>({
       }
     });
   }
-  function handleEdit(
-    event: SubmitEvent<HTMLFormElement>,
-    id: string | number,
-  ) {
+  function handleEdit(event: SubmitEvent<HTMLFormElement>, id: string) {
     event.preventDefault();
     const form = event.currentTarget;
     startTransition(async () => {

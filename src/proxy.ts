@@ -1,14 +1,17 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { isValidAdminToken, SESSION_COOKIE } from "@/lib/auth/auth";
 
-function buildCsp(): string {
+function buildCsp(isAdmin = false): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const scriptSrc = isAdmin
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : "script-src 'self' 'unsafe-inline'";
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-    "style-src 'self' 'unsafe-inline'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: blob: https://res.cloudinary.com",
-    "font-src 'self' data:",
+    "font-src 'self' data: https://fonts.gstatic.com",
     `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`.trim(),
     "worker-src 'self' blob:",
     "object-src 'none'",
@@ -25,7 +28,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const cleanUrl = new URL("/admin/login", request.url);
     return NextResponse.redirect(cleanUrl);
   }
-  const csp = isProduction ? buildCsp() : undefined;
+  const csp = isProduction ? buildCsp(isAdminPath) : undefined;
   const requestHeaders = new Headers(request.headers);
   if (csp) requestHeaders.set("Content-Security-Policy", csp);
   const response = NextResponse.next({

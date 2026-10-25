@@ -15,7 +15,7 @@ export interface Photo {
   artist?: string | null;
   taken_at?: string | null;
   created_at?: string;
-  downloads?: number | null;
+  downloads?: number;
   shares?: number;
   collections?: CollectionReference[];
   rules?: RuleCollectionReference[];

@@ -12,6 +12,7 @@ import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export interface DownloadButtonProps {
   photoId: string | number;
   cloudinaryUrl: string;
+  cloudinaryPublicId?: string;
   downloadCount?: number;
   variant?: "default" | "compact";
   className?: string;
@@ -21,6 +22,7 @@ type DownloadStatus = "idle" | "downloading" | "success";
 export default function DownloadButton({
   photoId,
   cloudinaryUrl,
+  cloudinaryPublicId,
   downloadCount = 0,
   variant = "default",
   className,
@@ -48,6 +50,7 @@ export default function DownloadButton({
         const { downloadUrl } = await getDownloadUrlAction({
           photoId,
           cloudinaryUrl,
+          cloudinaryPublicId,
           fileName: targetFileName,
         });
         const link = document.createElement("a");

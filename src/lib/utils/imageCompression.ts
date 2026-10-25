@@ -1,5 +1,4 @@
 import imageCompression from "browser-image-compression";
-import { dump, insert, load } from "piexif-ts";
 
 const fileToDataURL = (file: File | Blob): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -48,6 +47,7 @@ export async function compressImageWithExif(
       const compressedWithoutExif = await imageCompression(file, options);
       if (file.type === "image/jpeg" || file.type === "image/jpg") {
         try {
+          const { dump, insert, load } = await import("piexif-ts");
           const originalDataURL = await fileToDataURL(file);
           const exifObj = load(originalDataURL);
           if (exifObj?.["0th"] && 274 in exifObj["0th"]) {

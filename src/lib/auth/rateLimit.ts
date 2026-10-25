@@ -4,8 +4,8 @@ import { Redis } from "@upstash/redis";
 
 let redis: Redis | null = null;
 let hasLoggedUpstashWarning = false;
-const STAT_MAX_REQUESTS = 120;
-const STAT_WINDOW_MS = 60 * 60 * 1000;
+export const STAT_MAX_REQUESTS = 120;
+export const STAT_WINDOW_MS = 60 * 60 * 1000;
 const LOGIN_MAX_FAILURES = 5;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 function isUpstashConfigured(): boolean {

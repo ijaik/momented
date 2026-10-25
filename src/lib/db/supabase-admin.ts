@@ -32,16 +32,16 @@ export async function syncJunction(
   targetIds: string[],
   { skipDelete = false }: { skipDelete?: boolean } = {},
 ): Promise<void> {
+  const dynamicClient = db as SupabaseClient;
   if (!skipDelete) {
-    const { error: deleteError } = await db
+    const { error: deleteError } = await dynamicClient
       .from(table)
       .delete()
-      .eq(mainCol as never, mainId as never);
-    if (deleteError) {
+      .eq(mainCol, mainId);
+    if (deleteError)
       throw new Error(
         `Failed to clear junction table ${table}: ${deleteError.message}`,
       );
-    }
   }
   if (targetIds?.length > 0) {
     const uniqueTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
@@ -50,13 +50,12 @@ export async function syncJunction(
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));
-    const { error: insertError } = await db
+    const { error: insertError } = await dynamicClient
       .from(table)
-      .insert(inserts as never);
-    if (insertError) {
+      .insert(inserts);
+    if (insertError)
       throw new Error(
         `Failed to update junction table ${table}: ${insertError.message}`,
       );
-    }
   }
 }

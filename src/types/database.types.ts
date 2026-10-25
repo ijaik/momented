@@ -26,7 +26,7 @@ export type Database = {
           iso: number | null;
           artist: string | null;
           taken_at: string | null;
-          downloads: number | null;
+          downloads: number;
           shares: number;
         };
         Insert: {
@@ -46,7 +46,7 @@ export type Database = {
           iso?: number | null;
           artist?: string | null;
           taken_at?: string | null;
-          downloads?: number | null;
+          downloads?: number;
           shares?: number;
         };
         Update: {
@@ -66,7 +66,7 @@ export type Database = {
           iso?: number | null;
           artist?: string | null;
           taken_at?: string | null;
-          downloads?: number | null;
+          downloads?: number;
           shares?: number;
         };
         Relationships: [];
@@ -299,6 +299,14 @@ export type Database = {
       increment_shares: {
         Args: { row_id: string };
         Returns: number;
+      };
+      replace_series_photos: {
+        Args: {
+          p_series_id: string;
+          p_photo_ids: string[];
+          p_positions: number[];
+        };
+        Returns: undefined;
       };
     };
     Enums: {

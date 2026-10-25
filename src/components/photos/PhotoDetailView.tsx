@@ -39,7 +39,8 @@ export default function PhotoDetailView({
   const alt =
     photo.description && photo.title && photo.description !== photo.title
       ? `${photo.title} — ${photo.description}`
-      : photo.title || photo.description || "A Momented photograph";
+      : photo.title || photo.description || "A Momented Photograph";
+  const fileName = `${(photo.title || "A-Momented-Photograph").toLowerCase().replace(/\s+/g, "-")}.jpg`;
   const hasExif = Boolean(
     photo.camera_model ||
       photo.focal_length ||
@@ -234,8 +235,9 @@ export default function PhotoDetailView({
             <DownloadButton
               photoId={photo.id}
               cloudinaryUrl={photo.cloudinary_url}
+              cloudinaryPublicId={photo.cloudinary_public_id}
               downloadCount={photo.downloads || 0}
-              fileName={`${(photo.title || "photograph").toLowerCase().replace(/\s+/g, "-")}.jpg`}
+              fileName={fileName}
             />
           </section>
         </aside>
@@ -335,8 +337,9 @@ export default function PhotoDetailView({
             <DownloadButton
               photoId={photo.id}
               cloudinaryUrl={photo.cloudinary_url}
+              cloudinaryPublicId={photo.cloudinary_public_id}
               downloadCount={photo.downloads || 0}
-              fileName={`${(photo.title || "photograph").toLowerCase().replace(/\s+/g, "-")}.jpg`}
+              fileName={fileName}
               variant="compact"
             />
             <ShareButton

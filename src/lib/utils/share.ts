@@ -42,19 +42,7 @@ export async function imageUrlToFile(imageUrl: string): Promise<File | null> {
   }
 }
 export async function copyText(text: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  try {
-    textarea.select();
-    if (!document.execCommand("copy")) throw new Error("Copy failed");
-  } finally {
-    document.body.removeChild(textarea);
-  }
+  if (!navigator.clipboard?.writeText)
+    throw new Error("Clipboard API not available");
+  await navigator.clipboard.writeText(text);
 }

@@ -45,11 +45,11 @@ export default async function PhotoDetail({
         <EmptyState description="Photograph not found." />
       </>
     );
-  const [{ data: photo }, adjacent] = await Promise.all([
-    getPhotoById(id),
-    getAdjacentPhotos(id),
-  ]);
+  const { data: photo } = await getPhotoById(id);
   if (!photo) return <EmptyState description="Photo not found." />;
+  const adjacent = photo.created_at
+    ? await getAdjacentPhotos(photo.created_at)
+    : { prev: null, next: null };
   const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(
     typedPhoto.created_at,

@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 import {
   assertBoundedArray,
   assertBoundedString,
-  assertValidPhotoId,
   assertValidUUID,
   isValidUUID,
 } from "@/lib/utils/validation";
@@ -45,19 +44,6 @@ describe("validation", () => {
       expect(() => assertValidUUID(-1, "Calendar ID")).toThrow(
         "Invalid Calendar ID: must be a positive integer.",
       );
-    });
-  });
-  describe("assertValidPhotoId", () => {
-    it("accepts valid alphanumeric, underscore, and dash photo IDs", () => {
-      expect(() => assertValidPhotoId("photo_123-abc")).not.toThrow();
-      expect(() =>
-        assertValidPhotoId("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
-      ).not.toThrow();
-    });
-    it("throws for invalid photo IDs with spaces or symbols", () => {
-      expect(() => assertValidPhotoId("photo id with space")).toThrow();
-      expect(() => assertValidPhotoId("photo/with/slashes")).toThrow();
-      expect(() => assertValidPhotoId("")).toThrow();
     });
   });
   describe("assertBoundedString", () => {

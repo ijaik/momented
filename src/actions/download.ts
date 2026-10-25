@@ -1,13 +1,15 @@
 "use server";
 import { revalidatePath, updateTag } from "next/cache";
-import { checkRateLimit } from "@/lib/auth/rateLimit";
+import {
+  checkRateLimit,
+  STAT_MAX_REQUESTS,
+  STAT_WINDOW_MS,
+} from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb } from "@/lib/db/supabase-admin";
-import { assertValidPhotoId } from "@/lib/utils/validation";
+import { assertValidUUID } from "@/lib/utils/validation";
 
-const STAT_WINDOW_MS = 60 * 60 * 1000;
-const STAT_MAX_REQUESTS = 120;
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
   return (
@@ -21,10 +23,12 @@ async function isStatRateLimited(action: string): Promise<boolean> {
 export async function getDownloadUrlAction({
   photoId,
   cloudinaryUrl,
+  cloudinaryPublicId,
   fileName,
 }: {
   photoId: string | number;
   cloudinaryUrl: string;
+  cloudinaryPublicId?: string;
   fileName?: string;
 }): Promise<{ downloadUrl: string; downloadCount?: number }> {
   const idStr = String(photoId);
@@ -37,13 +41,16 @@ export async function getDownloadUrlAction({
     console.warn("Could not increment download count:", err);
   }
   try {
-    const db = getAdminDb();
-    const { data: photo } = await db
-      .from("photos")
-      .select("cloudinary_public_id")
-      .eq("id", idStr)
-      .single();
-    const publicId = photo?.cloudinary_public_id;
+    let publicId = cloudinaryPublicId;
+    if (!publicId) {
+      const db = getAdminDb();
+      const { data: photo } = await db
+        .from("photos")
+        .select("cloudinary_public_id")
+        .eq("id", idStr)
+        .single();
+      publicId = photo?.cloudinary_public_id;
+    }
     if (publicId) {
       const cleanBaseName = (fileName || `momented-${idStr}`)
         .replace(/\.[^/.]+$/, "")
@@ -61,7 +68,7 @@ export async function getDownloadUrlAction({
   return { downloadUrl: cloudinaryUrl, downloadCount: updatedCount };
 }
 async function incrementDownload(photoId: string): Promise<number> {
-  assertValidPhotoId(photoId);
+  assertValidUUID(photoId, "photo ID");
   if (await isStatRateLimited("download"))
     throw new Error("Rate limit exceeded. Try again later.");
   const db = getAdminDb();
@@ -78,7 +85,7 @@ export async function incrementShare(
   photoId: string | number,
 ): Promise<number> {
   const idStr = String(photoId);
-  assertValidPhotoId(idStr);
+  assertValidUUID(idStr, "photo ID");
   if (await isStatRateLimited("share"))
     throw new Error("Rate limit exceeded. Try again later.");
   const db = getAdminDb();

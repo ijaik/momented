@@ -34,6 +34,7 @@ function parseFormData(formData: FormData) {
 }
 function revalidateAfterCollectionChange() {
   updateTag("collections");
+  updateTag("rules");
   updateTag("collections-ids");
   updateTag("rule_collections-ids");
   updateTag("photos");
@@ -63,7 +64,7 @@ const COLLECTION_SPECS = {
 } as const satisfies Record<string, CollectionSpec>;
 async function deleteCollection(
   table: ContentTable,
-  id: string | number,
+  id: string,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Item ID");
@@ -111,7 +112,7 @@ async function createCollection(
 }
 async function editCollection(
   kind: keyof typeof COLLECTION_SPECS,
-  id: string | number,
+  id: string,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
@@ -142,11 +143,11 @@ async function editCollection(
   return { success: true };
 }
 interface AdminCollectionView {
-  id: string | number;
+  id: string;
   title: string;
   description: string | null;
-  cover_photo_id: string | number | null;
-  photos: { id: string | number; cloudinary_url: string; title?: string }[];
+  cover_photo_id: string | null;
+  photos: { id: string; cloudinary_url: string; title?: string }[];
 }
 async function getCollections(
   kind: keyof typeof COLLECTION_SPECS,
@@ -163,16 +164,15 @@ async function getCollections(
     id: row.id,
     title: row.title,
     description: (row as { description: string | null }).description,
-    cover_photo_id: (row as { cover_photo_id: string | number | null })
-      .cover_photo_id,
+    cover_photo_id: (row as { cover_photo_id: string | null }).cover_photo_id,
     photos: (
       (row.photos ?? []) as {
-        id: string | number;
+        id: string;
         cloudinary_url: string;
         title: string | null;
       }[]
     ).map((p) => ({
-      id: p.id,
+      id: String(p.id),
       cloudinary_url: p.cloudinary_url,
       title: p.title ?? undefined,
     })),
@@ -187,13 +187,13 @@ export async function createCollectionAction(
   return createCollection("collection", formData);
 }
 export async function editCollectionAction(
-  id: string | number,
+  id: string,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   return editCollection("collection", id, formData);
 }
 export async function deleteCollectionAction(
-  id: string | number,
+  id: string,
 ): Promise<{ success: boolean }> {
   return deleteCollection("collections", id);
 }
@@ -206,13 +206,13 @@ export async function createRuleCollectionAction(
   return createCollection("rule", formData);
 }
 export async function editRuleCollectionAction(
-  id: string | number,
+  id: string,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   return editCollection("rule", id, formData);
 }
 export async function deleteRuleCollectionAction(
-  id: string | number,
+  id: string,
 ): Promise<{ success: boolean }> {
   return deleteCollection("rule_collections", id);
 }

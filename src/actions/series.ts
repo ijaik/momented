@@ -30,12 +30,12 @@ export async function getSeriesAction() {
     .select(
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url))",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("position", { referencedTable: "series_photos", ascending: true });
   if (error) throw new Error(error.message);
   return (data || []).map((s) => {
     const rawPhotos = s.series_photos || [];
-    const sortedPhotos = [...rawPhotos]
-      .sort((a, b) => a.position - b.position)
+    const photos = rawPhotos
       .map((sp) => sp.photos)
       .filter((p): p is { id: string; title: string; cloudinary_url: string } =>
         Boolean(p),
@@ -46,7 +46,7 @@ export async function getSeriesAction() {
       description: s.description,
       cover_photo_id: s.cover_photo_id,
       created_at: s.created_at,
-      photos: sortedPhotos,
+      photos,
     };
   });
 }
@@ -128,33 +128,13 @@ export async function editSeriesAction(
     })
     .eq("id", id);
   if (updateError) throw new Error(updateError.message);
-  const { data: previousJunction } = await db
-    .from("series_photos")
-    .select("photo_id, position")
-    .eq("series_id", id);
-  await db.from("series_photos").delete().eq("series_id", id);
-  if (photoIds.length > 0) {
-    const seriesPhotoInserts = photoIds.map((pid, index) => ({
-      series_id: id,
-      photo_id: pid,
-      position: index,
-    }));
-    const { error: junctionError } = await db
-      .from("series_photos")
-      .insert(seriesPhotoInserts);
-    if (junctionError) {
-      if (previousJunction && previousJunction.length > 0) {
-        await db.from("series_photos").insert(
-          previousJunction.map((p) => ({
-            series_id: id,
-            photo_id: p.photo_id,
-            position: p.position,
-          })),
-        );
-      }
-      throw new Error(junctionError.message);
-    }
-  }
+  const positions = photoIds.map((_, index) => index);
+  const { error: rpcError } = await db.rpc("replace_series_photos", {
+    p_series_id: id,
+    p_photo_ids: photoIds,
+    p_positions: positions,
+  });
+  if (rpcError) throw new Error(rpcError.message);
   revalidateAfterSeriesChange(id);
   return { success: true };
 }
