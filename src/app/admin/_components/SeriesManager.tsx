@@ -331,7 +331,7 @@ export default function SeriesManager({
       {isFormOpen && (
         <section
           aria-label={editingSeries ? "Edit series" : "Create new series"}
-          className="rounded-lg border border-line bg-surface p-6 shadow-xs"
+          className="rounded-2xl border border-line/70 bg-surface/80 p-6 shadow-xs backdrop-blur-md sm:p-7"
         >
           <div className="mb-6 flex items-center justify-between border-b border-line pb-4">
             <div>
@@ -347,11 +347,11 @@ export default function SeriesManager({
               </p>
             </div>
             {!editingSeries && (
-              <div className="inline-flex rounded-md border border-line bg-soft/50 p-1 text-xs">
+              <div className="inline-flex rounded-full border border-line/70 bg-soft/60 p-1 text-xs backdrop-blur-xs">
                 <button
                   type="button"
                   onClick={() => setCreationMode("library")}
-                  className={`rounded-sm px-3 py-1 font-medium transition-colors ${
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-95 ${
                     creationMode === "library"
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
@@ -362,7 +362,7 @@ export default function SeriesManager({
                 <button
                   type="button"
                   onClick={() => setCreationMode("upload")}
-                  className={`rounded-sm px-3 py-1 font-medium transition-colors ${
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-95 ${
                     creationMode === "upload"
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
@@ -401,7 +401,7 @@ export default function SeriesManager({
                 <FieldLabel htmlFor="series-file-input">
                   Select Photographs in Order *
                 </FieldLabel>
-                <div className="mt-1 flex items-center justify-center rounded-lg border-2 border-dashed border-line bg-soft/30 px-6 py-8 text-center transition-colors hover:border-ink/30">
+                <div className="mt-1 flex items-center justify-center rounded-2xl border-2 border-dashed border-line/80 bg-soft/20 px-6 py-8 text-center transition-colors hover:border-ink/30">
                   <div className="flex flex-col items-center">
                     <Upload
                       size={28}
@@ -447,10 +447,10 @@ export default function SeriesManager({
                     {queuedFiles.map((item, idx) => (
                       <div
                         key={`queued-${item.file.name}-${idx}`}
-                        className="group relative flex flex-col gap-3 rounded-lg border border-line bg-soft/40 p-3 sm:flex-row sm:items-start"
+                        className="group relative flex flex-col gap-3 rounded-xl border border-line/70 bg-soft/40 p-3.5 backdrop-blur-xs sm:flex-row sm:items-start"
                       >
                         <div className="flex items-center gap-3 sm:flex-col sm:items-center">
-                          <div className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-md border border-line bg-line sm:h-24 sm:w-24">
+                          <div className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-line sm:h-24 sm:w-24">
                             <Image
                               unoptimized
                               src={item.preview}
@@ -470,7 +470,7 @@ export default function SeriesManager({
                               disabled={idx === 0}
                               aria-label="Move slide up"
                               title="Move slide up"
-                              className="rounded p-1 text-muted hover:bg-surface hover:text-ink disabled:opacity-30"
+                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-90 disabled:opacity-30"
                             >
                               <ArrowUp size={14} aria-hidden="true" />
                             </button>
@@ -480,7 +480,7 @@ export default function SeriesManager({
                               disabled={idx === queuedFiles.length - 1}
                               aria-label="Move slide down"
                               title="Move slide down"
-                              className="rounded p-1 text-muted hover:bg-surface hover:text-ink disabled:opacity-30"
+                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-90 disabled:opacity-30"
                             >
                               <ArrowDown size={14} aria-hidden="true" />
                             </button>
@@ -489,7 +489,7 @@ export default function SeriesManager({
                               onClick={() => removeQueuedFile(idx)}
                               aria-label="Remove slide from queue"
                               title="Remove slide from queue"
-                              className="rounded p-1 text-muted hover:bg-surface hover:text-danger"
+                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-90"
                             >
                               <Trash2 size={14} aria-hidden="true" />
                             </button>
@@ -546,7 +546,8 @@ export default function SeriesManager({
               <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
+                  size="sm"
                   onClick={closeForm}
                   disabled={isPending}
                 >
@@ -595,7 +596,7 @@ export default function SeriesManager({
                   </span>
                 </div>
                 {orderedPhotoIds.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 rounded-md border border-line bg-soft/40 p-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  <div className="grid grid-cols-2 gap-3 rounded-2xl border border-line/70 bg-soft/40 p-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                     {orderedPhotoIds.map((pId, idx) => {
                       const photo = allPhotos.find(
                         (p) => String(p.id) === String(pId),
@@ -605,13 +606,13 @@ export default function SeriesManager({
                       return (
                         <div
                           key={`ordered-${pId}`}
-                          className={`relative flex flex-col rounded-md border p-2 transition-colors ${
+                          className={`relative flex flex-col rounded-xl border p-2 transition-all duration-150 ${
                             isCover
                               ? "border-signal/70 bg-surface shadow-xs"
                               : "border-line bg-surface"
                           }`}
                         >
-                          <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-line">
+                          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-line">
                             <Image
                               src={photo.cloudinary_url}
                               alt={photo.title || "A Momented Photograph"}
@@ -695,7 +696,7 @@ export default function SeriesManager({
                 <FieldLabel htmlFor="library-picker">
                   Select Photographs From Library
                 </FieldLabel>
-                <div className="max-h-72 overflow-y-auto rounded-md border border-line bg-paper p-3">
+                <div className="max-h-72 overflow-y-auto rounded-2xl border border-line/70 bg-paper/60 p-3 backdrop-blur-xs">
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                     {allPhotos.map((photo) => {
                       const isSelected = orderedPhotoIds.includes(
@@ -708,13 +709,13 @@ export default function SeriesManager({
                           key={`lib-${photo.id}`}
                           type="button"
                           onClick={() => togglePhotoSelection(String(photo.id))}
-                          className={`flex flex-col rounded-md border p-2 text-left transition-all ${
+                          className={`flex flex-col rounded-xl border p-2 text-left transition-all duration-150 active:scale-95 ${
                             isSelected
                               ? "border-signal/70 bg-soft shadow-xs"
                               : "border-line bg-surface hover:border-ink/20"
                           }`}
                         >
-                          <div className="relative aspect-square w-full overflow-hidden rounded-sm bg-line">
+                          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-line">
                             <Image
                               src={photo.cloudinary_url}
                               alt={photo.title || "A Momented Photograph"}
@@ -728,7 +729,7 @@ export default function SeriesManager({
                               </span>
                             )}
                           </div>
-                          <span className="mt-1.5 truncate text-[11px] font-medium text-ink">
+                          <span className="mt-1.5 truncate text-xs font-medium text-ink">
                             {photo.title || "Untitled Momented"}
                           </span>
                         </button>
@@ -740,7 +741,8 @@ export default function SeriesManager({
               <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
+                  size="sm"
                   onClick={closeForm}
                   disabled={isPending}
                 >
@@ -778,7 +780,7 @@ export default function SeriesManager({
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-line bg-surface">
+          <div className="overflow-hidden rounded-2xl border border-line/70 bg-surface/75 backdrop-blur-md">
             <ul className="divide-y divide-line">
               {series.map((item) => {
                 const coverPhoto =
@@ -790,7 +792,7 @@ export default function SeriesManager({
                     className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
                   >
                     <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md border border-line bg-soft">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-line/70 bg-soft">
                         {coverPhoto ? (
                           <Image
                             src={coverPhoto.cloudinary_url}
@@ -826,11 +828,10 @@ export default function SeriesManager({
                         Edit
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="danger"
                         size="sm"
                         onClick={() => handleDelete(item.id)}
                         disabled={isPending}
-                        className="text-danger hover:bg-danger-soft hover:text-danger"
                       >
                         Delete
                       </Button>

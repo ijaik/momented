@@ -71,7 +71,7 @@ function CollectionsFallback() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="aspect-4/3 rounded-xs border border-line/60 bg-soft/70"
+            className="aspect-4/3 rounded-xl border border-line/60 bg-soft/70"
           />
         ))}
       </div>
@@ -123,7 +123,7 @@ async function CollectionsView({
               key={t.key}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-all ${
+              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-all duration-100 active:scale-95 ${
                 isActive
                   ? "border-signal text-ink font-semibold"
                   : "border-transparent text-muted hover:border-line hover:text-ink"

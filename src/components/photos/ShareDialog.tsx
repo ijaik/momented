@@ -119,7 +119,6 @@ export default function ShareDialog({
       setCopied(true);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
-      await trackShare();
     } catch {
       setError("Couldn't copy the link — please try again.");
     }
@@ -187,17 +186,17 @@ export default function ShareDialog({
         tabIndex={-1}
         aria-label="Close share dialog"
         onClick={close}
-        className="absolute inset-0 cursor-default bg-ink/50 animate-[dialog-backdrop-in_200ms_ease-out]"
+        className="absolute inset-0 cursor-default bg-ink/35 backdrop-blur-xs animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
       />
       <div
         ref={panelRef}
-        className="relative w-full max-w-md overflow-hidden rounded-xl border border-line bg-surface shadow-2xl animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)]"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-line/70 bg-surface/90 backdrop-blur-2xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)]"
       >
         <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-6">
           <div className="min-w-0">
             <h3
               id="share-dialog-title"
-              className="font-serif text-xl font-medium leading-snug text-ink"
+              className="font-serif text-xl font-medium leading-snug tracking-tight text-ink"
             >
               Share this moment
             </h3>
@@ -210,9 +209,9 @@ export default function ShareDialog({
             type="button"
             onClick={close}
             aria-label="Close share dialog"
-            className="-mr-2 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-soft hover:text-ink"
+            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-95"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={18} aria-hidden="true" />
           </button>
         </div>
         <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
@@ -222,7 +221,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={handleNativeShare}
                 disabled={isSharing}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-solid px-5 py-3 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
               >
                 <Share2 size={16} aria-hidden="true" />
                 {isSharing ? "Preparing…" : "Send the photograph"}
@@ -244,14 +243,14 @@ export default function ShareDialog({
                 id="share-url"
                 readOnly
                 value={shareUrl}
-                className="min-w-0 flex-1 rounded-md border border-line bg-paper px-3 py-2 text-sm text-ink"
+                className="min-w-0 flex-1 rounded-xl border border-line/80 bg-paper/60 px-3.5 py-2.5 text-sm text-ink backdrop-blur-xs transition-colors focus:border-ink/40 focus:outline-hidden"
                 onFocus={(e) => e.currentTarget.select()}
               />
               <button
                 type="button"
                 onClick={copyLink}
                 aria-live="polite"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-[0.97]"
               >
                 {copied ? (
                   <>
@@ -270,7 +269,7 @@ export default function ShareDialog({
           {error && (
             <p
               role="alert"
-              className="rounded-md bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger"
+              className="rounded-xl bg-danger-soft px-3.5 py-2.5 text-sm font-medium text-danger"
             >
               {error}
             </p>

@@ -4,31 +4,50 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-interface NavLink {
-  name: string;
-  href: string;
-}
-const links: NavLink[] = [
+const links = [
   { name: "Photographs", href: "/" },
   { name: "Collections", href: "/collections" },
   { name: "Series", href: "/series" },
   { name: "About", href: "/about" },
 ];
-function isActivePath(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
+const isActivePath = (pathname: string, href: string) =>
+  href === "/"
+    ? pathname === "/"
+    : pathname === href || pathname.startsWith(`${href}/`);
 export default function Navbar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
     if (!isOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
+    const closeOnEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
   }, [isOpen]);
+  const renderLinks = (mobile = false) =>
+    links.map(({ name, href }) => {
+      const active = isActivePath(pathname, href);
+      return (
+        <Link
+          key={href}
+          href={href}
+          aria-current={active ? "page" : undefined}
+          onClick={mobile ? () => setIsOpen(false) : undefined}
+          className={`${
+            mobile
+              ? "border-b border-line/70 py-3.5 text-[15px] last:border-b-0"
+              : "relative text-sm"
+          } transition-all duration-100 ease-out active:scale-${
+            mobile ? "[0.98]" : "95"
+          } ${
+            active ? "font-medium text-signal" : "text-muted hover:text-ink"
+          }`}
+        >
+          {name}
+        </Link>
+      );
+    });
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-paper/85 backdrop-blur-md">
       <nav
@@ -37,38 +56,14 @@ export default function Navbar() {
       >
         <Link
           href="/"
-          className="font-script text-[22px] leading-none tracking-tight text-ink transition-opacity hover:opacity-75"
+          className="font-script text-[22px] leading-none tracking-tight text-ink transition-all duration-100 ease-out hover:opacity-75 active:scale-95"
         >
           Momented
         </Link>
-        <div className="hidden items-center gap-7 md:flex">
-          {links.map((link) => {
-            const isActive = isActivePath(pathname, link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={isActive ? "page" : undefined}
-                className={`relative text-sm transition-colors ${
-                  isActive
-                    ? "font-medium text-ink"
-                    : "text-muted hover:text-ink"
-                }`}
-              >
-                {link.name}
-                {isActive && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-0 left-0 h-px w-full translate-y-full bg-ink"
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </div>
+        <div className="hidden items-center gap-7 md:flex">{renderLinks()}</div>
         <button
           type="button"
-          className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-soft md:hidden"
+          className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-md text-ink transition-all duration-100 ease-out hover:bg-soft active:scale-90 md:hidden"
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
           aria-controls="mobile-menu"
@@ -90,24 +85,7 @@ export default function Navbar() {
             aria-label="Mobile"
             className="mx-auto flex max-w-6xl flex-col px-5 py-3 sm:px-8"
           >
-            {links.map((link) => {
-              const isActive = isActivePath(pathname, link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  aria-current={isActive ? "page" : undefined}
-                  onClick={() => setIsOpen(false)}
-                  className={`border-b border-line/70 py-3.5 text-[15px] transition-colors last:border-b-0 ${
-                    isActive
-                      ? "font-medium text-ink"
-                      : "text-muted hover:text-ink"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              );
-            })}
+            {renderLinks(true)}
           </nav>
         </div>
       )}

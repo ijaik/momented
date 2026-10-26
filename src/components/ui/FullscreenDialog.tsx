@@ -28,9 +28,9 @@ export default function FullscreenDialog({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex flex-col justify-between bg-paper p-4 sm:p-6 select-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex flex-col justify-between bg-paper/95 backdrop-blur-2xl p-4 sm:p-6 select-none animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
     >
-      <header className="flex w-full items-center justify-between gap-4 border-b border-line pb-3">
+      <header className="flex w-full items-center justify-between gap-4 border-b border-line/60 pb-3.5">
         <div className="min-w-0">
           <h2 className="truncate font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
             {title}
@@ -46,7 +46,7 @@ export default function FullscreenDialog({
             onClick={onClose}
             aria-label="Exit fullscreen (Esc)"
             title="Minimize (Esc)"
-            className="inline-flex items-center gap-1.5 rounded-md border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-colors hover:bg-signal/20"
+            className="inline-flex items-center gap-1.5 rounded-full border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-all duration-100 hover:bg-signal/20 active:scale-95"
           >
             <Minimize2 size={15} aria-hidden="true" />
             <span>Minimize</span>
@@ -57,7 +57,9 @@ export default function FullscreenDialog({
         {children}
       </div>
       {footer && (
-        <footer className="w-full border-t border-line pt-3">{footer}</footer>
+        <footer className="w-full border-t border-line/60 pt-3">
+          {footer}
+        </footer>
       )}
     </div>
   );

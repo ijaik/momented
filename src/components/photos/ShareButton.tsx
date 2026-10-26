@@ -14,7 +14,7 @@ export interface ShareButtonProps {
   className?: string;
 }
 export default function ShareButton({
-  title = "",
+  title = "Untitled Momented",
   photoId,
   imageUrl,
   shareCount = 0,
@@ -56,7 +56,7 @@ export default function ShareButton({
           title="Share"
           className={
             className ||
-            "inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:bg-soft"
+            "inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-surface/80 backdrop-blur-xs px-3 py-1.5 text-xs font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
           }
         >
           <Share2 size={14} aria-hidden="true" className="shrink-0" />
@@ -71,7 +71,7 @@ export default function ShareButton({
           aria-expanded={isOpen}
           className={
             className ||
-            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-md bg-solid px-4 py-2 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 sm:px-5"
+            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-xl bg-solid px-4 py-2 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 hover:opacity-90 active:scale-[0.98] sm:px-5"
           }
         >
           <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">

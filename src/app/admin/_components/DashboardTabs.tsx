@@ -69,7 +69,12 @@ export default function DashboardTabs({
           </p>
           <p className="mt-2 text-sm text-muted">Content studio</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout} type="button">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={handleLogout}
+          type="button"
+        >
           Log out
         </Button>
       </header>
@@ -91,9 +96,9 @@ export default function DashboardTabs({
               tabIndex={isActive ? 0 : -1}
               onClick={() => activate(tab)}
               onKeyDown={(e) => onTabKeyDown(e, tab)}
-              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm transition-colors ${
+              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-all duration-100 active:scale-95 ${
                 isActive
-                  ? "border-ink font-medium text-ink"
+                  ? "border-ink text-ink font-semibold"
                   : "border-transparent text-muted hover:border-ink/30 hover:text-ink"
               }`}
             >

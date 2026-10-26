@@ -46,7 +46,7 @@ export default function AboutPage() {
         </header>
         <div className="flex flex-col gap-16 md:gap-20">
           <section className="grid grid-cols-1 gap-x-16 gap-y-12 sm:grid-cols-2">
-            <div className="rounded-xl border border-line/70 bg-surface/40 p-6 sm:p-7">
+            <div className="rounded-2xl border border-line/70 bg-surface/60 backdrop-blur-md p-6 sm:p-7 shadow-xs">
               <div className="mb-3 flex items-center gap-2 text-ink">
                 <Camera size={18} className="text-signal" />
                 <SectionLabel>The Concept</SectionLabel>
@@ -57,7 +57,7 @@ export default function AboutPage() {
                 conversations between natural light, urban shadow, and time.
               </p>
             </div>
-            <div className="rounded-xl border border-line/70 bg-surface/40 p-6 sm:p-7">
+            <div className="rounded-2xl border border-line/70 bg-surface/60 backdrop-blur-md p-6 sm:p-7 shadow-xs">
               <div className="mb-3 flex items-center gap-2 text-ink">
                 <Layers size={18} className="text-signal" />
                 <SectionLabel>The Philosophy</SectionLabel>
@@ -74,7 +74,7 @@ export default function AboutPage() {
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Link
                 href="/series"
-                className="group flex flex-col justify-between rounded-xl border border-line bg-surface p-5 transition-all hover:border-ink/20 hover:bg-soft"
+                className="group flex flex-col justify-between rounded-2xl border border-line/70 bg-surface/70 backdrop-blur-md p-6 transition-all hover:border-ink/20 hover:bg-soft/70 active:scale-[0.98]"
               >
                 <div>
                   <div className="flex items-center justify-between text-muted group-hover:text-ink">
@@ -97,7 +97,7 @@ export default function AboutPage() {
               </Link>
               <Link
                 href="/collections"
-                className="group flex flex-col justify-between rounded-xl border border-line bg-surface p-5 transition-all hover:border-ink/20 hover:bg-soft"
+                className="group flex flex-col justify-between rounded-2xl border border-line/70 bg-surface/70 backdrop-blur-md p-6 transition-all hover:border-ink/20 hover:bg-soft/70 active:scale-[0.98]"
               >
                 <div>
                   <div className="flex items-center justify-between text-muted group-hover:text-ink">
@@ -120,7 +120,7 @@ export default function AboutPage() {
               </Link>
               <Link
                 href="/"
-                className="group flex flex-col justify-between rounded-xl border border-line bg-surface p-5 transition-all hover:border-ink/20 hover:bg-soft"
+                className="group flex flex-col justify-between rounded-2xl border border-line/70 bg-surface/70 backdrop-blur-md p-6 transition-all hover:border-ink/20 hover:bg-soft/70 active:scale-[0.98]"
               >
                 <div>
                   <div className="flex items-center justify-between text-muted group-hover:text-ink">

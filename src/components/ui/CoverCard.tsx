@@ -35,7 +35,7 @@ export default function CoverCard({
   const plural = countLabel?.plural || "photographs";
   return (
     <Link href={href} className="focus-media group block">
-      <div className="relative aspect-4/3 overflow-hidden rounded-xs border border-line/70 bg-soft shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-500 group-hover:border-signal/50 group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.09)]">
+      <div className="relative aspect-4/3 overflow-hidden rounded-xl border border-line/70 bg-soft shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-500 ease-out group-hover:border-signal/50 group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.09)] group-active:scale-[0.99]">
         {coverImage ? (
           <>
             <Image
@@ -57,7 +57,7 @@ export default function CoverCard({
               loading={index === 0 ? "eager" : "lazy"}
             />
             {photoCount > 0 && (
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">
                 <Layers
                   size={12}
                   aria-hidden="true"

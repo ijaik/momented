@@ -20,7 +20,7 @@ export default function PhotoCard({
     <Link
       href={`/photo/${photo.id}`}
       aria-label={`${title}${photo.camera_model ? `, shot on ${photo.camera_model}` : ""}`}
-      className="focus-media group relative block w-full overflow-hidden rounded-xs border border-line/60 bg-soft shadow-[0_2px_10px_rgba(0,0,0,0.03)] transition-all duration-500 hover:border-signal/40 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+      className="focus-media group relative block w-full overflow-hidden rounded-xl border border-line/60 bg-soft shadow-[0_2px_12px_rgba(0,0,0,0.03)] transition-all duration-500 ease-out hover:border-signal/40 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] active:scale-[0.99]"
       style={{ aspectRatio: `${aspectRatio}` }}
     >
       <Image
@@ -36,16 +36,16 @@ export default function PhotoCard({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100 bg-linear-to-t from-black/85 via-black/20 to-black/10 sm:p-5"
+        className="pointer-events-none absolute inset-0 flex flex-col justify-end p-4 opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100 group-focus-visible:opacity-100 bg-linear-to-t from-black/80 via-black/20 to-transparent sm:p-5"
       >
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-serif text-base font-medium text-white sm:text-lg">
               {title}
             </p>
-            <p className="mt-0.5 text-xs text-white/70">View frame</p>
+            <p className="mt-0.5 text-xs text-white/75">View frame</p>
           </div>
-          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/10 text-white backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/15 text-white backdrop-blur-md shadow-xs transition-transform duration-300 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
             <ArrowUpRight size={15} aria-hidden="true" />
           </span>
         </div>

@@ -23,11 +23,11 @@ export default function LoginForm() {
   });
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-16">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm rounded-2xl border border-line/70 bg-surface/80 p-8 shadow-xs backdrop-blur-md">
         <p className="text-center font-script text-3xl tracking-tight text-ink">
           Momented
         </p>
-        <h1 className="mt-6 text-center font-serif text-3xl font-medium tracking-tight text-ink">
+        <h1 className="mt-5 text-center font-serif text-3xl font-medium tracking-tight text-ink">
           Content studio
         </h1>
         <p className="mt-2 text-center text-sm text-muted">
@@ -54,12 +54,13 @@ export default function LoginForm() {
             isLoading={isPending}
             loadingText="Verifying…"
             text="Log in"
+            size="md"
           />
         </form>
         {state.error && (
           <p
             role="alert"
-            className="mt-4 rounded-md bg-danger-soft px-3 py-2.5 text-center text-sm font-medium text-danger"
+            className="mt-4 rounded-xl border border-danger/20 bg-danger-soft px-3.5 py-2.5 text-center text-sm font-medium text-danger"
           >
             {state.error}
           </p>

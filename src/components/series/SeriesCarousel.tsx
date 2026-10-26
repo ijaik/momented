@@ -23,6 +23,16 @@ interface SeriesCarouselProps {
   seriesDescription?: string | null;
   photos: SeriesSlidePhoto[];
 }
+function rubberband(
+  overshoot: number,
+  dimension = 600,
+  constant = 0.55,
+): number {
+  return (
+    (overshoot * dimension * constant) /
+    (dimension + constant * Math.abs(overshoot))
+  );
+}
 export default function SeriesCarousel({
   seriesTitle,
   seriesDescription,
@@ -106,11 +116,11 @@ export default function SeriesCarousel({
     }
     if (!isHorizontalSwipe.current) return;
     let dampenedOffset = deltaX;
-    if (activeIndex === 0 && deltaX > 0) {
-      dampenedOffset = deltaX * 0.28;
-    } else if (activeIndex === totalSlides - 1 && deltaX < 0) {
-      dampenedOffset = deltaX * 0.28;
-    }
+    const containerWidth = containerRef.current?.clientWidth || 600;
+    if (activeIndex === 0 && deltaX > 0)
+      dampenedOffset = rubberband(deltaX, containerWidth);
+    else if (activeIndex === totalSlides - 1 && deltaX < 0)
+      dampenedOffset = rubberband(deltaX, containerWidth);
     currentDragOffset.current = dampenedOffset;
     setDragOffset(dampenedOffset);
   };
@@ -156,11 +166,11 @@ export default function SeriesCarousel({
       if (!isMouseDown.current || totalSlides <= 1) return;
       const deltaX = e.clientX - mouseStartX.current;
       let dampenedOffset = deltaX;
-      if (activeIndex === 0 && deltaX > 0) {
-        dampenedOffset = deltaX * 0.28;
-      } else if (activeIndex === totalSlides - 1 && deltaX < 0) {
-        dampenedOffset = deltaX * 0.28;
-      }
+      const containerWidth = container?.clientWidth || 600;
+      if (activeIndex === 0 && deltaX > 0)
+        dampenedOffset = rubberband(deltaX, containerWidth);
+      else if (activeIndex === totalSlides - 1 && deltaX < 0)
+        dampenedOffset = rubberband(deltaX, containerWidth);
       currentDragOffset.current = dampenedOffset;
       setDragOffset(dampenedOffset);
     };
@@ -211,7 +221,7 @@ export default function SeriesCarousel({
       className="flex flex-col gap-5"
     >
       <div
-        className="relative mx-auto w-full overflow-hidden border border-line bg-soft shadow-xs touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
+        className="relative mx-auto w-full overflow-hidden rounded-xl border border-line/70 bg-soft shadow-xs touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
         style={{
           aspectRatio: `${currentAspect}`,
           maxHeight: "min(78vh, 680px)",
@@ -229,7 +239,7 @@ export default function SeriesCarousel({
             transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
             transition: isDragging
               ? "none"
-              : "transform 320ms cubic-bezier(0.25, 1, 0.5, 1)",
+              : "transform 360ms cubic-bezier(0.16, 1, 0.3, 1)",
             willChange: isDragging ? "transform" : "auto",
           }}
         >
@@ -292,7 +302,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex - 1)}
               disabled={activeIndex === 0}
               aria-label="Previous photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-90 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
@@ -301,7 +311,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex + 1)}
               disabled={activeIndex === totalSlides - 1}
               aria-label="Next photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-90 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronRight size={18} aria-hidden="true" />
             </button>
@@ -330,10 +340,10 @@ export default function SeriesCarousel({
             type="button"
             onClick={() => setShowExifDrawer((prev) => !prev)}
             aria-expanded={showExifDrawer}
-            className={`inline-flex items-center gap-2 rounded-md border px-3.5 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-all duration-100 active:scale-95 ${
               showExifDrawer
                 ? "border-signal/50 bg-signal/10 text-signal"
-                : "border-line bg-surface text-ink hover:bg-soft"
+                : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft"
             }`}
           >
             <Info size={16} aria-hidden="true" />
@@ -344,14 +354,14 @@ export default function SeriesCarousel({
             cloudinaryUrl={currentPhoto.cloudinary_url}
             cloudinaryPublicId={currentPhoto.cloudinary_public_id}
             fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
-            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95 disabled:opacity-60"
             variant="compact"
           />
           <ShareButton
             title={`${seriesTitle} — Frame ${activeIndex + 1}`}
             photoId={currentPhoto.id}
             imageUrl={currentPhoto.cloudinary_url}
-            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
             variant="compact"
           />
           <button
@@ -359,7 +369,7 @@ export default function SeriesCarousel({
             onClick={toggleMaximize}
             aria-label="Maximize series"
             title="Maximize (F)"
-            className="inline-flex items-center gap-2 rounded-md border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:bg-soft"
+            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
           >
             <Maximize2 size={16} aria-hidden="true" />
             <span>Maximize</span>
@@ -369,9 +379,9 @@ export default function SeriesCarousel({
       {showExifDrawer && (
         <aside
           aria-label="Camera specifications for active frame"
-          className="w-full rounded-lg border border-line bg-surface/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs transition-all"
+          className="w-full rounded-2xl border border-line/60 bg-surface/85 p-5 shadow-xs backdrop-blur-md transition-all animate-[dialog-panel-in_200ms_cubic-bezier(0.16,1,0.3,1)]"
         >
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted border-b border-line pb-2.5">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted border-b border-line/60 pb-2.5">
             Frame {activeIndex + 1} Details
           </h3>
           {currentPhoto.camera_model ||
@@ -381,8 +391,8 @@ export default function SeriesCarousel({
           currentPhoto.iso ? (
             <div className="mt-3.5 space-y-3">
               {currentPhoto.camera_model && (
-                <div className="flex items-center gap-2.5 border-b border-line pb-2.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-xs border border-line bg-soft text-ink">
+                <div className="flex items-center gap-2.5 border-b border-line/60 pb-2.5">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-line/60 bg-soft/80 text-ink">
                     <Camera size={14} aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
@@ -396,7 +406,7 @@ export default function SeriesCarousel({
                 </div>
               )}
               <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                   <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
                     <CircleDot size={11} aria-hidden="true" />
                     <span>Focal</span>
@@ -405,7 +415,7 @@ export default function SeriesCarousel({
                     {currentPhoto.focal_length || "—"}
                   </dd>
                 </div>
-                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                   <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
                     <span className="font-serif text-xs font-bold leading-none">
                       ƒ
@@ -416,7 +426,7 @@ export default function SeriesCarousel({
                     {currentPhoto.aperture || "—"}
                   </dd>
                 </div>
-                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                   <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
                     <Clock size={11} aria-hidden="true" />
                     <span>Shutter</span>
@@ -425,7 +435,7 @@ export default function SeriesCarousel({
                     {currentPhoto.shutter_speed || "—"}
                   </dd>
                 </div>
-                <div className="rounded-xs border border-line/70 bg-soft/40 p-2">
+                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                   <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
                     <Film size={11} aria-hidden="true" />
                     <span>ISO</span>

@@ -98,10 +98,10 @@ export default function DownloadButton({
         title={isSuccess ? "Saved" : "Download"}
         className={
           className ||
-          `inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-all ${
+          `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-100 active:scale-95 ${
             isSuccess
               ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-              : "border-line bg-surface text-ink hover:bg-soft disabled:opacity-70"
+              : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft disabled:opacity-70"
           }`
         }
       >
@@ -133,10 +133,10 @@ export default function DownloadButton({
       aria-live="polite"
       className={
         className ||
-        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-md border px-4 py-2 text-sm font-medium transition-all sm:px-5 ${
+        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-xl border px-4 py-2 text-sm font-medium transition-all duration-100 sm:px-5 active:scale-[0.98] ${
           isSuccess
             ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-            : "border-line bg-surface text-ink hover:bg-soft hover:border-ink/20 disabled:opacity-70"
+            : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft hover:border-ink/20 disabled:opacity-70"
         }`
       }
     >

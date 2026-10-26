@@ -48,7 +48,7 @@ export default function PhotoChecklist({
         <legend className="mb-2 text-sm font-medium text-ink">
           Pick the photographs
         </legend>
-        <div className="max-h-80 overflow-y-auto rounded-md border border-line bg-paper p-3">
+        <div className="max-h-80 overflow-y-auto rounded-2xl border border-line/80 bg-paper/60 p-3 backdrop-blur-xs">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {photos.map((p, index) => {
               const isChecked = selectedIds.includes(p.id);
@@ -56,12 +56,14 @@ export default function PhotoChecklist({
               return (
                 <div
                   key={p.id}
-                  className={`flex flex-col rounded-md border p-2 transition-colors ${
-                    isCover ? "border-ink/40 bg-soft" : "border-line bg-surface"
+                  className={`flex flex-col rounded-xl border p-2 transition-all duration-150 ${
+                    isCover
+                      ? "border-ink/50 bg-soft shadow-xs"
+                      : "border-line bg-surface hover:border-ink/20"
                   }`}
                 >
                   <div className="relative">
-                    <label className="group relative block aspect-square cursor-pointer overflow-hidden rounded-sm bg-soft">
+                    <label className="group relative block aspect-square cursor-pointer overflow-hidden rounded-lg bg-soft">
                       <Image
                         src={p.cloudinary_url}
                         alt={p.title || "A Momented Photograph"}
@@ -90,7 +92,7 @@ export default function PhotoChecklist({
                         className="absolute left-2 top-2 z-10 h-4 w-4 cursor-pointer accent-solid"
                       />
                       {isCover && (
-                        <span className="absolute bottom-2 right-2 z-10 rounded-sm bg-solid px-1.5 py-0.5 text-[10px] font-medium text-on-solid">
+                        <span className="absolute bottom-2 right-2 z-10 rounded-full bg-solid/90 px-2 py-0.5 text-[10px] font-medium text-on-solid shadow-xs backdrop-blur-md">
                           Cover
                         </span>
                       )}
@@ -104,7 +106,7 @@ export default function PhotoChecklist({
                       <button
                         type="button"
                         onClick={() => setCoverId(p.id)}
-                        className="mt-1 flex cursor-pointer items-center gap-1.5 text-left"
+                        className="mt-1 flex cursor-pointer items-center gap-1.5 text-left active:scale-95 duration-100 transition-transform"
                       >
                         <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-muted" />
                         <span className="text-[11px] text-muted">

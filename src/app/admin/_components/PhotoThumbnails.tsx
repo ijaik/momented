@@ -21,7 +21,7 @@ export default function PhotoThumbnails({
           alt={p.title || fallbackTitle}
           width={80}
           height={80}
-          className="h-16 w-16 shrink-0 rounded-sm border border-line object-cover bg-soft"
+          className="h-16 w-16 shrink-0 rounded-lg border border-line/70 object-cover bg-soft transition-all duration-150 hover:border-ink/30"
           loading={index < 6 ? "eager" : "lazy"}
         />
       ))}

@@ -146,7 +146,7 @@ export default function PhotoManager({
       <div>
         <form
           onSubmit={handleUpload}
-          className="flex flex-col gap-5 rounded-lg border border-line bg-surface p-6 lg:sticky lg:top-8"
+          className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md lg:sticky lg:top-8"
         >
           <div>
             <h2 className="text-lg font-medium text-ink">Add a photograph</h2>
@@ -221,7 +221,7 @@ export default function PhotoManager({
               name="photo"
               accept="image/*"
               required
-              className="w-full cursor-pointer rounded-md border border-dashed border-line bg-paper px-3 py-4 text-sm text-muted file:mr-3 file:rounded-md file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink hover:border-ink/30"
+              className="w-full cursor-pointer rounded-xl border border-dashed border-line/80 bg-paper/60 px-4 py-4 text-sm text-muted transition-colors file:mr-3 file:rounded-lg file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink hover:border-ink/30"
             />
           </div>
           <SubmitButton
@@ -242,7 +242,7 @@ export default function PhotoManager({
               alt={photo.title || "A Momented Photograph"}
               width={200}
               height={200}
-              className="h-32 w-full shrink-0 rounded-sm border border-line object-cover bg-soft sm:w-32"
+              className="h-32 w-full shrink-0 rounded-xl border border-line/70 object-cover bg-soft sm:w-32"
               loading={index < 4 ? "eager" : "lazy"}
               fetchPriority={index === 0 ? "high" : "auto"}
             />
@@ -250,7 +250,7 @@ export default function PhotoManager({
               {editingPhotoId === photo.id ? (
                 <form
                   onSubmit={(e) => saveEdit(e, photo.id)}
-                  className="flex flex-col gap-4"
+                  className="flex flex-col gap-4 rounded-2xl border border-line/70 bg-surface/75 p-5 shadow-xs backdrop-blur-md"
                 >
                   <div>
                     <FieldLabel htmlFor={`edit-photo-title-${photo.id}`}>
@@ -326,7 +326,7 @@ export default function PhotoManager({
                     />
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
                       onClick={() => setEditingPhotoId(null)}
                     >
@@ -353,7 +353,7 @@ export default function PhotoManager({
                   <div className="mt-3 flex gap-3">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
                       onClick={() => setEditingPhotoId(photo.id)}
                     >

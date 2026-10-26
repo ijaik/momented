@@ -79,7 +79,7 @@ export default function PhotoDetailView({
             onClick={toggleMaximize}
             aria-label="Maximize photograph (Press F)"
             title="Maximize (F)"
-            className="group relative mx-auto flex w-fit max-w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-xs border border-line bg-soft shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all hover:border-signal/50 focus-visible:outline-2 focus-visible:outline-signal"
+            className="group relative mx-auto flex w-fit max-w-full cursor-zoom-in items-center justify-center overflow-hidden rounded-xl border border-line/70 bg-soft shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:border-signal/50 focus-visible:outline-2 focus-visible:outline-signal active:scale-[0.995]"
             style={{
               maxHeight: "min(72vh, calc(100vh - 12rem))",
             }}
@@ -96,7 +96,7 @@ export default function PhotoDetailView({
             />
             <span
               aria-hidden="true"
-              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-surface/90 px-3 py-1.5 text-xs font-medium text-ink opacity-0 shadow-xs backdrop-blur-md transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 hover:bg-soft"
+              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-surface/80 px-3 py-1.5 text-xs font-medium text-ink opacity-0 shadow-xs backdrop-blur-md transition-all duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 hover:bg-surface active:scale-95"
             >
               <Maximize2 size={13} aria-hidden="true" />
               <span>Maximize</span>
@@ -137,10 +137,10 @@ export default function PhotoDetailView({
               )}
             </div>
             {hasExif ? (
-              <div className="rounded-lg border border-line bg-surface/60 p-4 shadow-xs backdrop-blur-xs">
+              <div className="rounded-2xl border border-line/60 bg-surface/75 p-5 shadow-xs backdrop-blur-md">
                 {photo.camera_model && (
-                  <div className="mb-4 flex items-center gap-3 border-b border-line pb-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line bg-soft text-ink">
+                  <div className="mb-4 flex items-center gap-3 border-b border-line/60 pb-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line/60 bg-soft/80 text-ink">
                       <Camera size={18} aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
@@ -154,7 +154,7 @@ export default function PhotoDetailView({
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <div className="rounded-md border border-line/70 bg-soft/40 p-2.5">
+                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                     <div className="flex items-center gap-1.5 text-muted">
                       <CircleDot size={13} aria-hidden="true" />
                       <span className="text-[10px] font-semibold uppercase tracking-wider">
@@ -165,7 +165,7 @@ export default function PhotoDetailView({
                       {photo.focal_length || "—"}
                     </p>
                   </div>
-                  <div className="rounded-md border border-line/70 bg-soft/40 p-2.5">
+                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                     <div className="flex items-center gap-1.5 text-muted">
                       <span className="font-serif text-xs font-bold leading-none">
                         ƒ
@@ -178,7 +178,7 @@ export default function PhotoDetailView({
                       {photo.aperture || "—"}
                     </p>
                   </div>
-                  <div className="rounded-md border border-line/70 bg-soft/40 p-2.5">
+                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                     <div className="flex items-center gap-1.5 text-muted">
                       <Clock size={13} aria-hidden="true" />
                       <span className="text-[10px] font-semibold uppercase tracking-wider">
@@ -189,7 +189,7 @@ export default function PhotoDetailView({
                       {photo.shutter_speed || "—"}
                     </p>
                   </div>
-                  <div className="rounded-md border border-line/70 bg-soft/40 p-2.5">
+                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
                     <div className="flex items-center gap-1.5 text-muted">
                       <Film size={13} aria-hidden="true" />
                       <span className="text-[10px] font-semibold uppercase tracking-wider">
@@ -226,18 +226,18 @@ export default function PhotoDetailView({
             aria-label="Actions"
             className="grid grid-cols-1 gap-3 border-t border-line pt-8 sm:grid-cols-2"
           >
-            <ShareButton
-              title={photo.title || ""}
-              photoId={photo.id}
-              imageUrl={photo.cloudinary_url}
-              shareCount={photo.shares || 0}
-            />
             <DownloadButton
               photoId={photo.id}
               cloudinaryUrl={photo.cloudinary_url}
               cloudinaryPublicId={photo.cloudinary_public_id}
               downloadCount={photo.downloads || 0}
               fileName={fileName}
+            />
+            <ShareButton
+              title={photo.title || "Untitled Momented"}
+              photoId={photo.id}
+              imageUrl={photo.cloudinary_url}
+              shareCount={photo.shares || 0}
             />
           </section>
         </aside>
@@ -251,13 +251,13 @@ export default function PhotoDetailView({
             {adjacent?.prev ? (
               <Link
                 href={`/photo/${adjacent.prev.id}`}
-                className="group flex items-center gap-3.5 transition-opacity hover:opacity-85"
+                className="group flex items-center gap-3.5 rounded-xl p-2 -m-2 transition-all duration-200 hover:bg-soft/50 active:scale-[0.98]"
                 aria-label={`Previous photograph: ${adjacent.prev.title || "Untitled Momented"}`}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-ink transition-transform duration-300 group-hover:-translate-x-1">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink transition-transform duration-300 ease-out group-hover:-translate-x-1">
                   <ChevronLeft size={18} aria-hidden="true" />
                 </span>
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xs border border-line bg-soft">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line/70 bg-soft">
                   <Image
                     src={adjacent.prev.cloudinary_url}
                     alt={adjacent.prev.title || "A Momented photograph"}
@@ -279,11 +279,11 @@ export default function PhotoDetailView({
               <div />
             )}
             <div className="hidden text-center text-xs text-muted md:block">
-              <kbd className="rounded-sm border border-line bg-soft px-1.5 py-0.5 font-mono text-[11px] text-muted">
+              <kbd className="rounded-md border border-line/80 bg-surface/80 px-2 py-0.5 font-mono text-[11px] text-muted shadow-2xs">
                 ←
               </kbd>{" "}
               or{" "}
-              <kbd className="rounded-sm border border-line bg-soft px-1.5 py-0.5 font-mono text-[11px] text-muted">
+              <kbd className="rounded-md border border-line/80 bg-surface/80 px-2 py-0.5 font-mono text-[11px] text-muted shadow-2xs">
                 →
               </kbd>{" "}
               keys to walk gallery
@@ -291,7 +291,7 @@ export default function PhotoDetailView({
             {adjacent?.next ? (
               <Link
                 href={`/photo/${adjacent.next.id}`}
-                className="group flex items-center justify-end gap-3.5 text-right transition-opacity hover:opacity-85 sm:self-auto"
+                className="group flex items-center justify-end gap-3.5 rounded-xl p-2 -m-2 text-right transition-all duration-200 hover:bg-soft/50 active:scale-[0.98] sm:self-auto"
                 aria-label={`Next photograph: ${adjacent.next.title || "Untitled Momented"}`}
               >
                 <div className="min-w-0">
@@ -302,7 +302,7 @@ export default function PhotoDetailView({
                     {adjacent.next.title || "Untitled Momented"}
                   </p>
                 </div>
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xs border border-line bg-soft">
+                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line/70 bg-soft">
                   <Image
                     src={adjacent.next.cloudinary_url}
                     alt={adjacent.next.title || "A Momented photograph"}
@@ -311,7 +311,7 @@ export default function PhotoDetailView({
                     className="object-cover"
                   />
                 </div>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-ink transition-transform duration-300 group-hover:translate-x-1">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink transition-transform duration-300 ease-out group-hover:translate-x-1">
                   <ChevronRight size={18} aria-hidden="true" />
                 </span>
               </Link>

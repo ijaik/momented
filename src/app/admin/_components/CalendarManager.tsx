@@ -56,7 +56,7 @@ export default function CalendarManager({
             {editingId === cal.id ? (
               <form
                 onSubmit={(e) => handleEdit(e, cal.id)}
-                className="flex flex-col gap-5"
+                className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
               >
                 <div>
                   <FieldLabel htmlFor={`cal-title-${cal.id}`}>Title</FieldLabel>
@@ -92,7 +92,7 @@ export default function CalendarManager({
                   />
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     onClick={() => setEditingId(null)}
                   >

@@ -21,7 +21,7 @@ export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
   );
 }
 const baseInputStyle =
-  "w-full rounded-md border border-line bg-surface px-3 py-2 text-[15px] text-ink placeholder:text-faint transition-colors hover:border-ink/25";
+  "w-full rounded-xl border border-line/80 bg-surface/80 px-3.5 py-2.5 text-[15px] text-ink placeholder:text-faint backdrop-blur-xs transition-all duration-150 hover:border-ink/30 focus:border-ink/40 focus:outline-hidden focus:ring-2 focus:ring-ink/15";
 export interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
@@ -56,21 +56,27 @@ export interface SubmitButtonProps
   isLoading?: boolean;
   loadingText?: ReactNode;
   text: ReactNode;
+  size?: "sm" | "md";
   className?: string;
 }
 export function SubmitButton({
   isLoading,
   loadingText,
   text,
+  size = "sm",
   className = "",
   ...props
 }: SubmitButtonProps) {
+  const sizes = {
+    sm: "px-3.5 py-2 text-sm gap-1.5 rounded-xl",
+    md: "px-5 py-2.5 text-sm gap-2 rounded-xl",
+  };
   return (
     <button
       {...props}
       type="submit"
       disabled={isLoading}
-      className={`inline-flex items-center justify-center gap-2 rounded-md bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-opacity hover:opacity-85 disabled:pointer-events-none disabled:opacity-60 ${className}`}
+      className={`inline-flex items-center justify-center font-medium bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-95 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
     >
       {isLoading ? loadingText : text}
     </button>

@@ -120,7 +120,7 @@ export default function ItemManager<T extends BaseItem>({
       {isCreating && (
         <form
           onSubmit={handleCreate}
-          className="flex flex-col gap-5 rounded-lg border border-line bg-surface p-6"
+          className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
         >
           <div>
             <FieldLabel htmlFor="new-title">Title</FieldLabel>
@@ -150,7 +150,7 @@ export default function ItemManager<T extends BaseItem>({
             />
             <Button
               type="button"
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setIsCreating(false)}
             >
@@ -168,7 +168,7 @@ export default function ItemManager<T extends BaseItem>({
             {editingId === item.id ? (
               <form
                 onSubmit={(e) => handleEdit(e, item.id)}
-                className="flex flex-col gap-5"
+                className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
               >
                 <div>
                   <FieldLabel htmlFor={`edit-title-${item.id}`}>
@@ -207,7 +207,7 @@ export default function ItemManager<T extends BaseItem>({
                   />
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     onClick={() => setEditingId(null)}
                   >
@@ -224,7 +224,7 @@ export default function ItemManager<T extends BaseItem>({
                   <div className="flex gap-4">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
                       onClick={() => setEditingId(item.id)}
                     >
