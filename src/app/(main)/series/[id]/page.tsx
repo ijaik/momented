@@ -97,15 +97,13 @@ export default async function SeriesDetailPage({
             {series.description}
           </p>
         )}
-        <p className="mt-3 text-xs text-muted">
-          Curated on {displayDate} · by {siteConfig.author.name}
-        </p>
       </header>
       {sortedPhotos.length > 0 ? (
         <SeriesCarousel
           seriesTitle={series.title}
           seriesDescription={series.description}
           photos={sortedPhotos}
+          createdAt={displayDate}
         />
       ) : (
         <EmptyState description="No photographs added to this series yet." />

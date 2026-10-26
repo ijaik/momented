@@ -22,6 +22,7 @@ interface SeriesCarouselProps {
   seriesTitle: string;
   seriesDescription?: string | null;
   photos: SeriesSlidePhoto[];
+  createdAt: string;
 }
 function rubberband(
   overshoot: number,
@@ -37,6 +38,7 @@ export default function SeriesCarousel({
   seriesTitle,
   seriesDescription,
   photos,
+  createdAt,
 }: SeriesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
@@ -332,7 +334,7 @@ export default function SeriesCarousel({
             {activeDisplayDate}
             {currentPhoto.camera_model &&
               ` · Shot on ${currentPhoto.camera_model}`}
-            {` · Frame ${activeIndex + 1} of ${totalSlides}`}
+            {` · by ${currentPhoto.artist}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -372,7 +374,7 @@ export default function SeriesCarousel({
             className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
           >
             <Maximize2 size={16} aria-hidden="true" />
-            <span>Maximize</span>
+            <span className="hidden sm:inline">Maximize</span>
           </button>
         </div>
       </div>
@@ -460,12 +462,7 @@ export default function SeriesCarousel({
         onClose={exitMaximize}
         ariaLabel={`${seriesTitle} fullscreen gallery`}
         title={seriesTitle}
-        subtitle={
-          <>
-            Frame {activeIndex + 1} of {totalSlides}
-            {currentPhoto.title ? ` · ${currentPhoto.title}` : ""}
-          </>
-        }
+        subtitle={<p className="text-xs text-muted">{createdAt}</p>}
         actions={
           <>
             <DownloadButton

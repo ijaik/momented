@@ -326,11 +326,9 @@ export default function PhotoDetailView({
         onClose={exitMaximize}
         title={title}
         subtitle={
-          <p>
-            {displayDate}
-            {photo.camera_model && ` · Shot on ${photo.camera_model}`}
-            {` · by ${photo.artist || siteConfig.author.name}`}
-          </p>
+          photo.description ? (
+            <p className="text-xs text-muted">{photo.description}</p>
+          ) : undefined
         }
         actions={
           <>
@@ -352,13 +350,11 @@ export default function PhotoDetailView({
           </>
         }
         footer={
-          photo.description ? (
-            <div className="text-center">
-              <p className="line-clamp-2 text-xs text-muted">
-                {photo.description}
-              </p>
-            </div>
-          ) : undefined
+          <p className="text-center text-xs text-muted">
+            {displayDate}
+            {photo.camera_model && ` · Shot on ${photo.camera_model}`}
+            {` · by ${photo.artist || siteConfig.author.name}`}
+          </p>
         }
         ariaLabel={`${title} fullscreen viewer`}
       >

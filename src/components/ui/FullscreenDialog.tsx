@@ -32,12 +32,10 @@ export default function FullscreenDialog({
     >
       <header className="flex w-full items-center justify-between gap-4 border-b border-line/60 pb-3.5">
         <div className="min-w-0">
-          <h2 className="truncate font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
+          <h2 className="font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
             {title}
           </h2>
-          {subtitle && (
-            <div className="truncate text-xs text-muted">{subtitle}</div>
-          )}
+          {subtitle}
         </div>
         <div className="flex items-center gap-2">
           {actions}
@@ -49,7 +47,7 @@ export default function FullscreenDialog({
             className="inline-flex items-center gap-1.5 rounded-full border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-all duration-100 hover:bg-signal/20 active:scale-95"
           >
             <Minimize2 size={15} aria-hidden="true" />
-            <span>Minimize</span>
+            <span className="hidden sm:inline">Minimize</span>
           </button>
         </div>
       </header>
