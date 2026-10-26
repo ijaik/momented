@@ -112,7 +112,7 @@ export default async function CalendarMonthPage({
           breadcrumbJsonLd([
             {
               name: "Collections",
-              url: `${siteConfig.url}/collections`,
+              url: `${siteConfig.url}/collections?tab=calendar`,
             },
             { name: collection.title, url },
           ]),
@@ -121,6 +121,8 @@ export default async function CalendarMonthPage({
       <DetailLayout
         title={collection.title}
         description={collection.description}
+        backHref="/collections?tab=calendar"
+        backLabel="All calendar collections"
         meta={
           monthPhotos.length === 0
             ? undefined

@@ -51,7 +51,7 @@ export default async function SeriesDetailPage({
   if (id === "_")
     return (
       <>
-        <BackButton label="All series" />
+        <BackButton label="All series" href="/series" />
         <EmptyState description="No series curated yet." />
       </>
     );
@@ -59,7 +59,7 @@ export default async function SeriesDetailPage({
   if (!series)
     return (
       <>
-        <BackButton label="All series" />
+        <BackButton label="All series" href="/series" />
         <EmptyState description="Series not found." />
       </>
     );
@@ -87,7 +87,7 @@ export default async function SeriesDetailPage({
           ]),
         ]}
       />
-      <BackButton label="All series" />
+      <BackButton label="All series" href="/series" />
       <header className="mb-8 max-w-3xl border-b border-line pb-8 sm:mb-10">
         <h1 className="font-serif text-3xl font-medium leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">
           {series.title}
@@ -97,6 +97,7 @@ export default async function SeriesDetailPage({
             {series.description}
           </p>
         )}
+        <p className="mt-3 text-xs text-muted">Curated on {displayDate}</p>
       </header>
       {sortedPhotos.length > 0 ? (
         <SeriesCarousel

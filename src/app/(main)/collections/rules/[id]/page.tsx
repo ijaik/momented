@@ -45,6 +45,8 @@ export default async function SingleRulePage({
       <DetailLayout
         title="Rule Collections"
         description="Explore compositions categorized by photographic rules."
+        backHref="/collections?tab=rules"
+        backLabel="All rule collections"
       >
         <EmptyState description="No rule collection found." />
       </DetailLayout>
@@ -71,7 +73,7 @@ export default async function SingleRulePage({
           breadcrumbJsonLd([
             {
               name: "Collections",
-              url: `${siteConfig.url}/collections`,
+              url: `${siteConfig.url}/collections?tab=rules`,
             },
             { name: collection.title, url },
           ]),
@@ -80,6 +82,8 @@ export default async function SingleRulePage({
       <DetailLayout
         title={collection.title}
         description={collection.description}
+        backHref="/collections?tab=rules"
+        backLabel="All rule collections"
         meta={
           photos.length === 0
             ? undefined

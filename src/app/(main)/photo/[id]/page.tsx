@@ -41,7 +41,7 @@ export default async function PhotoDetail({
   if (id === "_")
     return (
       <>
-        <BackButton label="All photographs" />
+        <BackButton label="All photographs" href="/" />
         <EmptyState description="Photograph not found." />
       </>
     );
@@ -103,7 +103,7 @@ export default async function PhotoDetail({
           ]),
         ]}
       />
-      <BackButton label="All photographs" />
+      <BackButton label="All photographs" href="/" />
       <PhotoDetailView
         photo={typedPhoto}
         displayDate={displayDate}
