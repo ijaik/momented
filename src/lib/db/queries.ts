@@ -201,12 +201,20 @@ export async function getRuleCollectionsList() {
 }
 export async function getCalendarCollectionsList() {
   "use cache";
-  cacheTag("collections");
+  cacheTag("collections", "calendar", "photos");
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("calendar_collections")
-    .select("*, photos!photo_calendar_collections(id, cloudinary_url)")
-    .order("id", { ascending: true });
+    .select(
+      "*, photos!photo_calendar_collections(id, cloudinary_url, taken_at, created_at)",
+    )
+    .order("id", { ascending: true })
+    .order("taken_at", {
+      referencedTable: "photos",
+      ascending: false,
+      nullsFirst: false,
+    })
+    .order("created_at", { referencedTable: "photos", ascending: false });
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesList() {

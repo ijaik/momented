@@ -186,9 +186,24 @@ export async function savePhotoToDbAction(
       { skipDelete: true },
     ),
   ]);
+  const { data: latestCalendarPhoto } = await db
+    .from("photos")
+    .select("id, photo_calendar_collections!inner(calendar_id)")
+    .eq("photo_calendar_collections.calendar_id", monthId)
+    .order("taken_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (latestCalendarPhoto?.id)
+    await db
+      .from("calendar_collections")
+      .update({ cover_photo_id: latestCalendarPhoto.id })
+      .eq("id", monthId);
   updateTag("photos");
   updateTag("collections");
+  updateTag("calendar");
   revalidatePath("/");
   revalidatePath("/collections");
+  revalidatePath(`/collections/calendar/${monthId}`);
   return { success: true, id: newPhoto.id };
 }

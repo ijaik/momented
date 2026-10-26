@@ -30,7 +30,7 @@ export default function BackButton({
     <Link
       href={target}
       aria-label={label}
-      className={`my-8 md:my-10 group inline-flex items-center gap-2 rounded-full px-3 py-1.5 -ml-3 text-sm font-medium text-muted transition-all duration-100 bg-soft/70 hover:text-ink active:scale-95 ${className}`.trim()}
+      className={`my-8 md:my-10 group inline-flex items-center gap-2 rounded-full px-3 py-1.5 -ml-3 text-sm font-medium text-muted transition-all duration-100 hover:bg-soft/70 hover:text-ink active:scale-95 ${className}`.trim()}
     >
       <ArrowLeft
         size={16}

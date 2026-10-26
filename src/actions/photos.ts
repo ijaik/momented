@@ -16,6 +16,7 @@ function revalidateAfterPhotoChange() {
   updateTag("photos");
   updateTag("photos-ids");
   updateTag("collections");
+  updateTag("calendar");
   revalidatePath("/");
   revalidatePath("/collections");
 }
