@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import CalendarMonthView from "@/components/collections/CalendarMonthView";
+import CalendarMonthView, {
+  type YearGroup,
+} from "@/components/collections/CalendarMonthView";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
@@ -55,49 +57,21 @@ export default async function CalendarMonthPage({
   ]);
   const monthPhotos = rawPhotos ?? [];
   if (!collection) return <EmptyState description="Month not found." />;
-  const groupedByYear = new Map<number, Map<string, Photo[]>>();
+  const groupedByYear = new Map<number, Photo[]>();
   const undatedPhotos: Photo[] = [];
   for (const photo of monthPhotos) {
     if (isPhotoUndated(photo)) {
-      undatedPhotos.push({ ...photo, dayContext: null });
+      undatedPhotos.push(photo);
       continue;
     }
-    const { year, dateString } = getPhotoDate(photo);
-    let yearMap = groupedByYear.get(year);
-    if (!yearMap) {
-      yearMap = new Map();
-      groupedByYear.set(year, yearMap);
-    }
-    const dayPhotos = yearMap.get(dateString);
-    if (dayPhotos) {
-      dayPhotos.push(photo);
-    } else {
-      yearMap.set(dateString, [photo]);
-    }
+    const { year } = getPhotoDate(photo);
+    const yearPhotos = groupedByYear.get(year);
+    if (yearPhotos) yearPhotos.push(photo);
+    else groupedByYear.set(year, [photo]);
   }
-  const structuredYears = Array.from(groupedByYear.entries())
+  const structuredYears: YearGroup[] = Array.from(groupedByYear.entries())
     .sort((a, b) => b[0] - a[0])
-    .map(([year, dayMap]) => {
-      const photosForYear: Photo[] = [];
-      const sortedDays = Array.from(dayMap.entries()).sort(
-        (a, b) => Date.parse(b[0]) - Date.parse(a[0]),
-      );
-      for (const [, dayPhotos] of sortedDays) {
-        const isDense = dayPhotos.length > 2;
-        for (let i = 0; i < dayPhotos.length; i++) {
-          const photo = dayPhotos[i];
-          photosForYear.push(
-            isDense
-              ? {
-                  ...photo,
-                  dayContext: { current: i + 1, total: dayPhotos.length },
-                }
-              : { ...photo, dayContext: null },
-          );
-        }
-      }
-      return { year, photos: photosForYear };
-    });
+    .map(([year, photos]) => ({ year, photos }));
   const url = `${siteConfig.url}/collections/calendar/${id}`;
   return (
     <>

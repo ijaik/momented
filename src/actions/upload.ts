@@ -83,9 +83,12 @@ export async function getCloudinarySignatureAction(): Promise<CloudinarySignatur
   };
 }
 function assertSafeAsset(data: SavePhotoPayload): void {
+  const cloudName = siteConfig.cloudinary.cloudName;
   if (
     typeof data.secure_url !== "string" ||
-    !CLOUDINARY_URL_PATTERN.test(data.secure_url)
+    !CLOUDINARY_URL_PATTERN.test(data.secure_url) ||
+    (cloudName &&
+      !data.secure_url.startsWith(`https://res.cloudinary.com/${cloudName}/`))
   )
     throw new Error("Invalid image URL.");
   if (
@@ -158,7 +161,7 @@ export async function savePhotoToDbAction(
         taken_at: takenAtDate,
       },
     ])
-    .select()
+    .select("id")
     .single();
   if (dbError) throw new Error(`Database Error: ${dbError.message}`);
   const photoDate = takenAtDate ? new Date(takenAtDate) : new Date();
@@ -188,7 +191,7 @@ export async function savePhotoToDbAction(
   ]);
   const { data: latestCalendarPhoto } = await db
     .from("photos")
-    .select("id, photo_calendar_collections!inner(calendar_id)")
+    .select("id, photo_calendar_collections!inner()")
     .eq("photo_calendar_collections.calendar_id", monthId)
     .order("taken_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
@@ -200,8 +203,13 @@ export async function savePhotoToDbAction(
       .update({ cover_photo_id: latestCalendarPhoto.id })
       .eq("id", monthId);
   updateTag("photos");
+  updateTag("photos-ids");
   updateTag("collections");
+  updateTag("rules");
   updateTag("calendar");
+  updateTag(`calendar-${monthId}`);
+  for (const cid of data.collectionIds ?? []) updateTag(`collection-${cid}`);
+  for (const rid of data.ruleIds ?? []) updateTag(`rule-${rid}`);
   revalidatePath("/");
   revalidatePath("/collections");
   revalidatePath(`/collections/calendar/${monthId}`);

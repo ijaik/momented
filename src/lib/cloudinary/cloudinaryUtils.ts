@@ -25,3 +25,13 @@ export function buildCloudinaryUrl(
 export function getSocialShareImageUrl(url: string): string {
   return buildCloudinaryUrl(url, ["t_social_share"]);
 }
+export function formatDownloadFilename(
+  baseTitle: string | null | undefined,
+  suffix = "",
+): string {
+  const slug = (baseTitle || "A-Momented-Photograph")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+  return `${slug}${suffix}.jpg`;
+}

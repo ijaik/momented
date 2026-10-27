@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import JsonLd from "@/components/seo/JsonLd";
 import SeriesCarousel from "@/components/series/SeriesCarousel";
+import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
 import { siteConfig } from "@/config/site";
 import { getAllIds, getSeriesById } from "@/lib/db/queries";
@@ -30,7 +31,7 @@ export async function generateMetadata({
       position: number;
       photos: Photo;
     }[]) || [];
-  const firstPhoto = rawPhotos.sort((a, b) => a.position - b.position)[0]
+  const firstPhoto = [...rawPhotos].sort((a, b) => a.position - b.position)[0]
     ?.photos;
   return buildPageMetadata({
     title,
@@ -74,27 +75,22 @@ export default async function SeriesDetailPage({
           ]),
         ]}
       />
-      <header className="my-8 md:my-10 max-w-3xl border-b border-line pb-8">
-        <h1 className="font-serif text-3xl font-medium leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">
-          {series.title}
-        </h1>
-        {series.description && (
-          <p className="mt-4 text-[15px] leading-relaxed text-muted sm:text-base">
-            {series.description}
-          </p>
+      <DetailLayout
+        title={series.title}
+        description={series.description}
+        meta={`Curated on ${displayDate}`}
+      >
+        {sortedPhotos.length > 0 ? (
+          <SeriesCarousel
+            seriesTitle={series.title}
+            seriesDescription={series.description}
+            photos={sortedPhotos}
+            createdAt={displayDate}
+          />
+        ) : (
+          <EmptyState description="No photographs added to this series yet." />
         )}
-        <p className="mt-3 text-xs text-muted">Curated on {displayDate}</p>
-      </header>
-      {sortedPhotos.length > 0 ? (
-        <SeriesCarousel
-          seriesTitle={series.title}
-          seriesDescription={series.description}
-          photos={sortedPhotos}
-          createdAt={displayDate}
-        />
-      ) : (
-        <EmptyState description="No photographs added to this series yet." />
-      )}
+      </DetailLayout>
     </>
   );
 }

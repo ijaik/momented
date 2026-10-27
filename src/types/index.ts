@@ -17,21 +17,15 @@ export interface Photo {
   created_at?: string;
   downloads?: number;
   shares?: number;
-  collections?: CollectionReference[];
-  rules?: RuleCollectionReference[];
+  collections?: EntityReference[];
+  rules?: EntityReference[];
   calendars?: CalendarReference[];
   series?: EntityReference[];
-  dayContext?: {
-    current: number;
-    total: number;
-  } | null;
 }
 export interface EntityReference {
   id: string;
   title: string;
 }
-export type CollectionReference = EntityReference;
-export type RuleCollectionReference = EntityReference;
 export interface CalendarReference {
   id: number;
   title: string;
@@ -46,14 +40,6 @@ export interface BaseCollection {
 }
 export interface SeriesSlidePhoto extends Photo {
   position: number;
-}
-export interface Series {
-  id: string;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | null;
-  created_at: string;
-  photos: SeriesSlidePhoto[];
 }
 export type PageProps<
   TParams = Record<string, string>,

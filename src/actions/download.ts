@@ -1,10 +1,6 @@
 "use server";
 import { revalidatePath, updateTag } from "next/cache";
-import {
-  checkRateLimit,
-  STAT_MAX_REQUESTS,
-  STAT_WINDOW_MS,
-} from "@/lib/auth/rateLimit";
+import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb } from "@/lib/db/supabase-admin";
@@ -12,13 +8,7 @@ import { assertValidUUID } from "@/lib/utils/validation";
 
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
-  return (
-    await checkRateLimit(
-      `stats:${action}:${ip}`,
-      STAT_MAX_REQUESTS,
-      STAT_WINDOW_MS,
-    )
-  ).limited;
+  return (await checkRateLimit(`stats:${action}:${ip}`)).limited;
 }
 export async function getDownloadUrlAction({
   photoId,

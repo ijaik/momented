@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   buildCloudinaryUrl,
+  formatDownloadFilename,
   getSocialShareImageUrl,
 } from "@/lib/cloudinary/cloudinaryUtils";
 
@@ -52,6 +53,15 @@ describe("cloudinaryUtils", () => {
       expect(result).toBe(
         "https://res.cloudinary.com/demo/image/upload/t_social_share/v12345/sample.jpg",
       );
+    });
+  });
+  describe("formatDownloadFilename", () => {
+    it("slugifies title and appends suffix and .jpg", () => {
+      expect(formatDownloadFilename("Golden Hour")).toBe("golden-hour.jpg");
+      expect(formatDownloadFilename("Golden Hour", "-frame-2")).toBe(
+        "golden-hour-frame-2.jpg",
+      );
+      expect(formatDownloadFilename(null)).toBe("a-momented-photograph.jpg");
     });
   });
 });

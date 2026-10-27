@@ -4,6 +4,7 @@ import {
   assertBoundedString,
   assertValidUUID,
   isValidUUID,
+  parseEntityFormData,
 } from "@/lib/utils/validation";
 
 describe("validation", () => {
@@ -63,6 +64,33 @@ describe("validation", () => {
     it("throws when array length exceeds bounds", () => {
       expect(() => assertBoundedArray([1, 2, 3], 2, "Items")).toThrow(
         "Items exceeds maximum of 2 items.",
+      );
+    });
+  });
+  describe("parseEntityFormData", () => {
+    it("parses and deduplicates valid entity form data", () => {
+      const form = new FormData();
+      const id1 = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+      const id2 = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
+      form.set("title", "  Street Shadows  ");
+      form.set("description", "  Monochrome frames ");
+      form.set("cover_photo_id", id1);
+      form.append("photo_ids", id1);
+      form.append("photo_ids", id2);
+      form.append("photo_ids", id1);
+      const parsed = parseEntityFormData(form, { requireTitle: true });
+      expect(parsed).toEqual({
+        title: "Street Shadows",
+        description: "Monochrome frames",
+        cover_photo_id: id1,
+        photoIds: [id1, id2],
+      });
+    });
+    it("throws when requireTitle is true and title is blank", () => {
+      const form = new FormData();
+      form.set("title", "   ");
+      expect(() => parseEntityFormData(form, { requireTitle: true })).toThrow(
+        "Title is required.",
       );
     });
   });

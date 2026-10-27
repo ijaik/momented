@@ -2,14 +2,7 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
-import {
-  assertBoundedArray,
-  assertBoundedString,
-  assertValidUUID,
-  MAX_DESCRIPTION_LENGTH,
-  MAX_PHOTO_IDS,
-  MAX_TITLE_LENGTH,
-} from "@/lib/utils/validation";
+import { parseEntityFormData } from "@/lib/utils/validation";
 
 function revalidateAfterCalendarChange(id?: string | number) {
   updateTag("collections");
@@ -17,6 +10,7 @@ function revalidateAfterCalendarChange(id?: string | number) {
   updateTag("calendar_collections");
   updateTag("calendar_collections-ids");
   updateTag("photos");
+  if (id) updateTag(`calendar-${id}`);
   revalidatePath("/collections");
   revalidatePath("/");
   if (id) revalidatePath(`/collections/calendar/${id}`);
@@ -35,7 +29,9 @@ export async function getCalendarCollectionsAction(): Promise<
   const db = getAdminDb();
   const { data, error } = await db
     .from("calendar_collections")
-    .select("*, photos!photo_calendar_collections(id, cloudinary_url, title)")
+    .select(
+      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url, title)",
+    )
     .order("id", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
@@ -68,19 +64,12 @@ export async function editCalendarCollectionAction(
       "Invalid Calendar ID: must be an integer between 1 and 12.",
     );
   }
-  const title = (formData.get("title") as string) || "";
-  const description = (formData.get("description") as string) || "";
-  const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = formData.getAll("photo_ids").map(String);
-  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_PHOTO_IDS, "Photo IDs");
-  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
+  const { title, description, cover_photo_id, photoIds } =
+    parseEntityFormData(formData);
   const db = getAdminDb();
   const { error } = await db
     .from("calendar_collections")
-    .update({ title, description, cover_photo_id: coverPhotoRaw })
+    .update({ title, description, cover_photo_id })
     .eq("id", calendarId as never);
   if (error) throw new Error(error.message);
   await syncJunction(

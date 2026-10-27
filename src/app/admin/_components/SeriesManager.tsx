@@ -11,6 +11,8 @@ import Image from "next/image";
 import {
   type ChangeEvent,
   type SubmitEvent,
+  useEffect,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -25,14 +27,15 @@ import {
   savePhotoToDbAction,
 } from "@/actions/upload";
 import Button from "@/components/ui/Button";
-import { compressImageWithExif } from "@/lib/utils/imageCompression";
+import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
 import {
   FieldLabel,
   FormInput,
   FormTextarea,
   SubmitButton,
 } from "./AdminForms";
-export interface SeriesItemPhoto {
+
+interface SeriesItemPhoto {
   id: string;
   title?: string | null;
   cloudinary_url: string;
@@ -50,7 +53,7 @@ interface PhotoOption {
   title?: string | null;
   cloudinary_url: string;
 }
-export interface QueuedSlideFile {
+interface QueuedSlideFile {
   file: File;
   preview: string;
   title: string;
@@ -59,6 +62,10 @@ export interface QueuedSlideFile {
 interface SeriesManagerProps {
   series: SeriesAdminItem[];
   allPhotos: PhotoOption[];
+}
+function revokePreviews(items: QueuedSlideFile[]) {
+  for (const item of items)
+    if (item.preview.startsWith("blob:")) URL.revokeObjectURL(item.preview);
 }
 export default function SeriesManager({
   series,
@@ -74,14 +81,27 @@ export default function SeriesManager({
   const [orderedPhotoIds, setOrderedPhotoIds] = useState<string[]>([]);
   const [coverPhotoId, setCoverPhotoId] = useState<string | null>(null);
   const [queuedFiles, setQueuedFiles] = useState<QueuedSlideFile[]>([]);
+  const queuedFilesRef = useRef<QueuedSlideFile[]>([]);
   const [uploadStatus, setUploadStatus] = useState<string>("");
   const [isPending, startTransition] = useTransition();
+  useEffect(() => {
+    queuedFilesRef.current = queuedFiles;
+  }, [queuedFiles]);
+  useEffect(() => {
+    return () => {
+      revokePreviews(queuedFilesRef.current);
+    };
+  }, []);
+  const clearQueuedFiles = () => {
+    revokePreviews(queuedFiles);
+    setQueuedFiles([]);
+  };
   const openCreateForm = (mode: "library" | "upload" = "library") => {
     setEditingSeries(null);
     setCreationMode(mode);
     setOrderedPhotoIds([]);
     setCoverPhotoId(null);
-    setQueuedFiles([]);
+    clearQueuedFiles();
     setUploadStatus("");
     setIsCreating(true);
   };
@@ -90,7 +110,7 @@ export default function SeriesManager({
     setEditingSeries(item);
     setOrderedPhotoIds(item.photos.map((p) => String(p.id)));
     setCoverPhotoId(item.cover_photo_id || item.photos[0]?.id || null);
-    setQueuedFiles([]);
+    clearQueuedFiles();
     setUploadStatus("");
   };
   const closeForm = () => {
@@ -98,7 +118,7 @@ export default function SeriesManager({
     setEditingSeries(null);
     setOrderedPhotoIds([]);
     setCoverPhotoId(null);
-    setQueuedFiles([]);
+    clearQueuedFiles();
     setUploadStatus("");
   };
   const movePhoto = (index: number, direction: -1 | 1) => {
@@ -138,7 +158,12 @@ export default function SeriesManager({
     });
   };
   const removeQueuedFile = (index: number) => {
-    setQueuedFiles((prev) => prev.filter((_, i) => i !== index));
+    setQueuedFiles((prev) => {
+      const removed = prev[index];
+      if (removed?.preview.startsWith("blob:"))
+        URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
   const updateQueuedSlideTitle = (index: number, title: string) => {
     setQueuedFiles((prev) => {
@@ -208,52 +233,48 @@ export default function SeriesManager({
       return;
     }
     startTransition(async () => {
-      const uploadedPhotos: { id: string; publicId: string }[] = [];
+      const uploadedPhotos: { id: string; publicId: string; index: number }[] =
+        [];
       try {
         const total = queuedFiles.length;
-        for (let i = 0; i < total; i++) {
-          const item = queuedFiles[i];
-          setUploadStatus(`Compressing slide ${i + 1} of ${total}…`);
-          const fileToUpload = await compressImageWithExif(item.file, (s) =>
-            setUploadStatus(`Slide ${i + 1}/${total}: ${s}`),
+        setUploadStatus(`Preparing ${total} slides for upload…`);
+        const signData = await getCloudinarySignatureAction();
+        const CONCURRENCY = 3;
+        for (let start = 0; start < total; start += CONCURRENCY) {
+          const batch = queuedFiles.slice(start, start + CONCURRENCY);
+          await Promise.all(
+            batch.map(async (item, batchIdx) => {
+              const i = start + batchIdx;
+              const uploadData = await uploadPhotoToCloudinary(item.file, {
+                signatureData: signData,
+                onStatusChange: (s) =>
+                  setUploadStatus(`Slide ${i + 1}/${total}: ${s}`),
+              });
+              setUploadStatus(`Saving slide ${i + 1} of ${total} to database…`);
+              const slideTitle =
+                item.title.trim() || `${title} — Frame ${i + 1}`;
+              const slideDescription =
+                item.description.trim() || description || undefined;
+              const saveResult = await savePhotoToDbAction({
+                title: slideTitle,
+                description: slideDescription,
+                secure_url: uploadData.secure_url,
+                public_id: uploadData.public_id,
+                width: uploadData.width,
+                height: uploadData.height,
+                image_metadata: uploadData.image_metadata,
+              });
+              if (!saveResult.id)
+                throw new Error(`Failed to save slide ${i + 1} to database.`);
+              uploadedPhotos.push({
+                id: saveResult.id,
+                publicId: uploadData.public_id,
+                index: i,
+              });
+            }),
           );
-          setUploadStatus(`Uploading slide ${i + 1} of ${total}…`);
-          const signData = await getCloudinarySignatureAction();
-          const uploadFormData = new FormData();
-          uploadFormData.append("file", fileToUpload);
-          uploadFormData.append("api_key", signData.apiKey);
-          uploadFormData.append("timestamp", signData.timestamp.toString());
-          uploadFormData.append("signature", signData.signature);
-          uploadFormData.append("folder", signData.folder);
-          uploadFormData.append("image_metadata", "true");
-          const uploadRes = await fetch(
-            `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
-            { method: "POST", body: uploadFormData },
-          );
-          if (!uploadRes.ok) {
-            throw new Error(`Failed to upload slide ${i + 1} to Cloudinary.`);
-          }
-          const uploadData = await uploadRes.json();
-          setUploadStatus(`Saving slide ${i + 1} of ${total} to database…`);
-          const slideTitle = item.title.trim() || `${title} — Frame ${i + 1}`;
-          const slideDescription =
-            item.description.trim() || description || undefined;
-          const saveResult = await savePhotoToDbAction({
-            title: slideTitle,
-            description: slideDescription,
-            secure_url: uploadData.secure_url,
-            public_id: uploadData.public_id,
-            width: uploadData.width,
-            height: uploadData.height,
-            image_metadata: uploadData.image_metadata,
-          });
-          if (!saveResult.id)
-            throw new Error(`Failed to save slide ${i + 1} to database.`);
-          uploadedPhotos.push({
-            id: saveResult.id,
-            publicId: uploadData.public_id,
-          });
         }
+        uploadedPhotos.sort((a, b) => a.index - b.index);
         setUploadStatus("Assembling photo series…");
         const seriesFormData = new FormData();
         seriesFormData.append("title", title);
@@ -437,7 +458,7 @@ export default function SeriesManager({
                     </span>
                     <button
                       type="button"
-                      onClick={() => setQueuedFiles([])}
+                      onClick={clearQueuedFiles}
                       className="text-xs text-muted hover:text-ink"
                     >
                       Clear all

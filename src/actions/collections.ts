@@ -6,56 +6,38 @@ import {
   type JunctionTable,
   syncJunction,
 } from "@/lib/db/supabase-admin";
-import {
-  assertBoundedArray,
-  assertBoundedString,
-  assertValidUUID,
-  MAX_DESCRIPTION_LENGTH,
-  MAX_PHOTO_IDS,
-  MAX_TITLE_LENGTH,
-} from "@/lib/utils/validation";
+import { assertValidUUID, parseEntityFormData } from "@/lib/utils/validation";
 
-function parseFormData(formData: FormData) {
-  const title = (formData.get("title") as string) || "";
-  const description = (formData.get("description") as string) || "";
-  const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = formData.getAll("photo_ids").map(String);
-  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_PHOTO_IDS, "Photo IDs");
-  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
-  return {
-    title,
-    description,
-    cover_photo_id: coverPhotoRaw,
-    photoIds,
-  };
-}
-function revalidateAfterCollectionChange() {
+function revalidateAfterCollectionChange(
+  kind: "collection" | "rule",
+  id?: string,
+) {
   updateTag("collections");
   updateTag("rules");
   updateTag("collections-ids");
   updateTag("rule_collections-ids");
   updateTag("photos");
+  if (id) {
+    updateTag(`${kind}-${id}`);
+    revalidatePath(
+      kind === "rule" ? `/collections/rules/${id}` : `/collections/${id}`,
+    );
+  }
   revalidatePath("/collections");
   revalidatePath("/");
 }
 type ContentTable = "collections" | "rule_collections";
 interface CollectionSpec {
   table: ContentTable;
-  contentField: "description";
   junction: { table: JunctionTable; mainCol: string };
 }
 const COLLECTION_SPECS = {
   collection: {
     table: "collections",
-    contentField: "description",
     junction: { table: "photo_collections", mainCol: "collection_id" },
   },
   rule: {
     table: "rule_collections",
-    contentField: "description",
     junction: {
       table: "photo_rule_collections",
       mainCol: "rule_id",
@@ -63,18 +45,19 @@ const COLLECTION_SPECS = {
   },
 } as const satisfies Record<string, CollectionSpec>;
 async function deleteCollection(
-  table: ContentTable,
+  kind: keyof typeof COLLECTION_SPECS,
   id: string,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Item ID");
+  const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
   const { error } = await db
-    .from(table)
+    .from(spec.table)
     .delete()
     .eq("id" as never, id as never);
   if (error) throw new Error(error.message);
-  revalidateAfterCollectionChange();
+  revalidateAfterCollectionChange(kind, id);
   return { success: true };
 }
 async function createCollection(
@@ -84,19 +67,18 @@ async function createCollection(
   await verifyAdminSession();
   const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
-  const { title, cover_photo_id, photoIds } = parseFormData(formData);
-  const contentValue = (formData.get(spec.contentField) as string) || "";
-  assertBoundedString(contentValue, MAX_DESCRIPTION_LENGTH, spec.contentField);
+  const { title, description, cover_photo_id, photoIds } =
+    parseEntityFormData(formData);
   const { data, error } = await db
     .from(spec.table)
     .insert([
       {
         title,
-        [spec.contentField]: contentValue,
+        description,
         cover_photo_id,
       } as never,
     ])
-    .select()
+    .select("id")
     .single();
   if (error) throw new Error(error.message);
   await syncJunction(
@@ -106,8 +88,9 @@ async function createCollection(
     data.id,
     "photo_id",
     photoIds,
+    { skipDelete: true },
   );
-  revalidateAfterCollectionChange();
+  revalidateAfterCollectionChange(kind, data.id);
   return { success: true };
 }
 async function editCollection(
@@ -119,14 +102,13 @@ async function editCollection(
   assertValidUUID(id, "Item ID");
   const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
-  const { title, cover_photo_id, photoIds } = parseFormData(formData);
-  const contentValue = (formData.get(spec.contentField) as string) || "";
-  assertBoundedString(contentValue, MAX_DESCRIPTION_LENGTH, spec.contentField);
+  const { title, description, cover_photo_id, photoIds } =
+    parseEntityFormData(formData);
   const { error } = await db
     .from(spec.table)
     .update({
       title,
-      [spec.contentField]: contentValue,
+      description,
       cover_photo_id,
     } as never)
     .eq("id" as never, id as never);
@@ -139,7 +121,7 @@ async function editCollection(
     "photo_id",
     photoIds,
   );
-  revalidateAfterCollectionChange();
+  revalidateAfterCollectionChange(kind, id);
   return { success: true };
 }
 interface AdminCollectionView {
@@ -157,7 +139,9 @@ async function getCollections(
   const db = getAdminDb();
   const { data, error } = await db
     .from(spec.table)
-    .select(`*, photos!${spec.junction.table}(id, cloudinary_url, title)`)
+    .select(
+      `id, title, description, cover_photo_id, photos!${spec.junction.table}(id, cloudinary_url, title)`,
+    )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
@@ -195,7 +179,7 @@ export async function editCollectionAction(
 export async function deleteCollectionAction(
   id: string,
 ): Promise<{ success: boolean }> {
-  return deleteCollection("collections", id);
+  return deleteCollection("collection", id);
 }
 export async function getRuleCollectionsAction() {
   return getCollections("rule");
@@ -214,5 +198,5 @@ export async function editRuleCollectionAction(
 export async function deleteRuleCollectionAction(
   id: string,
 ): Promise<{ success: boolean }> {
-  return deleteCollection("rule_collections", id);
+  return deleteCollection("rule", id);
 }

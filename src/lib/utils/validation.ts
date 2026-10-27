@@ -38,3 +38,36 @@ export function assertBoundedArray(
   if (!Array.isArray(arr) || arr.length > maxLength)
     throw new Error(`${label} exceeds maximum of ${maxLength} items.`);
 }
+export interface ParsedEntityFormData {
+  title: string;
+  description: string;
+  cover_photo_id: string | null;
+  photoIds: string[];
+}
+export function parseEntityFormData(
+  formData: FormData,
+  {
+    maxPhotos = MAX_PHOTO_IDS,
+    requireTitle = false,
+  }: { maxPhotos?: number; requireTitle?: boolean } = {},
+): ParsedEntityFormData {
+  const title = ((formData.get("title") as string) || "").trim();
+  const description = ((formData.get("description") as string) || "").trim();
+  const coverPhotoRaw =
+    ((formData.get("cover_photo_id") as string) || "").trim() || null;
+  const photoIds = Array.from(
+    new Set(formData.getAll("photo_ids").map(String).filter(Boolean)),
+  );
+  if (requireTitle && !title) throw new Error("Title is required.");
+  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
+  assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
+  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
+  assertBoundedArray(photoIds, maxPhotos, "Photo IDs");
+  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
+  return {
+    title,
+    description,
+    cover_photo_id: coverPhotoRaw,
+    photoIds,
+  };
+}

@@ -7,16 +7,23 @@ import {
   assertBoundedArray,
   assertBoundedString,
   assertValidUUID,
+  CLOUDINARY_PUBLIC_ID_PATTERN,
   MAX_DESCRIPTION_LENGTH,
   MAX_PHOTO_IDS,
   MAX_TITLE_LENGTH,
 } from "@/lib/utils/validation";
 
-function revalidateAfterPhotoChange() {
+function revalidateAfterPhotoChange(id?: string | number) {
   updateTag("photos");
   updateTag("photos-ids");
   updateTag("collections");
+  updateTag("rules");
   updateTag("calendar");
+  updateTag("series");
+  if (id) {
+    updateTag(`photo-${id}`);
+    revalidatePath(`/photo/${id}`);
+  }
   revalidatePath("/");
   revalidatePath("/collections");
 }
@@ -60,19 +67,22 @@ export async function deletePhotoAction(
   await verifyAdminSession();
   assertValidUUID(id, "Photo ID");
   const db = getAdminDb();
-  const { error } = await db
+  const { data: deletedPhoto, error } = await db
     .from("photos")
     .delete()
-    .eq("id", id as never);
+    .eq("id", id as never)
+    .select("cloudinary_public_id")
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  if (publicId) {
+  const resolvedPublicId = deletedPhoto?.cloudinary_public_id || publicId;
+  if (resolvedPublicId && CLOUDINARY_PUBLIC_ID_PATTERN.test(resolvedPublicId)) {
     try {
-      await cloudinary.uploader.destroy(publicId);
+      await cloudinary.uploader.destroy(resolvedPublicId);
     } catch (cloudinaryError) {
       console.error("Failed to delete Cloudinary asset:", cloudinaryError);
     }
   }
-  revalidateAfterPhotoChange();
+  revalidateAfterPhotoChange(id);
   return { success: true };
 }
 export async function editPhotoAction(
@@ -114,6 +124,6 @@ export async function editPhotoAction(
       ruleIds,
     ),
   ]);
-  revalidateAfterPhotoChange();
+  revalidateAfterPhotoChange(id);
   return { success: true };
 }

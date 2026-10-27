@@ -3,12 +3,9 @@ import { revalidatePath, updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb } from "@/lib/db/supabase-admin";
 import {
-  assertBoundedArray,
-  assertBoundedString,
   assertValidUUID,
-  MAX_DESCRIPTION_LENGTH,
   MAX_SERIES_PHOTO_IDS,
-  MAX_TITLE_LENGTH,
+  parseEntityFormData,
 } from "@/lib/utils/validation";
 
 function revalidateAfterSeriesChange(id?: string) {
@@ -54,28 +51,18 @@ export async function createSeriesAction(
   formData: FormData,
 ): Promise<{ success: boolean; id?: string }> {
   await verifyAdminSession();
-  const title = ((formData.get("title") as string) || "").trim();
-  const description =
-    ((formData.get("description") as string) || "").trim() || null;
-  const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = Array.from(
-    new Set(formData.getAll("photo_ids").map(String)),
+  const { title, description, cover_photo_id, photoIds } = parseEntityFormData(
+    formData,
+    { maxPhotos: MAX_SERIES_PHOTO_IDS, requireTitle: true },
   );
-  if (!title) throw new Error("Series title is required.");
-  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  if (description)
-    assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
-  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
   const db = getAdminDb();
-  const coverId = coverPhotoRaw || photoIds[0] || null;
+  const coverId = cover_photo_id || photoIds[0] || null;
   const { data: newSeries, error: insertError } = await db
     .from("series")
     .insert([
       {
         title,
-        description,
+        description: description || null,
         cover_photo_id: coverId,
       },
     ])
@@ -103,27 +90,17 @@ export async function editSeriesAction(
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Series ID");
-  const title = ((formData.get("title") as string) || "").trim();
-  const description =
-    ((formData.get("description") as string) || "").trim() || null;
-  const coverPhotoRaw = (formData.get("cover_photo_id") as string) || null;
-  const photoIds = Array.from(
-    new Set(formData.getAll("photo_ids").map(String)),
+  const { title, description, cover_photo_id, photoIds } = parseEntityFormData(
+    formData,
+    { maxPhotos: MAX_SERIES_PHOTO_IDS, requireTitle: true },
   );
-  if (!title) throw new Error("Series title is required.");
-  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
-  if (description)
-    assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
-  if (coverPhotoRaw) assertValidUUID(coverPhotoRaw, "Cover photo ID");
-  assertBoundedArray(photoIds, MAX_SERIES_PHOTO_IDS, "Photo IDs");
-  for (const pid of photoIds) assertValidUUID(pid, "Photo ID");
   const db = getAdminDb();
-  const coverId = coverPhotoRaw || photoIds[0] || null;
+  const coverId = cover_photo_id || photoIds[0] || null;
   const { error: updateError } = await db
     .from("series")
     .update({
       title,
-      description,
+      description: description || null,
       cover_photo_id: coverId,
     })
     .eq("id", id);

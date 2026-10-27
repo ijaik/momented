@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import "./globals.css";
 export default function GlobalError({
   error,
   reset,
@@ -12,7 +13,7 @@ export default function GlobalError({
   }, [error]);
   return (
     <html lang="en">
-      <body className="flex min-h-screen flex-col items-center justify-center bg-[#faf9f6] px-6 text-center text-[#201e1a]">
+      <body className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center text-ink font-sans">
         <p className="font-script text-2xl tracking-tight">Momented</p>
         <h1 className="mt-6 font-serif text-3xl font-medium tracking-tight sm:text-4xl">
           Something went wrong
@@ -24,7 +25,7 @@ export default function GlobalError({
         <button
           type="button"
           onClick={reset}
-          className="mt-8 inline-flex items-center justify-center rounded-xl bg-[#201e1a] px-5 py-2.5 text-sm font-medium text-[#faf9f6] shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="mt-8 inline-flex items-center justify-center rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           Try again
         </button>

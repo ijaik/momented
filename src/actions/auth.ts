@@ -58,6 +58,11 @@ export async function loginAction(
 }
 export async function logoutAction(): Promise<{ success: boolean }> {
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete({
+    name: SESSION_COOKIE,
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
   return { success: true };
 }

@@ -8,20 +8,17 @@ const leckerli = Leckerli_One({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-leckerli",
-  preload: false,
 });
 const fraunces = Fraunces({
   subsets: ["latin"],
   axes: ["opsz"],
   display: "swap",
   variable: "--font-fraunces",
-  preload: false,
 });
 const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-schibsted",
-  preload: false,
 });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),

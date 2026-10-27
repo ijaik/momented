@@ -14,48 +14,59 @@ import {
 } from "./AdminForms";
 import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
 import PhotoThumbnails from "./PhotoThumbnails";
-export interface BaseItem {
-  id: string;
+export interface BaseItem<TId extends string | number = string> {
+  id: TId;
   title: string;
   description?: string | null;
-  cover_photo_id?: string | null;
+  cover_photo_id?: string | number | null;
   photos?: ChecklistPhoto[];
 }
-interface ItemManagerProps<T extends BaseItem = BaseItem> {
+interface ItemManagerProps<
+  TId extends string | number = string,
+  T extends BaseItem<TId> = BaseItem<TId>,
+> {
   items: T[];
   allPhotos: ChecklistPhoto[];
   title: string;
-  newItemLabel: string;
-  titlePlaceholder: string;
+  subtitle?: string;
+  newItemLabel?: string;
+  editButtonLabel?: string;
+  titlePlaceholder?: string;
   descName: string;
   descLabel: string;
-  descPlaceholder: string;
+  descPlaceholder?: string;
   descRows?: number;
-  createAction: (formData: FormData) => Promise<{ success: boolean }>;
-  editAction: (id: string, formData: FormData) => Promise<{ success: boolean }>;
-  deleteAction: (id: string) => Promise<{ success: boolean }>;
+  createAction?: (formData: FormData) => Promise<{ success: boolean }>;
+  editAction: (id: TId, formData: FormData) => Promise<{ success: boolean }>;
+  deleteAction?: (id: TId) => Promise<{ success: boolean }>;
   renderContent: (item: T) => ReactNode;
 }
-export default function ItemManager<T extends BaseItem>({
+export default function ItemManager<
+  TId extends string | number = string,
+  T extends BaseItem<TId> = BaseItem<TId>,
+>({
   items,
   allPhotos,
   title,
-  newItemLabel,
-  titlePlaceholder,
+  subtitle,
+  newItemLabel = "New item",
+  editButtonLabel = "Edit",
+  titlePlaceholder = "Title",
   descName,
   descLabel,
-  descPlaceholder,
+  descPlaceholder = "",
   descRows = 3,
   createAction,
   editAction,
   deleteAction,
   renderContent,
-}: ItemManagerProps<T>) {
+}: ItemManagerProps<TId, T>) {
   const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<TId | null>(null);
+  const [deletingId, setDeletingId] = useState<TId | null>(null);
   const [isPending, startTransition] = useTransition();
-  function handleDelete(id: string) {
+  function handleDelete(id: TId) {
+    if (!deleteAction) return;
     if (
       !confirm(`Are you sure you want to delete this ${title.toLowerCase()}?`)
     ) {
@@ -74,6 +85,7 @@ export default function ItemManager<T extends BaseItem>({
   }
   function handleCreate(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!createAction) return;
     const form = event.currentTarget;
     startTransition(async () => {
       try {
@@ -87,7 +99,7 @@ export default function ItemManager<T extends BaseItem>({
       }
     });
   }
-  function handleEdit(event: SubmitEvent<HTMLFormElement>, id: string) {
+  function handleEdit(event: SubmitEvent<HTMLFormElement>, id: TId) {
     event.preventDefault();
     const form = event.currentTarget;
     startTransition(async () => {
@@ -105,19 +117,22 @@ export default function ItemManager<T extends BaseItem>({
         <div>
           <h2 className="text-xl font-medium text-ink">{title}</h2>
           <p className="mt-0.5 text-sm text-muted">
-            {items.length} {items.length === 1 ? "entry" : "entries"}
+            {subtitle ||
+              `${items.length} ${items.length === 1 ? "entry" : "entries"}`}
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant={isCreating ? "secondary" : "primary"}
-          onClick={() => setIsCreating(!isCreating)}
-        >
-          {isCreating ? "Cancel" : newItemLabel}
-        </Button>
+        {createAction && (
+          <Button
+            type="button"
+            size="sm"
+            variant={isCreating ? "secondary" : "primary"}
+            onClick={() => setIsCreating(!isCreating)}
+          >
+            {isCreating ? "Cancel" : newItemLabel}
+          </Button>
+        )}
       </div>
-      {isCreating && (
+      {createAction && isCreating && (
         <form
           onSubmit={handleCreate}
           className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
@@ -228,17 +243,19 @@ export default function ItemManager<T extends BaseItem>({
                       size="sm"
                       onClick={() => setEditingId(item.id)}
                     >
-                      Edit
+                      {editButtonLabel}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      size="sm"
-                      disabled={deletingId === item.id || isPending}
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      {deletingId === item.id ? "Deleting…" : "Delete"}
-                    </Button>
+                    {deleteAction && (
+                      <Button
+                        type="button"
+                        variant="danger"
+                        size="sm"
+                        disabled={deletingId === item.id || isPending}
+                        onClick={() => handleDelete(item.id)}
+                      >
+                        {deletingId === item.id ? "Deleting…" : "Delete"}
+                      </Button>
+                    )}
                   </div>
                 </div>
                 {renderContent(item)}

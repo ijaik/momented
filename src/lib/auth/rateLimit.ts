@@ -41,12 +41,15 @@ function getRedis(): Redis | null {
 }
 let _statLimiter: Ratelimit | null = null;
 let _loginLimiter: Ratelimit | null = null;
+const statEphemeralCache = new Map<string, number>();
+const loginEphemeralCache = new Map<string, number>();
 function getStatLimiter(r: Redis): Ratelimit {
   if (!_statLimiter) {
     _statLimiter = new Ratelimit({
       redis: r,
       limiter: Ratelimit.slidingWindow(STAT_MAX_REQUESTS, "1 h"),
       prefix: "rl:stat",
+      ephemeralCache: statEphemeralCache,
     });
   }
   return _statLimiter;
@@ -57,6 +60,7 @@ function getLoginLimiter(r: Redis): Ratelimit {
       redis: r,
       limiter: Ratelimit.fixedWindow(LOGIN_MAX_FAILURES, "15 m"),
       prefix: "rl:login",
+      ephemeralCache: loginEphemeralCache,
     });
   }
   return _loginLimiter;
@@ -89,8 +93,6 @@ function pruneExpiredMapEntries<T extends { resetAt: number }>(
 }
 export async function checkRateLimit(
   key: string,
-  _maxRequests: number = STAT_MAX_REQUESTS,
-  _windowMs: number = STAT_WINDOW_MS,
 ): Promise<{ limited: boolean; retryAfterSeconds: number }> {
   const r = getRedis();
   if (r) {
@@ -108,10 +110,10 @@ export async function checkRateLimit(
   const entry = memStatStore.get(key);
   if (!entry || now > entry.resetAt) {
     pruneExpiredMapEntries(memStatStore, now);
-    memStatStore.set(key, { count: 1, resetAt: now + _windowMs });
+    memStatStore.set(key, { count: 1, resetAt: now + STAT_WINDOW_MS });
     return { limited: false, retryAfterSeconds: 0 };
   }
-  if (entry.count >= _maxRequests) {
+  if (entry.count >= STAT_MAX_REQUESTS) {
     const retryAfterSeconds = Math.max(
       0,
       Math.ceil((entry.resetAt - now) / 1000),

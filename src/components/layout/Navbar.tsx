@@ -36,11 +36,9 @@ export default function Navbar() {
           onClick={mobile ? () => setIsOpen(false) : undefined}
           className={`${
             mobile
-              ? "border-b border-line/70 py-3.5 text-[15px] last:border-b-0"
-              : "relative text-sm"
-          } transition-all duration-100 ease-out active:scale-${
-            mobile ? "[0.98]" : "95"
-          } ${
+              ? "border-b border-line/70 py-3.5 text-[15px] last:border-b-0 active:scale-[0.98]"
+              : "relative text-sm active:scale-95"
+          } transition-all duration-100 ease-out ${
             active ? "font-medium text-signal" : "text-muted hover:text-ink"
           }`}
         >

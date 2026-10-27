@@ -39,12 +39,9 @@ export async function isValidAdminToken(
     return false;
   }
 }
-export async function isAdminAuthed(): Promise<boolean> {
-  const token = (await cookies()).get(SESSION_COOKIE)?.value;
-  return isValidAdminToken(token);
-}
 export async function verifyAdminSession(): Promise<boolean> {
-  if (!(await isAdminAuthed()))
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  if (!(await isValidAdminToken(token)))
     throw new Error("Unauthorized: No valid session token");
   return true;
 }

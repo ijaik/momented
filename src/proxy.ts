@@ -4,15 +4,15 @@ import { isValidAdminToken, SESSION_COOKIE } from "@/lib/auth/auth";
 function buildCsp(isAdmin = false): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const scriptSrc = isAdmin
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net"
     : "script-src 'self' 'unsafe-inline'";
   return [
     "default-src 'self'",
     scriptSrc,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://res.cloudinary.com",
-    "font-src 'self' data: https://fonts.gstatic.com",
-    `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`.trim(),
+    "font-src 'self' data:",
+    `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com https://cdn.jsdelivr.net ${supabaseUrl}`.trim(),
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
@@ -28,13 +28,9 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     const cleanUrl = new URL("/admin/login", request.url);
     return NextResponse.redirect(cleanUrl);
   }
-  const csp = isProduction ? buildCsp(isAdminPath) : undefined;
-  const requestHeaders = new Headers(request.headers);
-  if (csp) requestHeaders.set("Content-Security-Policy", csp);
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-  if (csp) response.headers.set("Content-Security-Policy", csp);
+  const response = NextResponse.next();
+  if (isProduction)
+    response.headers.set("Content-Security-Policy", buildCsp(isAdminPath));
   if (!isAdminPath) return response;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const isValid = await isValidAdminToken(token);
@@ -54,6 +50,13 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons|screenshots|sitemap.xml|robots.txt|manifest.webmanifest).*)",
+    {
+      source:
+        "/((?!_next/static|_next/image|favicon.ico|icons|screenshots|sitemap.xml|robots.txt|manifest.webmanifest).*)",
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
   ],
 };

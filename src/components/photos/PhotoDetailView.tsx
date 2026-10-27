@@ -1,22 +1,16 @@
 "use client";
-import {
-  Camera,
-  ChevronLeft,
-  ChevronRight,
-  CircleDot,
-  Clock,
-  Film,
-  Maximize2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
+import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
 import ShareButton from "@/components/photos/ShareButton";
 import FullscreenDialog from "@/components/ui/FullscreenDialog";
 import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
+import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
 import type { AdjacentPhotos } from "@/lib/db/queries";
 import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
 import type { Photo } from "@/types";
@@ -40,14 +34,8 @@ export default function PhotoDetailView({
     photo.description && photo.title && photo.description !== photo.title
       ? `${photo.title} — ${photo.description}`
       : photo.title || photo.description || "A Momented Photograph";
-  const fileName = `${(photo.title || "A-Momented-Photograph").toLowerCase().replace(/\s+/g, "-")}.jpg`;
-  const hasExif = Boolean(
-    photo.camera_model ||
-      photo.focal_length ||
-      photo.aperture ||
-      photo.shutter_speed ||
-      photo.iso,
-  );
+  const fileName = formatDownloadFilename(photo.title);
+  const hasExif = hasPhotoExif(photo);
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -91,8 +79,8 @@ export default function PhotoDetailView({
               height={photo.height}
               sizes="(min-width: 1024px) 60vw, 100vw"
               className="block h-auto max-h-[min(72vh,calc(100vh-12rem))] w-auto max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.01]"
+              priority
               fetchPriority="high"
-              loading="eager"
             />
             <span
               aria-hidden="true"
@@ -138,69 +126,7 @@ export default function PhotoDetailView({
             </div>
             {hasExif ? (
               <div className="rounded-2xl border border-line/60 bg-surface/75 p-5 shadow-xs backdrop-blur-md">
-                {photo.camera_model && (
-                  <div className="mb-4 flex items-center gap-3 border-b border-line/60 pb-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-line/60 bg-soft/80 text-ink">
-                      <Camera size={18} aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted">
-                        Camera Body
-                      </span>
-                      <p className="truncate text-sm font-medium text-ink">
-                        {photo.camera_model}
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                    <div className="flex items-center gap-1.5 text-muted">
-                      <CircleDot size={13} aria-hidden="true" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">
-                        Focal
-                      </span>
-                    </div>
-                    <p className="mt-1 font-sans text-sm font-semibold tabular-nums text-ink">
-                      {photo.focal_length || "—"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                    <div className="flex items-center gap-1.5 text-muted">
-                      <span className="font-serif text-xs font-bold leading-none">
-                        ƒ
-                      </span>
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">
-                        Aperture
-                      </span>
-                    </div>
-                    <p className="mt-1 font-sans text-sm font-semibold tabular-nums text-ink">
-                      {photo.aperture || "—"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                    <div className="flex items-center gap-1.5 text-muted">
-                      <Clock size={13} aria-hidden="true" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">
-                        Shutter
-                      </span>
-                    </div>
-                    <p className="mt-1 font-sans text-sm font-semibold tabular-nums text-ink">
-                      {photo.shutter_speed || "—"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                    <div className="flex items-center gap-1.5 text-muted">
-                      <Film size={13} aria-hidden="true" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">
-                        ISO
-                      </span>
-                    </div>
-                    <p className="mt-1 font-sans text-sm font-semibold tabular-nums text-ink">
-                      {photo.iso ? `ISO ${photo.iso}` : "—"}
-                    </p>
-                  </div>
-                </div>
+                <ExifSpecGrid photo={photo} />
               </div>
             ) : (
               <div className="border-t border-line py-4">
@@ -234,7 +160,7 @@ export default function PhotoDetailView({
               fileName={fileName}
             />
             <ShareButton
-              title={photo.title || "Untitled Momented"}
+              title={title}
               photoId={photo.id}
               imageUrl={photo.cloudinary_url}
               shareCount={photo.shares || 0}

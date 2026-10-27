@@ -2,12 +2,9 @@
 import Image from "next/image";
 import { type SubmitEvent, useState, useTransition } from "react";
 import { deletePhotoAction, editPhotoAction } from "@/actions/photos";
-import {
-  getCloudinarySignatureAction,
-  savePhotoToDbAction,
-} from "@/actions/upload";
+import { savePhotoToDbAction } from "@/actions/upload";
 import Button from "@/components/ui/Button";
-import { compressImageWithExif } from "@/lib/utils/imageCompression";
+import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
 import {
   FieldLabel,
   FormInput,
@@ -76,22 +73,9 @@ export default function PhotoManager({
         const fileInput = form.elements.namedItem("photo") as HTMLInputElement;
         const file = fileInput?.files?.[0];
         if (!file) throw new Error("Please select a photo to upload.");
-        const fileToUpload = await compressImageWithExif(file, setStatus);
-        const signData = await getCloudinarySignatureAction();
-        setStatus("Uploading…");
-        const formData = new FormData();
-        formData.append("file", fileToUpload);
-        formData.append("api_key", signData.apiKey);
-        formData.append("timestamp", signData.timestamp.toString());
-        formData.append("signature", signData.signature);
-        formData.append("folder", signData.folder);
-        formData.append("image_metadata", "true");
-        const uploadRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
-          { method: "POST", body: formData },
-        );
-        if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
-        const uploadData = await uploadRes.json();
+        const uploadData = await uploadPhotoToCloudinary(file, {
+          onStatusChange: setStatus,
+        });
         setStatus("Saving photo data…");
         const titleInput = form.elements.namedItem("title") as HTMLInputElement;
         const descriptionInput = form.elements.namedItem(

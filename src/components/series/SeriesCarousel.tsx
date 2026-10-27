@@ -1,19 +1,13 @@
 "use client";
-import {
-  Camera,
-  ChevronLeft,
-  ChevronRight,
-  CircleDot,
-  Clock,
-  Film,
-  Info,
-  Maximize2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, Maximize2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
+import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
 import ShareButton from "@/components/photos/ShareButton";
 import FullscreenDialog from "@/components/ui/FullscreenDialog";
+import { siteConfig } from "@/config/site";
+import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
 import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import type { SeriesSlidePhoto } from "@/types";
@@ -217,6 +211,10 @@ export default function SeriesCarousel({
     currentPhoto.created_at,
     currentPhoto.taken_at,
   );
+  const slideDownloadFileName = formatDownloadFilename(
+    currentPhoto.title || seriesTitle,
+    `-frame-${activeIndex + 1}`,
+  );
   return (
     <section
       aria-label={`${seriesTitle} photo carousel`}
@@ -262,6 +260,7 @@ export default function SeriesCarousel({
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                     className="object-cover pointer-events-none select-none"
+                    priority={index === 0}
                     fetchPriority={index === 0 ? "high" : "auto"}
                     loading={isAdjacent ? "eager" : "lazy"}
                     draggable={false}
@@ -334,7 +333,7 @@ export default function SeriesCarousel({
             {activeDisplayDate}
             {currentPhoto.camera_model &&
               ` · Shot on ${currentPhoto.camera_model}`}
-            {` · by ${currentPhoto.artist}`}
+            {` · by ${currentPhoto.artist || siteConfig.author.name}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -355,7 +354,7 @@ export default function SeriesCarousel({
             photoId={currentPhoto.id}
             cloudinaryUrl={currentPhoto.cloudinary_url}
             cloudinaryPublicId={currentPhoto.cloudinary_public_id}
-            fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
+            fileName={slideDownloadFileName}
             className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95 disabled:opacity-60"
             variant="compact"
           />
@@ -386,68 +385,8 @@ export default function SeriesCarousel({
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted border-b border-line/60 pb-2.5">
             Frame {activeIndex + 1} Details
           </h3>
-          {currentPhoto.camera_model ||
-          currentPhoto.focal_length ||
-          currentPhoto.aperture ||
-          currentPhoto.shutter_speed ||
-          currentPhoto.iso ? (
-            <div className="mt-3.5 space-y-3">
-              {currentPhoto.camera_model && (
-                <div className="flex items-center gap-2.5 border-b border-line/60 pb-2.5">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-line/60 bg-soft/80 text-ink">
-                    <Camera size={14} aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0">
-                    <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted">
-                      Camera
-                    </span>
-                    <p className="truncate text-xs font-medium text-ink">
-                      {currentPhoto.camera_model}
-                    </p>
-                  </div>
-                </div>
-              )}
-              <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    <CircleDot size={11} aria-hidden="true" />
-                    <span>Focal</span>
-                  </dt>
-                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
-                    {currentPhoto.focal_length || "—"}
-                  </dd>
-                </div>
-                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    <span className="font-serif text-xs font-bold leading-none">
-                      ƒ
-                    </span>
-                    <span>Aperture</span>
-                  </dt>
-                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
-                    {currentPhoto.aperture || "—"}
-                  </dd>
-                </div>
-                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    <Clock size={11} aria-hidden="true" />
-                    <span>Shutter</span>
-                  </dt>
-                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
-                    {currentPhoto.shutter_speed || "—"}
-                  </dd>
-                </div>
-                <div className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs">
-                  <dt className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    <Film size={11} aria-hidden="true" />
-                    <span>ISO</span>
-                  </dt>
-                  <dd className="mt-0.5 font-sans text-xs font-semibold tabular-nums text-ink">
-                    {currentPhoto.iso ? `ISO ${currentPhoto.iso}` : "—"}
-                  </dd>
-                </div>
-              </dl>
-            </div>
+          {hasPhotoExif(currentPhoto) ? (
+            <ExifSpecGrid photo={currentPhoto} compact />
           ) : (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm sm:text-base md:text-lg font-medium text-muted">
@@ -469,7 +408,7 @@ export default function SeriesCarousel({
               photoId={currentPhoto.id}
               cloudinaryUrl={currentPhoto.cloudinary_url}
               cloudinaryPublicId={currentPhoto.cloudinary_public_id}
-              fileName={`${(currentPhoto.title || seriesTitle).toLowerCase().replace(/\s+/g, "-")}-frame-${activeIndex + 1}.jpg`}
+              fileName={slideDownloadFileName}
               variant="compact"
             />
             <ShareButton
