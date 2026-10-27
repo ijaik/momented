@@ -5,7 +5,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     <>
       <Suspense
         fallback={
-          <div className="fixed inset-x-0 top-0 z-50 h-16 border-b border-line bg-paper/85 backdrop-blur-md" />
+          <div className="fixed inset-x-0 top-0 z-50 h-16 border-b border-line bg-paper" />
         }
       >
         <Navbar />

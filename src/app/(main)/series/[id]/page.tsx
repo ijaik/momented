@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import JsonLd from "@/components/seo/JsonLd";
 import SeriesCarousel from "@/components/series/SeriesCarousel";
-import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
 import { siteConfig } from "@/config/site";
 import { getAllIds, getSeriesById } from "@/lib/db/queries";
@@ -48,21 +47,9 @@ export default async function SeriesDetailPage({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  if (id === "_")
-    return (
-      <>
-        <BackButton label="All series" href="/series" />
-        <EmptyState description="No series curated yet." />
-      </>
-    );
+  if (id === "_") return <EmptyState description="No series curated yet." />;
   const { data: series } = await getSeriesById(id);
-  if (!series)
-    return (
-      <>
-        <BackButton label="All series" href="/series" />
-        <EmptyState description="Series not found." />
-      </>
-    );
+  if (!series) return <EmptyState description="Series not found." />;
   const rawPhotos =
     (series.series_photos as unknown as RawSeriesPhotoJoin[]) || [];
   const sortedPhotos: SeriesSlidePhoto[] = [...rawPhotos]
@@ -87,8 +74,7 @@ export default async function SeriesDetailPage({
           ]),
         ]}
       />
-      <BackButton label="All series" href="/series" />
-      <header className="mb-8 max-w-3xl border-b border-line pb-8 sm:mb-10">
+      <header className="my-8 md:my-10 max-w-3xl border-b border-line pb-8">
         <h1 className="font-serif text-3xl font-medium leading-[1.1] tracking-tight text-ink sm:text-4xl md:text-5xl">
           {series.title}
         </h1>

@@ -72,7 +72,7 @@ export default function PhotoDetailView({
   }, [adjacent, router]);
   return (
     <>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16">
+      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-8 md:mt-10">
         <figure className="min-w-0 lg:sticky lg:top-20">
           <button
             type="button"

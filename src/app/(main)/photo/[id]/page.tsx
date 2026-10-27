@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import PhotoDetailView from "@/components/photos/PhotoDetailView";
 import JsonLd from "@/components/seo/JsonLd";
-import BackButton from "@/components/ui/BackButton";
 import EmptyState from "@/components/ui/EmptyState";
 import type { ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
@@ -38,13 +37,7 @@ export default async function PhotoDetail({
   params,
 }: PageProps<{ id: string }>) {
   const { id } = await params;
-  if (id === "_")
-    return (
-      <>
-        <BackButton label="All photographs" href="/" />
-        <EmptyState description="Photograph not found." />
-      </>
-    );
+  if (id === "_") return <EmptyState description="Photograph not found." />;
   const { data: photo } = await getPhotoById(id);
   if (!photo) return <EmptyState description="Photo not found." />;
   const adjacent = photo.created_at
@@ -103,7 +96,6 @@ export default async function PhotoDetail({
           ]),
         ]}
       />
-      <BackButton label="All photographs" href="/" />
       <PhotoDetailView
         photo={typedPhoto}
         displayDate={displayDate}
