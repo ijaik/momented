@@ -26,6 +26,8 @@ function revalidateAfterPhotoChange(id?: string | number) {
   }
   revalidatePath("/");
   revalidatePath("/collections");
+  revalidatePath("/collections/rules");
+  revalidatePath("/collections/calendar");
 }
 interface AdminPhotoView {
   id: string | number;

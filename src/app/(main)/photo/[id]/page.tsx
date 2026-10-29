@@ -9,7 +9,6 @@ import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("photos");
   if (ids.length === 0) return [{ id: "_" }];

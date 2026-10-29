@@ -12,6 +12,7 @@ function revalidateAfterCalendarChange(id?: string | number) {
   updateTag("photos");
   if (id) updateTag(`calendar-${id}`);
   revalidatePath("/collections");
+  revalidatePath("/collections/calendar");
   revalidatePath("/");
   if (id) revalidatePath(`/collections/calendar/${id}`);
 }

@@ -12,7 +12,6 @@ import {
 import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import type { PageProps } from "@/types";
-export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("rule_collections");
   if (ids.length === 0) return [{ id: "_" }];
@@ -71,7 +70,7 @@ export default async function SingleRulePage({
           breadcrumbJsonLd([
             {
               name: "Collections",
-              url: `${siteConfig.url}/collections?tab=rules`,
+              url: `${siteConfig.url}/collections/rules`,
             },
             { name: collection.title, url },
           ]),

@@ -24,6 +24,7 @@ function revalidateAfterCollectionChange(
     );
   }
   revalidatePath("/collections");
+  revalidatePath("/collections/rules");
   revalidatePath("/");
 }
 type ContentTable = "collections" | "rule_collections";

@@ -15,7 +15,6 @@ import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate, isPhotoUndated } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("calendar_collections");
   if (ids.length === 0)
@@ -44,10 +43,8 @@ export async function generateMetadata({
 }
 export default async function CalendarMonthPage({
   params,
-  searchParams,
-}: PageProps<{ id: string }, { tab?: string }>) {
+}: PageProps<{ id: string }>) {
   const { id } = await params;
-  const { tab } = (await searchParams) ?? {};
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
     return <EmptyState description="Invalid month requested." />;
@@ -86,7 +83,7 @@ export default async function CalendarMonthPage({
           breadcrumbJsonLd([
             {
               name: "Collections",
-              url: `${siteConfig.url}/collections?tab=calendar`,
+              url: `${siteConfig.url}/collections/calendar`,
             },
             { name: collection.title, url },
           ]),
@@ -106,7 +103,6 @@ export default async function CalendarMonthPage({
             collectionTitle={collection.title}
             structuredYears={structuredYears}
             undatedPhotos={undatedPhotos}
-            initialTab={tab}
           />
         ) : (
           <EmptyState

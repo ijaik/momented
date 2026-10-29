@@ -227,7 +227,7 @@ export async function getCalendarCollectionsList() {
   const { data, error } = await supabase
     .from("calendar_collections")
     .select(
-      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url, taken_at, created_at)",
+      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url)",
     )
     .order("id", { ascending: true })
     .order("taken_at", {

@@ -12,7 +12,6 @@ import {
 import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import type { PageProps } from "@/types";
-export const instant = false;
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("collections");
   if (ids.length === 0) return [{ id: "_" }];

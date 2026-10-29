@@ -10,13 +10,11 @@ interface CalendarMonthViewProps {
   collectionTitle: string;
   structuredYears: YearGroup[];
   undatedPhotos: Photo[];
-  initialTab?: string;
 }
 export default function CalendarMonthView({
   collectionTitle,
   structuredYears,
   undatedPhotos,
-  initialTab,
 }: CalendarMonthViewProps) {
   const tabListId = useId();
   const yearTabs = structuredYears.map((group) => ({
@@ -48,12 +46,14 @@ export default function CalendarMonthView({
   }
   const validTabKeys = new Set(tabs.map((t) => t.key));
   const defaultTab =
-    initialTab && validTabKeys.has(initialTab)
-      ? initialTab
-      : structuredYears.length === 0 && undatedPhotos.length > 0
-        ? "lost"
-        : "all";
-  const [activeTab, setActiveTab] = useState(defaultTab);
+    structuredYears.length === 0 && undatedPhotos.length > 0 ? "lost" : "all";
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const paramTab = new URLSearchParams(window.location.search).get("tab");
+      if (paramTab && validTabKeys.has(paramTab)) return paramTab;
+    }
+    return defaultTab;
+  });
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     if (typeof window !== "undefined") {
