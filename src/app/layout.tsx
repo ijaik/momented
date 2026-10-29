@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   verification: {
     google: "GMp5Gc1BgPdvcJHZzWt8tXY79MP_U0BLy4pu-0-QNgA",
+    other: {
+      "msvalidate.01": "4A20B233D66302E0F38651D04CEFA6F8",
+    },
   },
   title: {
     default: "Momented — Minimalist Photography Journal & Gallery",
