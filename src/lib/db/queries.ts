@@ -46,16 +46,20 @@ export async function getAllIds(table: IdTable): Promise<string[]> {
   return (data ?? []).map((row) => String(row.id));
 }
 export async function getSitemapPhotos(): Promise<
-  { id: string; created_at: string | null }[]
+  { id: string; created_at: string | null; cloudinary_url?: string | null }[]
 > {
   "use cache";
   cacheTag("photos");
   cacheLife("weeks");
   const { data } = await supabase
     .from("photos")
-    .select("id, created_at")
+    .select("id, created_at, cloudinary_url")
     .order("created_at", { ascending: false });
-  return (data ?? []) as { id: string; created_at: string | null }[];
+  return (data ?? []) as {
+    id: string;
+    created_at: string | null;
+    cloudinary_url?: string | null;
+  }[];
 }
 export async function getHomePhotos() {
   "use cache";

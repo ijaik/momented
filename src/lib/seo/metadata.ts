@@ -63,7 +63,7 @@ export function buildPageMetadata({
       images: [
         imageUrl
           ? getSocialShareImageUrl(imageUrl)
-          : "/screenshots/desktop.png",
+          : `${siteConfig.url}/screenshots/desktop.png`,
       ],
     },
   };

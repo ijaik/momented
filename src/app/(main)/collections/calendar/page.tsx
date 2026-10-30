@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import CollectionsTabs from "@/components/collections/CollectionsTabs";
+import JsonLd from "@/components/seo/JsonLd";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
+import { siteConfig } from "@/config/site";
 import { getCalendarCollectionsList } from "@/lib/db/queries";
+import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Calendar Collections",
@@ -19,6 +22,29 @@ export default async function CalendarCollectionsPage() {
   const count = displayCollections.length;
   return (
     <>
+      <JsonLd
+        data={[
+          hubPageJsonLd({
+            title: "Calendar Collections — Moments by Month",
+            description:
+              "Moments as they happened, grouped by the month they were captured.",
+            url: `${siteConfig.url}/collections/calendar`,
+            items: displayCollections.map((col) => ({
+              name: col.title,
+              description: col.description,
+              url: `${siteConfig.url}/collections/calendar/${col.id}`,
+              image: col.photos?.[0]?.cloudinary_url,
+            })),
+          }),
+          breadcrumbJsonLd([
+            { name: "Collections", url: `${siteConfig.url}/collections` },
+            {
+              name: "Calendar Collections",
+              url: `${siteConfig.url}/collections/calendar`,
+            },
+          ]),
+        ]}
+      />
       <PageHeader
         title="Calendar Collections"
         description="Moments as they happened, grouped by the month they were captured."

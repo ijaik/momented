@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
 import CoverCard from "@/components/ui/CoverCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
+import { siteConfig } from "@/config/site";
 import { getSeriesList } from "@/lib/db/queries";
+import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 export const metadata: Metadata = buildPageMetadata({
@@ -41,6 +44,25 @@ export default async function SeriesPage() {
   const count = seriesList.length;
   return (
     <>
+      <JsonLd
+        data={[
+          hubPageJsonLd({
+            title: "Series — Cinematic Photographic Narratives",
+            description:
+              "Ordered sequences of moments captured in the same continuum of light, movement, and time.",
+            url: `${siteConfig.url}/series`,
+            items: seriesList.map((series) => ({
+              name: series.title,
+              description: series.description,
+              url: `${siteConfig.url}/series/${series.id}`,
+              image: series.photos[0]?.cloudinary_url,
+            })),
+          }),
+          breadcrumbJsonLd([
+            { name: "Series", url: `${siteConfig.url}/series` },
+          ]),
+        ]}
+      />
       <PageHeader
         title="Series"
         description="Ordered sequences of moments captured in the same continuum of light, movement, and time."

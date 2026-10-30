@@ -1,15 +1,56 @@
-import { ArrowUpRight, Camera, Film, Layers } from "lucide-react";
+import {
+  ArrowUpRight,
+  Camera,
+  Film,
+  HelpCircle,
+  Layers,
+  ShieldCheck,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import { siteConfig } from "@/config/site";
-import { aboutPageJsonLd, personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
+import {
+  aboutPageJsonLd,
+  faqPageJsonLd,
+  personJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
+
+const FAQS = [
+  {
+    question: "What is Momented?",
+    answer:
+      "Momented is an independent minimalist photography journal and open visual archive created by Jai, dedicated to capturing quiet studies in light, shadow, urban textures, and moments in between.",
+  },
+  {
+    question:
+      "Are photographs on Momented free for commercial and personal use?",
+    answer:
+      "Yes. All photographs on Momented are released under Creative Commons CC0 1.0 Universal Public Domain Dedication. You are free to view, download, adapt, and use them for personal, editorial, or commercial projects without permission or cost.",
+  },
+  {
+    question: "Is attribution required when using Momented photos?",
+    answer:
+      "Attribution is not legally required under the CC0 dedication, but mentioning 'Jai / Momented' or linking back to https://momented.vercel.app is appreciated whenever you share the work.",
+  },
+  {
+    question: "What camera gear and technical settings are used?",
+    answer:
+      "Photographs are captured across varied camera systems and prime lenses. Full technical exposure data—including camera model, focal length, aperture, shutter speed, and ISO—is preserved in the EXIF metadata on each photograph's view page.",
+  },
+  {
+    question: "How can I download the highest resolution file?",
+    answer:
+      "Open any individual photograph and select 'Download' in the details panel to save the original high-resolution uncompressed file directly to your device.",
+  },
+];
 export const metadata: Metadata = buildPageMetadata({
   title: "About",
   description:
-    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented.",
+    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented. Free high-resolution CC0 photography.",
   path: "/about",
 });
 function SectionLabel({ children }: { children: ReactNode }) {
@@ -22,7 +63,14 @@ function SectionLabel({ children }: { children: ReactNode }) {
 export default function AboutPage() {
   return (
     <>
-      <JsonLd data={[aboutPageJsonLd(), personJsonLd(), websiteJsonLd()]} />
+      <JsonLd
+        data={[
+          aboutPageJsonLd(),
+          personJsonLd(),
+          websiteJsonLd(),
+          faqPageJsonLd(FAQS),
+        ]}
+      />
       <div className="mx-auto w-full max-w-6xl 2xl:max-w-360 py-16 md:py-24">
         <header className="mb-16 border-b border-line pb-14 md:mb-20 md:pb-16">
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
@@ -144,10 +192,71 @@ export default function AboutPage() {
             </div>
           </section>
           <section className="border-t border-line pt-12">
-            <SectionLabel>The License</SectionLabel>
-            <blockquote className="mt-4 border-l-2 border-signal/60 pl-6 font-serif text-lg font-light leading-relaxed text-ink/90 md:text-xl">
-              &ldquo;{siteConfig.license}&rdquo;
-            </blockquote>
+            <SectionLabel>The License & Rights</SectionLabel>
+            <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div className="rounded-2xl border border-line/70 bg-surface/50 p-6 md:col-span-2">
+                <blockquote className="border-l-2 border-signal/60 pl-6 font-serif text-lg font-light leading-relaxed text-ink/90 md:text-xl">
+                  &ldquo;{siteConfig.license}&rdquo;
+                </blockquote>
+                <p className="mt-4 text-xs text-muted leading-relaxed">
+                  Dedicated under{" "}
+                  <a
+                    href="https://creativecommons.org/publicdomain/zero/1.0/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline hover:text-ink"
+                  >
+                    Creative Commons CC0 1.0 Universal
+                  </a>
+                  . Free for commercial, personal, and artistic use worldwide.
+                </p>
+              </div>
+              <div className="flex flex-col justify-center rounded-2xl border border-line/70 bg-surface/50 p-6">
+                <div className="flex items-center gap-2 text-ink">
+                  <ShieldCheck size={18} className="text-signal" />
+                  <span className="text-xs font-mono uppercase tracking-wider text-muted">
+                    License Summary
+                  </span>
+                </div>
+                <ul className="mt-3 space-y-2 text-xs text-muted">
+                  <li className="flex items-center gap-2">
+                    <span className="text-signal">✓</span> Free commercial use
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-signal">✓</span> No permission needed
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-signal">✓</span> Full original
+                    resolution
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-signal">✓</span> Attribution
+                    appreciated
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+          <section className="border-t border-line pt-12">
+            <div className="mb-6 flex items-center gap-2">
+              <HelpCircle size={18} className="text-signal" />
+              <SectionLabel>Frequently Asked Questions</SectionLabel>
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {FAQS.map((faq) => (
+                <article
+                  key={faq.question}
+                  className="rounded-2xl border border-line/70 bg-surface/60 backdrop-blur-md p-6 sm:p-7 shadow-xs"
+                >
+                  <h3 className="font-serif text-lg font-medium text-ink">
+                    {faq.question}
+                  </h3>
+                  <p className="mt-3 text-[15px] leading-relaxed text-muted">
+                    {faq.answer}
+                  </p>
+                </article>
+              ))}
+            </div>
           </section>
         </div>
         <div className="mt-20 flex flex-col gap-3 border-t border-line pt-8 sm:flex-row sm:items-baseline sm:justify-between">
