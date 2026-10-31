@@ -160,10 +160,19 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
       photo.description ||
       `Photograph "${name}" exploring light and shadow by ${artistName}.`,
     contentUrl: photo.cloudinary_url,
-    thumbnailUrl: photo.cloudinary_url,
+    thumbnailUrl: getSocialShareImageUrl(photo.cloudinary_url),
     encodingFormat: "image/jpeg",
     url: `${siteConfig.url}/photo/${photo.id}`,
     image: getSocialShareImageUrl(photo.cloudinary_url),
+    representativeOfPage: true,
+    inLanguage: "en-US",
+    genre: "Fine Art Photography",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteConfig.url}/#website`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
     ...(photo.created_at ? { datePublished: photo.created_at } : {}),
     ...(photo.taken_at ? { dateCreated: photo.taken_at } : {}),
     creator: {
@@ -236,6 +245,74 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
           ],
         }
       : {}),
+  };
+}
+export function photoPageJsonLd(photo: Photo): JsonLdObject {
+  const name = photo.title || "A Momented Photograph";
+  const artistName = photo.artist || siteConfig.author.name;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemPage",
+    "@id": `${siteConfig.url}/photo/${photo.id}#webpage`,
+    url: `${siteConfig.url}/photo/${photo.id}`,
+    name: `${name} — ${siteConfig.name}`,
+    description:
+      photo.description ||
+      `Photograph "${name}" exploring light and shadow by ${artistName}.`,
+    inLanguage: "en-US",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteConfig.url}/#website`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    primaryImageOfPage: {
+      "@type": "ImageObject",
+      "@id": `${siteConfig.url}/photo/${photo.id}#image`,
+      contentUrl: photo.cloudinary_url,
+      thumbnailUrl: getSocialShareImageUrl(photo.cloudinary_url),
+      url: `${siteConfig.url}/photo/${photo.id}`,
+      name,
+    },
+    mainEntity: {
+      "@type": "ImageObject",
+      "@id": `${siteConfig.url}/photo/${photo.id}#image`,
+    },
+  };
+}
+export function homePageGalleryJsonLd(
+  photos: {
+    id: string;
+    title?: string | null;
+    description?: string | null;
+    cloudinary_url: string;
+  }[],
+): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${siteConfig.name} — Photography Gallery & Journal`,
+    description: siteConfig.description,
+    url: `${siteConfig.url}/`,
+    inLanguage: "en-US",
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteConfig.url}/#website`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: photos.length,
+      itemListElement: photos.slice(0, 50).map((photo, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: photo.title || `Moment ${index + 1}`,
+        url: `${siteConfig.url}/photo/${photo.id}`,
+        image: getSocialShareImageUrl(photo.cloudinary_url),
+        ...(photo.description ? { description: photo.description } : {}),
+      })),
+    },
   };
 }
 export function collectionPageJsonLd(

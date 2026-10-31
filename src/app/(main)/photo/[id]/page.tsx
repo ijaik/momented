@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PhotoDetailView from "@/components/photos/PhotoDetailView";
 import JsonLd from "@/components/seo/JsonLd";
 import EmptyState from "@/components/ui/EmptyState";
 import type { ReferenceLink } from "@/components/ui/ReferenceRow";
+import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
-import { getAdjacentPhotos, getAllIds, getPhotoById } from "@/lib/db/queries";
-import { breadcrumbJsonLd, photographJsonLd } from "@/lib/seo/jsonLd";
+import { getAllIds, getPhotoById, getRelatedPhotos } from "@/lib/db/queries";
+import {
+  breadcrumbJsonLd,
+  photographJsonLd,
+  photoPageJsonLd,
+} from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-import { formatDisplayDate } from "@/lib/utils/dateUtils";
+import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("photos");
@@ -32,16 +38,15 @@ export async function generateMetadata({
     imageUrl: photo.cloudinary_url,
   });
 }
-export default async function PhotoDetail({
+async function PhotoDetailContent({
   params,
-}: PageProps<{ id: string }>) {
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   if (id === "_") return <EmptyState description="Photograph not found." />;
   const { data: photo } = await getPhotoById(id);
   if (!photo) return <EmptyState description="Photo not found." />;
-  const adjacent = photo.created_at
-    ? await getAdjacentPhotos(photo.created_at)
-    : { prev: null, next: null };
   const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(
     typedPhoto.created_at,
@@ -52,42 +57,64 @@ export default async function PhotoDetail({
   const ruleCollections = typedPhoto.rules || [];
   const seriesList = typedPhoto.series || [];
   const title = typedPhoto.title || "Untitled Momented";
+  const monthIndex =
+    calendarCollections[0]?.id !== undefined
+      ? Number(calendarCollections[0].id)
+      : typedPhoto.taken_at || typedPhoto.created_at
+        ? getPhotoDate(typedPhoto).month
+        : null;
+  const relatedPhotos = await getRelatedPhotos({
+    photoId: typedPhoto.id,
+    collectionId: standardCollections[0]?.id,
+    ruleId: ruleCollections[0]?.id,
+    seriesId: seriesList[0]?.id,
+    monthIndex,
+  });
   const references: ReferenceLink[] = [
     ...standardCollections.map((c) => ({
       id: c.id,
       title: c.title,
       href: `/collections/${c.id}`,
-      kind: "Collection",
+      kind: "Collection" as const,
     })),
     ...ruleCollections.map((r) => ({
       id: r.id,
       title: r.title,
       href: `/collections/rules/${r.id}`,
-      kind: "Rule",
+      kind: "Rule" as const,
     })),
     ...calendarCollections.map((c) => ({
       id: c.id,
       title: c.title,
       href: `/collections/calendar/${c.id}`,
-      kind: "Month",
+      kind: "Month" as const,
     })),
     ...seriesList.map((s) => ({
       id: s.id,
       title: s.title,
       href: `/series/${s.id}`,
-      kind: "Series",
+      kind: "Series" as const,
     })),
   ];
   return (
     <>
       <JsonLd
         data={[
+          photoPageJsonLd(typedPhoto),
           photographJsonLd(typedPhoto),
           breadcrumbJsonLd([
             {
               name: "Photographs",
               url: `${siteConfig.url}/`,
             },
+            ...(standardCollections[0]
+              ? [
+                  {
+                    name: standardCollections[0].title,
+                    url: `${siteConfig.url}/collections/${standardCollections[0].id}`,
+                  },
+                ]
+              : []),
             {
               name: title,
               url: `${siteConfig.url}/photo/${typedPhoto.id}`,
@@ -99,8 +126,15 @@ export default async function PhotoDetail({
         photo={typedPhoto}
         displayDate={displayDate}
         references={references}
-        adjacent={adjacent}
+        relatedPhotos={relatedPhotos}
       />
     </>
+  );
+}
+export default function PhotoDetail({ params }: PageProps<{ id: string }>) {
+  return (
+    <Suspense fallback={<Skeleton variant="photo" />}>
+      <PhotoDetailContent params={params} />
+    </Suspense>
   );
 }

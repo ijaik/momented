@@ -31,7 +31,7 @@ export default function PhotoCard({
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 480px"
         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         priority={index === 0}
-        loading={index === 0 ? "eager" : "lazy"}
+        loading={index === 0 ? undefined : "lazy"}
         fetchPriority={index === 0 ? "high" : "low"}
       />
       <div

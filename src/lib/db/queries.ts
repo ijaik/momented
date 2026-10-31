@@ -86,40 +86,6 @@ export async function getPhotoById(id: string) {
     .single();
   return { data: data ?? null, error: error?.message ?? null };
 }
-interface AdjacentPhotoSummary {
-  id: string;
-  title: string | null;
-  cloudinary_url: string;
-}
-export interface AdjacentPhotos {
-  prev: AdjacentPhotoSummary | null;
-  next: AdjacentPhotoSummary | null;
-}
-export async function getAdjacentPhotos(
-  currentCreatedAt: string,
-): Promise<AdjacentPhotos> {
-  "use cache";
-  cacheTag("photos");
-  cacheLife("weeks");
-  if (!currentCreatedAt) return { prev: null, next: null };
-  const [{ data: prevData }, { data: nextData }] = await Promise.all([
-    supabase
-      .from("photos")
-      .select("id, title, cloudinary_url")
-      .gt("created_at", currentCreatedAt)
-      .order("created_at", { ascending: true })
-      .limit(1),
-    supabase
-      .from("photos")
-      .select("id, title, cloudinary_url")
-      .lt("created_at", currentCreatedAt)
-      .order("created_at", { ascending: false })
-      .limit(1),
-  ]);
-  const prev = prevData?.[0] ? (prevData[0] as AdjacentPhotoSummary) : null;
-  const next = nextData?.[0] ? (nextData[0] as AdjacentPhotoSummary) : null;
-  return { prev, next };
-}
 async function getPhotosForEntity(
   junction: PhotoJunction,
   entityId: string | number,
@@ -157,6 +123,86 @@ export function getPhotosForRule(ruleId: string) {
     "rules",
     `rule-${ruleId}`,
   );
+}
+export async function getRelatedPhotos({
+  photoId,
+  collectionId,
+  ruleId,
+  seriesId,
+  monthIndex,
+}: {
+  photoId: string;
+  collectionId?: string | null;
+  ruleId?: string | null;
+  seriesId?: string | null;
+  monthIndex?: number | null;
+}): Promise<Photo[]> {
+  "use cache";
+  cacheTag("photos", "collections", "rules", "series", "calendar");
+  cacheLife("weeks");
+  const relatedMap = new Map<string, Photo>();
+  if (collectionId) {
+    const { data } = await getPhotosForCollection(collectionId);
+    for (const p of data) {
+      if (p.id !== photoId && !relatedMap.has(p.id)) {
+        relatedMap.set(p.id, p);
+        if (relatedMap.size >= 3) break;
+      }
+    }
+  }
+  if (relatedMap.size < 3 && seriesId) {
+    const { data: s } = await getSeriesById(seriesId);
+    if (s?.series_photos) {
+      const rawPhotos = s.series_photos as unknown as {
+        position: number;
+        photos: Photo;
+      }[];
+      for (const sp of rawPhotos) {
+        if (
+          sp.photos &&
+          sp.photos.id !== photoId &&
+          !relatedMap.has(sp.photos.id)
+        ) {
+          relatedMap.set(sp.photos.id, sp.photos);
+          if (relatedMap.size >= 3) break;
+        }
+      }
+    }
+  }
+  if (relatedMap.size < 3 && ruleId) {
+    const { data } = await getPhotosForRule(ruleId);
+    for (const p of data) {
+      if (p.id !== photoId && !relatedMap.has(p.id)) {
+        relatedMap.set(p.id, p);
+        if (relatedMap.size >= 3) break;
+      }
+    }
+  }
+  if (
+    relatedMap.size < 3 &&
+    monthIndex !== null &&
+    monthIndex !== undefined &&
+    monthIndex >= 1 &&
+    monthIndex <= 12
+  ) {
+    const { data } = await getPhotosForCalendarMonth(monthIndex);
+    for (const p of data) {
+      if (p.id !== photoId && !relatedMap.has(p.id)) {
+        relatedMap.set(p.id, p);
+        if (relatedMap.size >= 3) break;
+      }
+    }
+  }
+  if (relatedMap.size < 3) {
+    const { data } = await getHomePhotos();
+    for (const p of data) {
+      if (p.id !== photoId && !relatedMap.has(p.id)) {
+        relatedMap.set(p.id, p as unknown as Photo);
+        if (relatedMap.size >= 3) break;
+      }
+    }
+  }
+  return Array.from(relatedMap.values()).slice(0, 3);
 }
 export function getPhotosForCalendarMonth(monthIndex: number) {
   return getPhotosForEntity(

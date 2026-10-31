@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import SeriesCarousel from "@/components/series/SeriesCarousel";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import { getAllIds, getSeriesById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, seriesPageJsonLd } from "@/lib/seo/jsonLd";
@@ -43,9 +45,11 @@ interface RawSeriesPhotoJoin {
   position: number;
   photos: Photo | null;
 }
-export default async function SeriesDetailPage({
+async function SeriesDetailContent({
   params,
-}: PageProps<{ id: string }>) {
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   if (id === "_") return <EmptyState description="No series curated yet." />;
   const { data: series } = await getSeriesById(id);
@@ -91,5 +95,14 @@ export default async function SeriesDetailPage({
         )}
       </DetailLayout>
     </>
+  );
+}
+export default function SeriesDetailPage({
+  params,
+}: PageProps<{ id: string }>) {
+  return (
+    <Suspense fallback={<Skeleton variant="series" />}>
+      <SeriesDetailContent params={params} />
+    </Suspense>
   );
 }

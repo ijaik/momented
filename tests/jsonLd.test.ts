@@ -3,10 +3,14 @@ import { siteConfig } from "@/config/site";
 import {
   breadcrumbJsonLd,
   faqPageJsonLd,
+  homePageGalleryJsonLd,
   hubPageJsonLd,
   personJsonLd,
+  photographJsonLd,
+  photoPageJsonLd,
   websiteJsonLd,
 } from "@/lib/seo/jsonLd";
+import type { Photo } from "@/types";
 
 describe("JSON-LD & Schema Helpers", () => {
   it("websiteJsonLd includes @id, license, author and publisher", () => {
@@ -85,5 +89,56 @@ describe("JSON-LD & Schema Helpers", () => {
     };
     expect(mainEntity["@type"]).toBe("ItemList");
     expect(mainEntity.numberOfItems).toBe(1);
+  });
+  it("photographJsonLd and photoPageJsonLd create valid structured data for photo", () => {
+    const mockPhoto: Photo = {
+      id: "test-photo-123",
+      title: "Morning Sun",
+      description: "Golden hour glow",
+      cloudinary_url: "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+      cloudinary_public_id: "sample",
+      width: 1200,
+      height: 800,
+      camera_model: "Sony A7 IV",
+      taken_at: "2026-10-15T08:00:00Z",
+      created_at: "2026-10-15T10:00:00Z",
+    };
+    const photoLd = photographJsonLd(mockPhoto);
+    expect(photoLd["@type"]).toBe("ImageObject");
+    expect(photoLd.name).toBe("Morning Sun");
+    expect(photoLd.contentUrl).toBe(mockPhoto.cloudinary_url);
+    expect(photoLd.license).toBe(
+      "https://creativecommons.org/publicdomain/zero/1.0/",
+    );
+    const pageLd = photoPageJsonLd(mockPhoto);
+    expect(pageLd["@type"]).toBe("ItemPage");
+    expect(pageLd.url).toBe(`${siteConfig.url}/photo/test-photo-123`);
+    expect(pageLd.primaryImageOfPage).toBeDefined();
+  });
+  it("homePageGalleryJsonLd creates valid ItemList schema for recent photos", () => {
+    const mockPhotos = [
+      {
+        id: "p1",
+        title: "Photo 1",
+        cloudinary_url: "https://res.cloudinary.com/demo/image/upload/p1.jpg",
+      },
+      {
+        id: "p2",
+        title: "Photo 2",
+        cloudinary_url: "https://res.cloudinary.com/demo/image/upload/p2.jpg",
+      },
+    ];
+    const data = homePageGalleryJsonLd(mockPhotos);
+    expect(data["@type"]).toBe("CollectionPage");
+    const mainEntity = data.mainEntity as {
+      "@type": string;
+      numberOfItems: number;
+      itemListElement: { name: string; url: string }[];
+    };
+    expect(mainEntity["@type"]).toBe("ItemList");
+    expect(mainEntity.numberOfItems).toBe(2);
+    expect(mainEntity.itemListElement[0].url).toBe(
+      `${siteConfig.url}/photo/p1`,
+    );
   });
 });

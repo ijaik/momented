@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
 import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
 import ShareButton from "@/components/photos/ShareButton";
+import WallpaperPreviewButton from "@/components/photos/WallpaperPreviewButton";
 import FullscreenDialog from "@/components/ui/FullscreenDialog";
 import { siteConfig } from "@/config/site";
 import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
@@ -262,7 +263,9 @@ export default function SeriesCarousel({
                     className="object-cover pointer-events-none select-none"
                     priority={index === 0}
                     fetchPriority={index === 0 ? "high" : "auto"}
-                    loading={isAdjacent ? "eager" : "lazy"}
+                    loading={
+                      index === 0 ? undefined : isAdjacent ? "eager" : "lazy"
+                    }
                     draggable={false}
                   />
                 </div>
@@ -350,6 +353,12 @@ export default function SeriesCarousel({
             <Info size={16} aria-hidden="true" />
             <span>{showExifDrawer ? "Hide details" : "Frame details"}</span>
           </button>
+          <WallpaperPreviewButton
+            photo={currentPhoto}
+            fileName={slideDownloadFileName}
+            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
+            variant="compact"
+          />
           <DownloadButton
             photoId={currentPhoto.id}
             cloudinaryUrl={currentPhoto.cloudinary_url}
@@ -404,6 +413,11 @@ export default function SeriesCarousel({
         subtitle={<p className="text-xs text-muted">{createdAt}</p>}
         actions={
           <>
+            <WallpaperPreviewButton
+              photo={currentPhoto}
+              fileName={slideDownloadFileName}
+              variant="compact"
+            />
             <DownloadButton
               photoId={currentPhoto.id}
               cloudinaryUrl={currentPhoto.cloudinary_url}

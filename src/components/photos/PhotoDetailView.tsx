@@ -1,17 +1,15 @@
 "use client";
-import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
 import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
+import RelatedPhotos from "@/components/photos/RelatedPhotos";
 import ShareButton from "@/components/photos/ShareButton";
+import WallpaperPreviewButton from "@/components/photos/WallpaperPreviewButton";
 import FullscreenDialog from "@/components/ui/FullscreenDialog";
 import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
 import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
-import type { AdjacentPhotos } from "@/lib/db/queries";
 import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
 import type { Photo } from "@/types";
 
@@ -19,15 +17,14 @@ interface PhotoDetailViewProps {
   photo: Photo;
   displayDate: string;
   references: ReferenceLink[];
-  adjacent?: AdjacentPhotos;
+  relatedPhotos?: Photo[];
 }
 export default function PhotoDetailView({
   photo,
   displayDate,
   references,
-  adjacent,
+  relatedPhotos,
 }: PhotoDetailViewProps) {
-  const router = useRouter();
   const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
   const title = photo.title || "Untitled Momented";
   const alt =
@@ -36,28 +33,6 @@ export default function PhotoDetailView({
       : photo.title || photo.description || "A Momented Photograph";
   const fileName = formatDownloadFilename(photo.title);
   const hasExif = hasPhotoExif(photo);
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      if (e.key === "ArrowLeft" && adjacent?.prev) {
-        e.preventDefault();
-        router.push(`/photo/${adjacent.prev.id}`);
-      } else if (e.key === "ArrowRight" && adjacent?.next) {
-        e.preventDefault();
-        router.push(`/photo/${adjacent.next.id}`);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [adjacent, router]);
   return (
     <>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-8 md:mt-10">
@@ -150,102 +125,29 @@ export default function PhotoDetailView({
           )}
           <section
             aria-label="Actions"
-            className="grid grid-cols-1 gap-3 border-t border-line pt-8 sm:grid-cols-2"
+            className="flex flex-col gap-3 border-t border-line pt-8"
           >
-            <DownloadButton
-              photoId={photo.id}
-              cloudinaryUrl={photo.cloudinary_url}
-              cloudinaryPublicId={photo.cloudinary_public_id}
-              downloadCount={photo.downloads || 0}
-              fileName={fileName}
-            />
-            <ShareButton
-              title={title}
-              photoId={photo.id}
-              imageUrl={photo.cloudinary_url}
-              shareCount={photo.shares || 0}
-            />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <DownloadButton
+                photoId={photo.id}
+                cloudinaryUrl={photo.cloudinary_url}
+                cloudinaryPublicId={photo.cloudinary_public_id}
+                downloadCount={photo.downloads || 0}
+                fileName={fileName}
+              />
+              <ShareButton
+                title={title}
+                photoId={photo.id}
+                imageUrl={photo.cloudinary_url}
+                shareCount={photo.shares || 0}
+              />
+            </div>
+            <WallpaperPreviewButton photo={photo} fileName={fileName} />
           </section>
         </aside>
       </div>
-      {(adjacent?.prev || adjacent?.next) && (
-        <nav
-          aria-label="Photograph sequence navigation"
-          className="mt-16 border-t border-line pt-8"
-        >
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            {adjacent?.prev ? (
-              <Link
-                href={`/photo/${adjacent.prev.id}`}
-                className="group flex items-center gap-3.5 rounded-xl p-2 -m-2 transition-all duration-200 hover:bg-soft/50 active:scale-[0.98]"
-                aria-label={`Previous photograph: ${adjacent.prev.title || "Untitled Momented"}`}
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink transition-transform duration-300 ease-out group-hover:-translate-x-1">
-                  <ChevronLeft size={18} aria-hidden="true" />
-                </span>
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line/70 bg-soft">
-                  <Image
-                    src={adjacent.prev.cloudinary_url}
-                    alt={adjacent.prev.title || "A Momented photograph"}
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted">
-                    Previous moment
-                  </span>
-                  <p className="truncate font-serif text-sm font-medium text-ink">
-                    {adjacent.prev.title || "Untitled Momented"}
-                  </p>
-                </div>
-              </Link>
-            ) : (
-              <div />
-            )}
-            <div className="hidden text-center text-xs text-muted md:block">
-              <kbd className="rounded-md border border-line/80 bg-surface/80 px-2 py-0.5 font-mono text-[11px] text-muted shadow-2xs">
-                ←
-              </kbd>{" "}
-              or{" "}
-              <kbd className="rounded-md border border-line/80 bg-surface/80 px-2 py-0.5 font-mono text-[11px] text-muted shadow-2xs">
-                →
-              </kbd>{" "}
-              keys to walk gallery
-            </div>
-            {adjacent?.next ? (
-              <Link
-                href={`/photo/${adjacent.next.id}`}
-                className="group flex items-center justify-end gap-3.5 rounded-xl p-2 -m-2 text-right transition-all duration-200 hover:bg-soft/50 active:scale-[0.98] sm:self-auto"
-                aria-label={`Next photograph: ${adjacent.next.title || "Untitled Momented"}`}
-              >
-                <div className="min-w-0">
-                  <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted">
-                    Next moment
-                  </span>
-                  <p className="truncate font-serif text-sm font-medium text-ink">
-                    {adjacent.next.title || "Untitled Momented"}
-                  </p>
-                </div>
-                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-line/70 bg-soft">
-                  <Image
-                    src={adjacent.next.cloudinary_url}
-                    alt={adjacent.next.title || "A Momented photograph"}
-                    fill
-                    sizes="48px"
-                    className="object-cover"
-                  />
-                </div>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink transition-transform duration-300 ease-out group-hover:translate-x-1">
-                  <ChevronRight size={18} aria-hidden="true" />
-                </span>
-              </Link>
-            ) : (
-              <div />
-            )}
-          </div>
-        </nav>
+      {relatedPhotos && relatedPhotos.length > 0 && (
+        <RelatedPhotos photos={relatedPhotos} />
       )}
       <FullscreenDialog
         isOpen={isMaximized}
@@ -258,6 +160,11 @@ export default function PhotoDetailView({
         }
         actions={
           <>
+            <WallpaperPreviewButton
+              photo={photo}
+              fileName={fileName}
+              variant="compact"
+            />
             <DownloadButton
               photoId={photo.id}
               cloudinaryUrl={photo.cloudinary_url}

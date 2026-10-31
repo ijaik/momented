@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import CalendarMonthView, {
   type YearGroup,
 } from "@/components/collections/CalendarMonthView";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
-  getAllIds,
+  getCalendarCollectionsList,
   getCalendarMonthById,
   getPhotosForCalendarMonth,
 } from "@/lib/db/queries";
@@ -16,10 +18,16 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate, isPhotoUndated } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
 export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const ids = await getAllIds("calendar_collections");
-  if (ids.length === 0)
-    return Array.from({ length: 12 }, (_, i) => ({ id: String(i + 1) }));
-  return ids.map((id) => ({ id }));
+  const { data: calendars } = await getCalendarCollectionsList();
+  const activeIds = (calendars ?? [])
+    .filter(
+      (c) =>
+        Array.isArray(c.photos) &&
+        c.photos.some((p) => Boolean(p?.id && p?.cloudinary_url)),
+    )
+    .map((c) => ({ id: String(c.id) }));
+  if (activeIds.length === 0) return [{ id: "1" }];
+  return activeIds;
 }
 export async function generateMetadata({
   params,
@@ -41,9 +49,11 @@ export async function generateMetadata({
     noIndex: (photos?.length ?? 0) === 0,
   });
 }
-export default async function CalendarMonthPage({
+async function CalendarMonthContent({
   params,
-}: PageProps<{ id: string }>) {
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
@@ -112,5 +122,14 @@ export default async function CalendarMonthPage({
         )}
       </DetailLayout>
     </>
+  );
+}
+export default function CalendarMonthPage({
+  params,
+}: PageProps<{ id: string }>) {
+  return (
+    <Suspense fallback={<Skeleton variant="calendar" />}>
+      <CalendarMonthContent params={params} />
+    </Suspense>
   );
 }

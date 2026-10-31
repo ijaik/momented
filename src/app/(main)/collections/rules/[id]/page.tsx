@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
   getAllIds,
@@ -35,9 +37,11 @@ export async function generateMetadata({
     noIndex: (photos?.length ?? 0) === 0,
   });
 }
-export default async function SingleRulePage({
+async function SingleRuleContent({
   params,
-}: PageProps<{ id: string }>) {
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   if (id === "_") {
     return (
@@ -91,5 +95,12 @@ export default async function SingleRulePage({
         />
       </DetailLayout>
     </>
+  );
+}
+export default function SingleRulePage({ params }: PageProps<{ id: string }>) {
+  return (
+    <Suspense fallback={<Skeleton variant="collection" />}>
+      <SingleRuleContent params={params} />
+    </Suspense>
   );
 }

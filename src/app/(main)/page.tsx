@@ -4,7 +4,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { getHomePhotos } from "@/lib/db/queries";
-import { websiteJsonLd } from "@/lib/seo/jsonLd";
+import { homePageGalleryJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Momented — Minimalist Photography Journal & Gallery",
@@ -20,7 +20,7 @@ export default async function Home() {
     );
   return (
     <>
-      <JsonLd data={websiteJsonLd()} />
+      <JsonLd data={[websiteJsonLd(), homePageGalleryJsonLd(photos || [])]} />
       <PageHeader
         title="Photographs"
         description="A journal of light, shadow, and the moments in between — one frame at a time."
