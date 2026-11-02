@@ -41,8 +41,10 @@ export async function getAllIds(table: IdTable): Promise<string[]> {
   cacheTag(`${table}-ids`, table);
   cacheLife("weeks");
   const { data, error } = await supabase.from(table).select("id");
-  if (error)
-    throw new Error(`Failed to fetch IDs for ${table}: ${error.message}`);
+  if (error) {
+    console.warn(`Failed to fetch IDs for ${table}:`, error.message);
+    return [];
+  }
   return (data ?? []).map((row) => String(row.id));
 }
 export async function getSitemapPhotos(): Promise<
@@ -71,7 +73,7 @@ export async function getHomePhotos() {
       "id, title, description, cloudinary_url, width, height, camera_model",
     )
     .order("created_at", { ascending: false });
-  return { data: data ?? [], error: error?.message ?? null };
+  return { data: (data ?? []) as Photo[], error: error?.message ?? null };
 }
 export async function getPhotoById(id: string) {
   "use cache";

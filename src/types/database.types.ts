@@ -308,6 +308,16 @@ export type Database = {
         };
         Returns: undefined;
       };
+      replace_photo_junctions: {
+        Args: {
+          p_table_name: string;
+          p_main_col: string;
+          p_main_id: string;
+          p_target_col: string;
+          p_target_ids: string[];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;

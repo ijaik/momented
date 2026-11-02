@@ -41,7 +41,7 @@ describe("cloudinaryUtils", () => {
         "https://res.cloudinary.com/demo/image/upload/c_fill,w_300/v123/sample.jpg";
       const transformed = buildCloudinaryUrl(url, ["w_800"]);
       expect(transformed).toBe(
-        "https://res.cloudinary.com/demo/image/upload/c_fill,w_300/w_800/v123/sample.jpg",
+        "https://res.cloudinary.com/demo/image/upload/w_800/v123/sample.jpg",
       );
     });
   });

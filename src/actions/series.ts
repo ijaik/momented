@@ -79,7 +79,10 @@ export async function createSeriesAction(
     const { error: junctionError } = await db
       .from("series_photos")
       .insert(seriesPhotoInserts);
-    if (junctionError) throw new Error(junctionError.message);
+    if (junctionError) {
+      await db.from("series").delete().eq("id", newSeries.id);
+      throw new Error(junctionError.message);
+    }
   }
   revalidateAfterSeriesChange(newSeries.id);
   return { success: true, id: newSeries.id };

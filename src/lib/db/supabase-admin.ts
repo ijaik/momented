@@ -32,7 +32,21 @@ export async function syncJunction(
   targetIds: string[],
   { skipDelete = false }: { skipDelete?: boolean } = {},
 ): Promise<void> {
-  const dynamicClient = db as SupabaseClient;
+  const dynamicClient = db as SupabaseClient<Database>;
+  const cleanTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
+  if (!skipDelete && table !== "series_photos") {
+    const { error: rpcError } = await dynamicClient.rpc(
+      "replace_photo_junctions",
+      {
+        p_table_name: table,
+        p_main_col: mainCol,
+        p_main_id: String(mainId),
+        p_target_col: targetCol,
+        p_target_ids: cleanTargetIds,
+      },
+    );
+    if (!rpcError) return;
+  }
   if (!skipDelete) {
     const { error: deleteError } = await dynamicClient
       .from(table)
@@ -43,16 +57,14 @@ export async function syncJunction(
         `Failed to clear junction table ${table}: ${deleteError.message}`,
       );
   }
-  if (targetIds?.length > 0) {
-    const uniqueTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
-    if (uniqueTargetIds.length === 0) return;
-    const inserts = uniqueTargetIds.map((targetId) => ({
+  if (cleanTargetIds.length > 0) {
+    const inserts = cleanTargetIds.map((targetId) => ({
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));
     const { error: insertError } = await dynamicClient
       .from(table)
-      .insert(inserts);
+      .insert(inserts as never);
     if (insertError)
       throw new Error(
         `Failed to update junction table ${table}: ${insertError.message}`,

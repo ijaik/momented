@@ -20,9 +20,9 @@ function isUpstashConfigured(): boolean {
 }
 function getRedis(): Redis | null {
   if (!isUpstashConfigured()) {
-    if (!hasLoggedUpstashWarning && process.env.NODE_ENV !== "production") {
+    if (!hasLoggedUpstashWarning) {
       console.warn(
-        "[RateLimit] Upstash Redis credentials not configured. Falling back to in-memory rate limiting.",
+        "[RateLimit] Upstash Redis credentials not configured. Falling back to in-memory rate limiting. Note: brute-force lockout requires persistent Redis in multi-instance serverless deployments.",
       );
       hasLoggedUpstashWarning = true;
     }
@@ -75,18 +75,16 @@ function pruneExpiredMapEntries<T extends { resetAt: number }>(
   map: Map<string, T>,
   now: number,
 ): void {
-  if (map.size <= MAX_MEM_CACHE_SIZE) return;
   for (const [k, v] of map.entries()) {
     if (now > v.resetAt) {
       map.delete(k);
     }
   }
   if (map.size > MAX_MEM_CACHE_SIZE) {
-    const keysToDelete = Array.from(map.keys()).slice(
-      0,
-      Math.floor(MAX_MEM_CACHE_SIZE / 2),
-    );
-    for (const k of keysToDelete) {
+    const sortedEntries = Array.from(map.entries())
+      .sort((a, b) => a[1].resetAt - b[1].resetAt)
+      .slice(0, Math.floor(MAX_MEM_CACHE_SIZE / 2));
+    for (const [k] of sortedEntries) {
       map.delete(k);
     }
   }

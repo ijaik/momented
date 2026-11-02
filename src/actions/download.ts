@@ -1,10 +1,14 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb } from "@/lib/db/supabase-admin";
-import { assertValidUUID } from "@/lib/utils/validation";
+import {
+  assertValidUUID,
+  CLOUDINARY_PUBLIC_ID_PATTERN,
+  CLOUDINARY_URL_PATTERN,
+} from "@/lib/utils/validation";
 
 async function isStatRateLimited(action: string): Promise<boolean> {
   const ip = await getClientIp();
@@ -22,16 +26,22 @@ export async function getDownloadUrlAction({
   fileName?: string;
 }): Promise<{ downloadUrl: string; downloadCount?: number }> {
   const idStr = String(photoId);
+  assertValidUUID(idStr, "photo ID");
+  if (!cloudinaryUrl || !CLOUDINARY_URL_PATTERN.test(cloudinaryUrl))
+    throw new Error("Invalid Cloudinary URL");
   let updatedCount: number | undefined;
   try {
     updatedCount = await incrementDownload(idStr);
     updateTag(`photo-${idStr}`);
-    revalidatePath(`/photo/${idStr}`);
   } catch (err) {
     console.warn("Could not increment download count:", err);
   }
   try {
-    let publicId = cloudinaryPublicId;
+    let publicId =
+      cloudinaryPublicId &&
+      CLOUDINARY_PUBLIC_ID_PATTERN.test(cloudinaryPublicId)
+        ? cloudinaryPublicId
+        : undefined;
     if (!publicId) {
       const db = getAdminDb();
       const { data: photo } = await db
@@ -69,24 +79,30 @@ async function incrementDownload(photoId: string): Promise<number> {
     console.error("Increment downloads error:", error);
     throw new Error("Could not update download count");
   }
-  return data as number;
+  return Number(data);
 }
 export async function incrementShare(
   photoId: string | number,
-): Promise<number> {
+): Promise<number | null> {
   const idStr = String(photoId);
   assertValidUUID(idStr, "photo ID");
-  if (await isStatRateLimited("share"))
-    throw new Error("Rate limit exceeded. Try again later.");
-  const db = getAdminDb();
-  const { data, error } = await db.rpc("increment_shares", {
-    row_id: idStr,
-  });
-  if (error) {
-    console.error("Increment shares error:", error);
-    throw new Error("Could not update share count");
+  if (await isStatRateLimited("share")) {
+    console.warn("Share stat rate limited for photo:", idStr);
+    return null;
   }
-  updateTag(`photo-${idStr}`);
-  revalidatePath(`/photo/${idStr}`);
-  return data as number;
+  try {
+    const db = getAdminDb();
+    const { data, error } = await db.rpc("increment_shares", {
+      row_id: idStr,
+    });
+    if (error) {
+      console.warn("Increment shares database error:", error.message || error);
+      return null;
+    }
+    updateTag(`photo-${idStr}`);
+    return Number(data);
+  } catch (err) {
+    console.warn("Failed to increment share count:", err);
+    return null;
+  }
 }

@@ -85,6 +85,8 @@ Create a `.env.local` file in the root directory. You will need active accounts 
 | `CLOUDINARY_API_SECRET`                | Your Cloudinary API secret.                          |
 | `ADMIN_PASSWORD_HASH`                  | Your bcrypt hashed password for the admin dashboard. |
 | `ADMIN_SESSION_SECRET`                 | A long, random, secure string for JWT encryption.    |
+| `UPSTASH_REDIS_REST_URL`               | (Optional) Upstash Redis URL for distributed rate limiting & login lockout. |
+| `UPSTASH_REDIS_REST_TOKEN`             | (Optional) Upstash Redis token for distributed rate limiting & login lockout. |
 
 > **💡 Tip:** Generate `ADMIN_PASSWORD_HASH` by hashing your desired admin password using bcrypt. Generate a long, random string for `ADMIN_SESSION_SECRET`.
 

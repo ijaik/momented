@@ -47,14 +47,14 @@ export default function DownloadButton({
     startTransition(async () => {
       setOptimisticCount(1);
       try {
-        const { downloadUrl } = await getDownloadUrlAction({
+        const res = await getDownloadUrlAction({
           photoId,
           cloudinaryUrl,
           cloudinaryPublicId,
           fileName: targetFileName,
         });
         const link = document.createElement("a");
-        link.href = downloadUrl;
+        link.href = res.downloadUrl;
         link.download = targetFileName;
         document.body.appendChild(link);
         link.click();
@@ -163,10 +163,10 @@ export default function DownloadButton({
       <span
         aria-hidden="true"
         className={`shrink-0 text-[12px] font-mono tabular-nums transition-colors ${
-          isSuccess ? "text-emerald-500" : "text-faint"
+          isSuccess ? "text-emerald-500 font-medium" : "text-faint"
         }`}
       >
-        {isSuccess ? "Ready" : `${optimisticCount}`}
+        {optimisticCount}
       </span>
     </button>
   );

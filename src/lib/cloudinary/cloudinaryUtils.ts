@@ -19,7 +19,7 @@ export function buildCloudinaryUrl(
   const suffix = url.substring(uploadIndex + 8);
   const [firstSegment, ...restSegments] = suffix.split("/");
   if (isTransformSegment(firstSegment))
-    return `${prefix}${firstSegment}/${transformString}/${restSegments.join("/")}`;
+    return `${prefix}${transformString}/${restSegments.join("/")}`;
   return `${prefix}${transformString}/${suffix}`;
 }
 export function getSocialShareImageUrl(url: string): string {

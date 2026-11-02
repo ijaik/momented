@@ -69,6 +69,24 @@ export async function deletePhotoAction(
   await verifyAdminSession();
   assertValidUUID(id, "Photo ID");
   const db = getAdminDb();
+  await Promise.all([
+    db
+      .from("collections")
+      .update({ cover_photo_id: null })
+      .eq("cover_photo_id", id as never),
+    db
+      .from("rule_collections")
+      .update({ cover_photo_id: null })
+      .eq("cover_photo_id", id as never),
+    db
+      .from("calendar_collections")
+      .update({ cover_photo_id: null })
+      .eq("cover_photo_id", id as never),
+    db
+      .from("series")
+      .update({ cover_photo_id: null })
+      .eq("cover_photo_id", id as never),
+  ]);
   const { data: deletedPhoto, error } = await db
     .from("photos")
     .delete()
