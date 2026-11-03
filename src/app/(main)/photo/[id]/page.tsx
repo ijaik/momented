@@ -28,9 +28,12 @@ export async function generateMetadata({
   const { data: photo } = await getPhotoById(id);
   if (!photo) return { title: "Photo Not Found" };
   const title = photo.title || "Photography Gallery";
+  const cameraText = photo.camera_model
+    ? ` Captured on ${photo.camera_model}.`
+    : "";
   const description = photo.description
-    ? `${photo.description} Captured on ${photo.camera_model || "camera"}.`
-    : `Explore "${photo.title || "this photograph"}" on ${siteConfig.name}.`;
+    ? `${title} — ${photo.description}.${cameraText}`.replace(/\.\./g, ".")
+    : `Explore "${title}" on ${siteConfig.name}.${cameraText}`;
   return buildPageMetadata({
     title,
     description,

@@ -41,9 +41,13 @@ export async function generateMetadata({
     getPhotosForCalendarMonth(monthIndex),
   ]);
   if (!collection) return { title: "Month Not Found" };
+  const monthName = collection.title || `Month ${monthIndex}`;
+  const description =
+    collection.description ||
+    `Photographs and captured moments from ${monthName} on ${siteConfig.name}.`;
   return buildPageMetadata({
-    title: collection.title,
-    description: collection.description || undefined,
+    title: monthName,
+    description,
     path: `/collections/calendar/${id}`,
     imageUrl: photos?.[0]?.cloudinary_url,
     noIndex: (photos?.length ?? 0) === 0,

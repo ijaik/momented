@@ -29,9 +29,12 @@ export async function generateMetadata({
     getPhotosForRule(id),
   ]);
   if (!collection) return { title: "Rule Collection Not Found" };
+  const description =
+    collection.description ||
+    `Photographs composed under the photographic constraint: "${collection.title}" on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: collection.title,
-    description: collection.description || undefined,
+    description,
     path: `/collections/rules/${id}`,
     imageUrl: photos?.[0]?.cloudinary_url,
     noIndex: (photos?.length ?? 0) === 0,

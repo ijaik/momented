@@ -29,9 +29,12 @@ export async function generateMetadata({
     getPhotosForCollection(id),
   ]);
   if (!collection) return { title: "Collection Not Found" };
+  const description =
+    collection.description ||
+    `A curated photography collection: "${collection.title}" on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: collection.title,
-    description: collection.description || undefined,
+    description,
     path: `/collections/${id}`,
     imageUrl: photos?.[0]?.cloudinary_url,
     noIndex: (photos?.length ?? 0) === 0,
