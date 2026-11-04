@@ -47,9 +47,16 @@ describe("Download Server Action Protections", () => {
     ).rejects.toThrow("Invalid Cloudinary URL");
     expect(
       getDownloadUrlAction({
+        photoId: fakePhotoId,
+        cloudinaryUrl:
+          "https://res.cloudinary.com/attacker-cloud/image/upload/malicious.jpg",
+      }),
+    ).rejects.toThrow("Invalid Cloudinary URL");
+    expect(
+      getDownloadUrlAction({
         photoId: "invalid-uuid-string",
         cloudinaryUrl:
-          "https://res.cloudinary.com/demo/image/upload/sample.jpg",
+          "https://res.cloudinary.com/momented/image/upload/sample.jpg",
       }),
     ).rejects.toThrow("Invalid photo ID.");
   });

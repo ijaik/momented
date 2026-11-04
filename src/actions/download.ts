@@ -1,5 +1,6 @@
 "use server";
 import { updateTag } from "next/cache";
+import { siteConfig } from "@/config/site";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
 import cloudinary from "@/lib/cloudinary/cloudinary";
@@ -17,17 +18,20 @@ async function isStatRateLimited(action: string): Promise<boolean> {
 export async function getDownloadUrlAction({
   photoId,
   cloudinaryUrl,
-  cloudinaryPublicId,
   fileName,
 }: {
   photoId: string | number;
   cloudinaryUrl: string;
-  cloudinaryPublicId?: string;
   fileName?: string;
 }): Promise<{ downloadUrl: string; downloadCount?: number }> {
   const idStr = String(photoId);
   assertValidUUID(idStr, "photo ID");
-  if (!cloudinaryUrl || !CLOUDINARY_URL_PATTERN.test(cloudinaryUrl))
+  const cloudName = siteConfig.cloudinary.cloudName;
+  if (
+    !cloudinaryUrl ||
+    !CLOUDINARY_URL_PATTERN.test(cloudinaryUrl) ||
+    !cloudinaryUrl.startsWith(`https://res.cloudinary.com/${cloudName}/`)
+  )
     throw new Error("Invalid Cloudinary URL");
   let updatedCount: number | undefined;
   try {
@@ -37,21 +41,14 @@ export async function getDownloadUrlAction({
     console.warn("Could not increment download count:", err);
   }
   try {
-    let publicId =
-      cloudinaryPublicId &&
-      CLOUDINARY_PUBLIC_ID_PATTERN.test(cloudinaryPublicId)
-        ? cloudinaryPublicId
-        : undefined;
-    if (!publicId) {
-      const db = getAdminDb();
-      const { data: photo } = await db
-        .from("photos")
-        .select("cloudinary_public_id")
-        .eq("id", idStr)
-        .single();
-      publicId = photo?.cloudinary_public_id;
-    }
-    if (publicId) {
+    const db = getAdminDb();
+    const { data: photo } = await db
+      .from("photos")
+      .select("cloudinary_public_id")
+      .eq("id", idStr)
+      .maybeSingle();
+    const publicId = photo?.cloudinary_public_id;
+    if (publicId && CLOUDINARY_PUBLIC_ID_PATTERN.test(publicId)) {
       const cleanBaseName = (fileName || `momented-${idStr}`)
         .replace(/\.[^/.]+$/, "")
         .replace(/[^a-zA-Z0-9_-]/g, "_");

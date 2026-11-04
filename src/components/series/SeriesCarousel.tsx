@@ -362,7 +362,6 @@ export default function SeriesCarousel({
           <DownloadButton
             photoId={currentPhoto.id}
             cloudinaryUrl={currentPhoto.cloudinary_url}
-            cloudinaryPublicId={currentPhoto.cloudinary_public_id}
             fileName={slideDownloadFileName}
             className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95 disabled:opacity-60"
             variant="compact"
@@ -421,7 +420,6 @@ export default function SeriesCarousel({
             <DownloadButton
               photoId={currentPhoto.id}
               cloudinaryUrl={currentPhoto.cloudinary_url}
-              cloudinaryPublicId={currentPhoto.cloudinary_public_id}
               fileName={slideDownloadFileName}
               variant="compact"
             />

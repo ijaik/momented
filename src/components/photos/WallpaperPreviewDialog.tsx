@@ -121,7 +121,6 @@ export default function WallpaperPreviewDialog({
             <DownloadButton
               photoId={photo.id}
               cloudinaryUrl={photo.cloudinary_url}
-              cloudinaryPublicId={photo.cloudinary_public_id}
               downloadCount={photo.downloads || 0}
               fileName={fileName}
               variant="compact"

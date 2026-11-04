@@ -27,7 +27,7 @@ export const siteConfig: SiteConfig = {
   license:
     "The photographs can speak for themselves. If you mention where they came from, I'm grateful.",
   cloudinary: {
-    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "momented",
     folderDev: "momented-dev",
     folderProd: "momented-prod",
   },
