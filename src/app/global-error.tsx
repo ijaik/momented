@@ -14,7 +14,9 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col items-center justify-center bg-paper px-6 text-center text-ink font-sans">
-        <p className="font-script text-2xl tracking-tight">Momented</p>
+        <p className="font-serif text-2xl font-medium tracking-tight">
+          Momented
+        </p>
         <h1 className="mt-6 font-serif text-3xl font-medium tracking-tight sm:text-4xl">
           Something went wrong
         </h1>

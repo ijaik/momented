@@ -24,14 +24,19 @@ export default function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-paper px-6 py-16">
       <div className="w-full max-w-sm rounded-2xl border border-line/70 bg-surface/80 p-8 shadow-xs backdrop-blur-md">
-        <p className="text-center font-script text-3xl tracking-tight text-ink">
-          Momented
-        </p>
-        <h1 className="mt-5 text-center font-serif text-3xl font-medium tracking-tight text-ink">
-          Content studio
+        <div className="flex flex-col items-center">
+          <span className="font-serif text-3xl font-medium tracking-tight text-ink">
+            Momented
+          </span>
+          <span className="mt-1 rounded-full border border-line bg-soft/80 px-2.5 py-0.5 text-[11px] font-mono uppercase tracking-wider text-muted">
+            Studio
+          </span>
+        </div>
+        <h1 className="mt-6 text-center font-serif text-2xl font-medium tracking-tight text-ink">
+          Sign In
         </h1>
-        <p className="mt-2 text-center text-sm text-muted">
-          Enter the admin password to continue.
+        <p className="mt-1.5 text-center text-xs text-muted">
+          Enter your studio passkey to continue.
         </p>
         <form action={formAction} className="mt-8 flex flex-col gap-5">
           <div>

@@ -46,7 +46,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Momented | Captured Moment",
     short_name: "Momented",
     description:
-      "A momented journal by Jai, exploring light, shadow, and moments in between.",
+      "A minimalist photography journal and open visual archive of light, shadow, and moments in between.",
     lang: "en-US",
     dir: "ltr",
     display: "standalone",

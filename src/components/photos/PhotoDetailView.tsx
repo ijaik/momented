@@ -1,6 +1,7 @@
 "use client";
-import { Maximize2 } from "lucide-react";
+import { ArrowLeft, Maximize2 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import DownloadButton from "@/components/photos/DownloadButton";
 import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
 import RelatedPhotos from "@/components/photos/RelatedPhotos";
@@ -35,7 +36,20 @@ export default function PhotoDetailView({
   const hasExif = hasPhotoExif(photo);
   return (
     <>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-8 md:mt-10">
+      <div className="mb-2 mt-4 sm:mt-6">
+        <Link
+          href="/photos"
+          className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider text-muted backdrop-blur-xs transition-all duration-150 hover:bg-soft hover:text-ink active:scale-95"
+        >
+          <ArrowLeft
+            size={13}
+            className="transition-transform duration-150 group-hover:-translate-x-1"
+            aria-hidden="true"
+          />
+          <span>All Photographs</span>
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-6 md:mt-8">
         <figure className="min-w-0 lg:sticky lg:top-20">
           <button
             type="button"

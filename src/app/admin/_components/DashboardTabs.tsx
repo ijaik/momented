@@ -64,10 +64,17 @@ export default function DashboardTabs({
     <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16 2xl:max-w-360">
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-4 border-b border-line pb-6">
         <div>
-          <p className="font-script text-2xl leading-none tracking-tight text-ink">
-            Momented
+          <div className="flex items-center gap-2.5">
+            <p className="font-serif text-2xl font-medium tracking-tight text-ink">
+              Momented
+            </p>
+            <span className="rounded-full border border-line bg-soft/80 px-2.5 py-0.5 text-[11px] font-mono uppercase tracking-wider text-muted">
+              Studio
+            </span>
+          </div>
+          <p className="mt-1.5 text-xs text-muted">
+            Curatorial editorial workspace
           </p>
-          <p className="mt-2 text-sm text-muted">Content studio</p>
         </div>
         <Button
           variant="secondary"
@@ -81,31 +88,33 @@ export default function DashboardTabs({
       <div
         role="tablist"
         aria-label="Content to manage"
-        className="mt-8 flex gap-7 overflow-x-auto overflow-y-hidden border-b border-line"
+        className="mt-8 flex items-center justify-start overflow-x-auto pb-2"
       >
-        {TAB_ORDER.map((tab) => {
-          const isActive = activeTab === tab;
-          return (
-            <button
-              key={tab}
-              id={`tab-${tab}`}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              aria-controls={`panel-${tab}`}
-              tabIndex={isActive ? 0 : -1}
-              onClick={() => activate(tab)}
-              onKeyDown={(e) => onTabKeyDown(e, tab)}
-              className={`relative -mb-px whitespace-nowrap border-b-2 py-3 text-sm font-medium transition-all duration-100 active:scale-95 ${
-                isActive
-                  ? "border-ink text-ink font-semibold"
-                  : "border-transparent text-muted hover:border-ink/30 hover:text-ink"
-              }`}
-            >
-              {TAB_LABELS[tab]}
-            </button>
-          );
-        })}
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-soft/70 p-1.5 backdrop-blur-md shadow-2xs">
+          {TAB_ORDER.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                id={`tab-${tab}`}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`panel-${tab}`}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => activate(tab)}
+                onKeyDown={(e) => onTabKeyDown(e, tab)}
+                className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-150 ease-out active:scale-95 whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? "bg-surface text-ink shadow-xs font-semibold"
+                    : "text-muted hover:text-ink hover:bg-surface/50"
+                }`}
+              >
+                {TAB_LABELS[tab]}
+              </button>
+            );
+          })}
+        </div>
       </div>
       <div
         id={`panel-${activeTab}`}

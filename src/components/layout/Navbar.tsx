@@ -1,11 +1,12 @@
 "use client";
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const links = [
-  { name: "Photographs", href: "/" },
+  { name: "Photographs", href: "/photos" },
   { name: "Collections", href: "/collections" },
   { name: "Series", href: "/series" },
   { name: "About", href: "/about" },
@@ -47,16 +48,29 @@ export default function Navbar() {
       );
     });
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-paper">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line/70 bg-paper/85 backdrop-blur-md transition-colors">
       <nav
         aria-label="Main"
         className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360"
       >
         <Link
           href="/"
-          className="font-script text-[22px] leading-none tracking-tight text-ink transition-all duration-100 ease-out hover:opacity-75 active:scale-95"
+          className="group flex items-center gap-2.5 transition-all duration-150 ease-out hover:opacity-85 active:scale-95"
         >
-          Momented
+          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line/80 bg-surface shadow-2xs transition-transform duration-150 ease-out group-hover:scale-105">
+            <Image
+              src="/icons/favicon.svg"
+              alt="Momented logo"
+              width={32}
+              height={32}
+              priority
+              unoptimized
+              className="h-full w-full object-contain"
+            />
+          </span>
+          <span className="font-serif text-2xl font-medium tracking-tight text-ink">
+            Momented
+          </span>
         </Link>
         <div className="hidden items-center gap-7 md:flex">{renderLinks()}</div>
         <button

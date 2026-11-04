@@ -41,7 +41,7 @@ async function getLlmsText() {
     .join("\n");
   return `# ${siteConfig.name}
 
-> A minimalist photography journal and open visual archive by Jai exploring light, shadow, and moments in between.
+> A minimalist photography journal and open visual archive exploring light, shadow, and moments in between.
 
 Momented (${siteConfig.url}) is an independent photography publication and image archive created and maintained by photographer Jai. The collection documents everyday stillness, architectural geometry, natural light, and quiet urban compositions.
 
@@ -51,7 +51,8 @@ Each photograph is accompanied by authentic EXIF exposure metadata, including ca
 
 ## Primary Sections
 
-- [Full Archive](${siteConfig.url}/): Chronological visual journal of all published photographic frames.
+- [Editorial Frontpage](${siteConfig.url}/): Curated overview featuring the latest Frame of the Moment, visual series, and three-lens perspectives.
+- [Full Archive](${siteConfig.url}/photos): Chronological visual journal of all published photographic frames.
 - [About & Licensing](${siteConfig.url}/about): Behind the lens, philosophical statement, CC0 public domain terms, and frequently asked questions.
 - [Curated Series](${siteConfig.url}/series): Multi-frame cinematic visual narratives captured in the same continuum of light and time.
 - [Curated Collections](${siteConfig.url}/collections): Thematic archives grouped by subject matter, mood, and atmosphere.

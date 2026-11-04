@@ -104,6 +104,8 @@ async function CalendarMonthContent({
         ]}
       />
       <DetailLayout
+        badge="Seasonal Light"
+        backLink={{ href: "/collections/calendar", label: "Calendar" }}
         title={collection.title}
         description={collection.description}
         meta={

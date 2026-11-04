@@ -84,6 +84,8 @@ async function SingleRuleContent({
         ]}
       />
       <DetailLayout
+        badge="Composition Rule"
+        backLink={{ href: "/collections/rules", label: "All Rules" }}
         title={collection.title}
         description={collection.description}
         meta={

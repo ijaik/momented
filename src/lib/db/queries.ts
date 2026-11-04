@@ -75,6 +75,128 @@ export async function getHomePhotos() {
     .order("created_at", { ascending: false });
   return { data: (data ?? []) as Photo[], error: error?.message ?? null };
 }
+export interface HomeEditorialData {
+  heroPhoto: Photo | null;
+  recentPhotos: Photo[];
+  totalPhotos: number;
+  featuredSeries: {
+    id: string;
+    title: string;
+    description: string | null;
+    photos: {
+      id: string;
+      title: string | null;
+      cloudinary_url: string;
+      width: number;
+      height: number;
+    }[];
+  } | null;
+  featuredCollection: {
+    id: string;
+    title: string;
+    description: string | null;
+    cover_photo_id?: string | null;
+    photos?: { id: string; cloudinary_url: string }[];
+  } | null;
+  featuredRule: {
+    id: string;
+    title: string;
+    description: string | null;
+    cover_photo_id?: string | null;
+    photos?: { id: string; cloudinary_url: string }[];
+  } | null;
+  featuredCalendar: {
+    id: number;
+    title: string;
+    description: string | null;
+    cover_photo_id?: string | null;
+    photos?: { id: string; cloudinary_url: string }[];
+  } | null;
+}
+export async function getHomeEditorialData(): Promise<HomeEditorialData> {
+  "use cache";
+  cacheTag("photos", "series", "collections", "rules", "calendar");
+  cacheLife("weeks");
+  const [
+    photosRes,
+    countRes,
+    seriesRes,
+    collectionsRes,
+    rulesRes,
+    calendarRes,
+  ] = await Promise.all([
+    supabase
+      .from("photos")
+      .select(
+        "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, taken_at, created_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase.from("photos").select("id", { count: "exact", head: true }),
+    getSeriesList(),
+    getCuratedCollections(),
+    getRuleCollectionsList(),
+    getCalendarCollectionsList(),
+  ]);
+  const allPhotos = (photosRes.data ?? []) as Photo[];
+  const heroPhoto = allPhotos[0] ?? null;
+  const recentPhotos = allPhotos.slice(1, 5);
+  const totalPhotos = countRes.count ?? allPhotos.length;
+  const rawLatestSeries = seriesRes.data?.[0] ?? null;
+  let featuredSeries: HomeEditorialData["featuredSeries"] = null;
+  if (rawLatestSeries) {
+    const rawPhotos =
+      (rawLatestSeries.series_photos as unknown as {
+        position: number;
+        photos: {
+          id: string;
+          title: string | null;
+          cloudinary_url: string;
+          width: number;
+          height: number;
+        } | null;
+      }[]) || [];
+    const sortedPhotos = [...rawPhotos]
+      .sort((a, b) => a.position - b.position)
+      .map((sp) => sp.photos)
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
+    featuredSeries = {
+      id: rawLatestSeries.id,
+      title: rawLatestSeries.title,
+      description: rawLatestSeries.description,
+      photos: sortedPhotos,
+    };
+  }
+  const collections = collectionsRes.data ?? [];
+  const featuredCollection =
+    collections.find((c) => Array.isArray(c.photos) && c.photos.length > 0) ??
+    collections[0] ??
+    null;
+  const rules = rulesRes.data ?? [];
+  const featuredRule =
+    rules.find((r) => Array.isArray(r.photos) && r.photos.length > 0) ??
+    rules[0] ??
+    null;
+  const calendars = calendarRes.data ?? [];
+  const currentMonthId = new Date().getMonth() + 1;
+  const activeCalendars = calendars.filter(
+    (c) => Array.isArray(c.photos) && c.photos.length > 0,
+  );
+  const featuredCalendar =
+    activeCalendars.find((c) => c.id === currentMonthId) ??
+    activeCalendars[0] ??
+    calendars[0] ??
+    null;
+  return {
+    heroPhoto,
+    recentPhotos,
+    totalPhotos,
+    featuredSeries,
+    featuredCollection,
+    featuredRule,
+    featuredCalendar,
+  };
+}
 export async function getPhotoById(id: string) {
   "use cache";
   cacheTag(`photo-${id}`, "photos", "series");

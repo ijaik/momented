@@ -40,12 +40,11 @@ export default async function CollectionsPage() {
         ]}
       />
       <PageHeader
-        title="Collections"
-        description="Moments gathered by hand — themes and moods curated on Momented."
+        badge="02 / Curated Lenses"
+        title="Thematic Collections"
+        description="Moments gathered by hand — architectural textures, shadows, and fleeting atmospheres."
         meta={
-          count > 0
-            ? `${count} ${count === 1 ? "collection" : "collections"}`
-            : undefined
+          count > 0 ? `${count} ${count === 1 ? "theme" : "themes"}` : undefined
         }
       />
       <CollectionsTabs activeTab="curated" />

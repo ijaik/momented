@@ -8,8 +8,8 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
 import JsonLd from "@/components/seo/JsonLd";
+import SectionLabel from "@/components/ui/SectionLabel";
 import { siteConfig } from "@/config/site";
 import {
   aboutPageJsonLd,
@@ -53,13 +53,6 @@ export const metadata: Metadata = buildPageMetadata({
     "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented. Free high-resolution CC0 photography.",
   path: "/about",
 });
-function SectionLabel({ children }: { children: ReactNode }) {
-  return (
-    <h2 className="text-xs font-mono uppercase tracking-widest text-signal">
-      {children}
-    </h2>
-  );
-}
 export default function AboutPage() {
   return (
     <>
@@ -100,8 +93,8 @@ export default function AboutPage() {
                 <SectionLabel>The Concept</SectionLabel>
               </div>
               <p className="text-[15px] leading-relaxed text-muted">
-                <span className="font-serif italic text-ink">Momented</span> —
-                the term for a captured moment. Through it, I preserve the quiet
+                <span className="font-serif text-ink">Momented</span> — the term
+                for a captured moment. Through it, I preserve the quiet
                 conversations between natural light, urban shadow, and time.
               </p>
             </div>
@@ -167,7 +160,7 @@ export default function AboutPage() {
                 </span>
               </Link>
               <Link
-                href="/"
+                href="/photos"
                 className="group flex flex-col justify-between rounded-2xl border border-line/70 bg-surface/70 backdrop-blur-md p-6 transition-all hover:border-ink/20 hover:bg-soft/70 active:scale-[0.98]"
               >
                 <div>

@@ -44,12 +44,11 @@ export default async function RuleCollectionsPage() {
         ]}
       />
       <PageHeader
-        title="Rule Collections"
-        description="Moments made under a deliberate constraint — one photography rule at a time."
+        badge="02 / Curated Lenses"
+        title="Composition Rules"
+        description="Moments made under deliberate geometric and optical constraints — rule of thirds, framing, and leading lines."
         meta={
-          count > 0
-            ? `${count} ${count === 1 ? "collection" : "collections"}`
-            : undefined
+          count > 0 ? `${count} ${count === 1 ? "rule" : "rules"}` : undefined
         }
       />
       <CollectionsTabs activeTab="rules" />

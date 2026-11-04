@@ -6,7 +6,6 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-serif:
     var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
-  --font-script: var(--font-leckerli), "Comic Sans MS", cursive;
   --color-paper: #faf9f6;
   --color-surface: #ffffff;
   --color-ink: #201e1a;

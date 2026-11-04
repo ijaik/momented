@@ -79,9 +79,11 @@ async function SeriesDetailContent({
         ]}
       />
       <DetailLayout
+        badge="Visual Sequence"
+        backLink={{ href: "/series", label: "All Series" }}
         title={series.title}
         description={series.description}
-        meta={`Curated on ${displayDate}`}
+        meta={`${sortedPhotos.length} ${sortedPhotos.length === 1 ? "frame" : "frames"} • ${displayDate}`}
       >
         {sortedPhotos.length > 0 ? (
           <SeriesCarousel

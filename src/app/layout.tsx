@@ -1,14 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Leckerli_One, Schibsted_Grotesk } from "next/font/google";
+import { Fraunces, Schibsted_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
-const leckerli = Leckerli_One({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-leckerli",
-});
 const fraunces = Fraunces({
   subsets: ["latin"],
   axes: ["opsz"],
@@ -36,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Momented",
   },
   description:
-    "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+    "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
   keywords: [
     "photography",
     "minimalist photography",
@@ -59,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "Momented",
     title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
     images: [
       {
         url: "/screenshots/desktop.png",
@@ -73,14 +67,24 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A minimalist photography journal by Jai exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
     images: ["/screenshots/desktop.png"],
   },
   icons: {
     icon: [
-      { url: "/icons/favicon.ico" },
-      { url: "/icons/favicon-16x16.png", sizes: "16x16" },
-      { url: "/icons/favicon-32x32.png", sizes: "32x32" },
+      { url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
+      {
+        url: "/icons/favicon-192x192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        url: "/icons/favicon-512x512.png",
+        sizes: "512x512",
+        type: "image/png",
+      },
     ],
     apple: [
       {
@@ -108,10 +112,7 @@ export const viewport: Viewport = {
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${leckerli.variable} ${fraunces.variable} ${schibsted.variable}`}
-    >
+    <html lang="en" className={`${fraunces.variable} ${schibsted.variable}`}>
       <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
         {children}
       </body>

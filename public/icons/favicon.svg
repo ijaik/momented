@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" fill="none">
+  <!-- Crisp white rounded squircle background -->
+  <rect width="512" height="512" rx="112" fill="#FFFFFF"/>
+  
+  <!-- Film Strip Outer Body (Deep rich photographic black) -->
+  <rect x="64" y="128" width="384" height="256" rx="24" fill="#111111"/>
+  
+  <!-- Top Sprocket Holes (8 clean, evenly spaced 35mm perforations) -->
+  <rect x="88" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="130" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="172" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="214" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="256" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="298" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="340" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="382" y="146" width="22" height="32" rx="5" fill="#FFFFFF"/>
+
+  <!-- Bottom Sprocket Holes (8 matching perforations) -->
+  <rect x="88" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="130" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="172" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="214" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="256" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="298" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="340" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+  <rect x="382" y="334" width="22" height="32" rx="5" fill="#FFFFFF"/>
+
+  <!-- Two Negative Picture Frames (Enclosed, balanced, photographic) -->
+  <rect x="100" y="196" width="144" height="120" rx="10" fill="#FFFFFF"/>
+  <rect x="268" y="196" width="144" height="120" rx="10" fill="#FFFFFF"/>
+</svg>

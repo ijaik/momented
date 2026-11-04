@@ -46,11 +46,12 @@ export default async function CalendarCollectionsPage() {
         ]}
       />
       <PageHeader
-        title="Calendar Collections"
-        description="Moments as they happened, grouped by the month they were captured."
+        badge="02 / Curated Lenses"
+        title="Seasonal Calendar"
+        description="Moments as they happened, chronicled through the changing light of each month."
         meta={
           count > 0
-            ? `${count} ${count === 1 ? "collection" : "collections"}`
+            ? `${count} active ${count === 1 ? "month" : "months"}`
             : undefined
         }
       />

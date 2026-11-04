@@ -80,6 +80,8 @@ async function SingleCollectionContent({
         ]}
       />
       <DetailLayout
+        badge="Thematic Collection"
+        backLink={{ href: "/collections", label: "All Collections" }}
         title={collection.title}
         description={collection.description}
         meta={
