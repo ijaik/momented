@@ -8,7 +8,9 @@ import {
 } from "@/lib/auth/auth";
 import {
   clearLoginFailures,
+  getGlobalLoginLockout,
   getLoginLockout,
+  recordGlobalLoginFailure,
   recordLoginFailure,
 } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
@@ -18,6 +20,16 @@ export async function loginAction(
   const password = formData.get("password");
   if (typeof password !== "string" || !password)
     return { success: false, error: "Password is required" };
+  const globalLockoutRemaining = await getGlobalLoginLockout();
+  if (globalLockoutRemaining > 0) {
+    const minutes = Math.ceil(globalLockoutRemaining / 60);
+    return {
+      success: false,
+      error: `Too many attempts. Try again in ${minutes} minute${
+        minutes === 1 ? "" : "s"
+      }.`,
+    };
+  }
   const ip = await getClientIp();
   const lockoutKey = `login:${ip}`;
   const lockoutRemaining = await getLoginLockout(lockoutKey);
@@ -35,12 +47,17 @@ export async function loginAction(
     return { success: false, error: "Server configuration error" };
   const isValid = await bcrypt.compare(password, adminPasswordHash);
   if (!isValid) {
-    const { lockedOut } = await recordLoginFailure(lockoutKey);
+    const [{ lockedOut: ipLockedOut }, { lockedOut: globalLockedOut }] =
+      await Promise.all([
+        recordLoginFailure(lockoutKey),
+        recordGlobalLoginFailure(),
+      ]);
     return {
       success: false,
-      error: lockedOut
-        ? "Too many attempts. Try again in 15 minutes."
-        : "Incorrect password",
+      error:
+        ipLockedOut || globalLockedOut
+          ? "Too many attempts. Try again in 15 minutes."
+          : "Incorrect password",
     };
   }
   await clearLoginFailures(lockoutKey);

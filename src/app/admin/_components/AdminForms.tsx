@@ -25,27 +25,64 @@ const baseInputStyle =
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   className?: string;
 }
-export function FormInput({ className = "", ...props }: FormInputProps) {
-  return <input className={`${baseInputStyle} ${className}`} {...props} />;
+export function FormInput({
+  id,
+  name,
+  className = "",
+  ...props
+}: FormInputProps) {
+  const resolvedId = id || name;
+  const resolvedName = name || id;
+  return (
+    <input
+      id={resolvedId}
+      name={resolvedName}
+      className={`${baseInputStyle} ${className}`}
+      {...props}
+    />
+  );
 }
 interface FormTextareaProps
   extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   className?: string;
 }
-export function FormTextarea({ className = "", ...props }: FormTextareaProps) {
-  return <textarea className={`${baseInputStyle} ${className}`} {...props} />;
+export function FormTextarea({
+  id,
+  name,
+  className = "",
+  ...props
+}: FormTextareaProps) {
+  const resolvedId = id || name;
+  const resolvedName = name || id;
+  return (
+    <textarea
+      id={resolvedId}
+      name={resolvedName}
+      className={`${baseInputStyle} ${className}`}
+      {...props}
+    />
+  );
 }
 interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   className?: string;
   children?: ReactNode;
 }
 export function FormSelect({
+  id,
+  name,
   children,
   className = "",
   ...props
 }: FormSelectProps) {
+  const resolvedId = id || name;
+  const resolvedName = name || id;
   return (
-    <select className={`${baseInputStyle} ${className}`} {...props}>
+    <select
+      id={resolvedId}
+      name={resolvedName}
+      className={`${baseInputStyle} ${className}`}
+      {...props}
+    >
       {children}
     </select>
   );

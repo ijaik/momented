@@ -40,6 +40,7 @@ export default function PhotoChecklist({
   return (
     <div className="flex flex-col gap-3">
       <input
+        id="cover_photo_id"
         type="hidden"
         name="cover_photo_id"
         value={coverId !== null ? String(coverId) : ""}
@@ -63,7 +64,10 @@ export default function PhotoChecklist({
                   }`}
                 >
                   <div className="relative">
-                    <label className="group relative block aspect-square cursor-pointer overflow-hidden rounded-lg bg-soft">
+                    <label
+                      htmlFor={`photo-checkbox-${p.id}`}
+                      className="group relative block aspect-square cursor-pointer overflow-hidden rounded-lg bg-soft"
+                    >
                       <Image
                         src={p.cloudinary_url}
                         alt={p.title || "A Momented Photograph"}
@@ -82,6 +86,7 @@ export default function PhotoChecklist({
                         }`}
                       />
                       <input
+                        id={`photo-checkbox-${p.id}`}
                         type="checkbox"
                         name="photo_ids"
                         value={p.id}

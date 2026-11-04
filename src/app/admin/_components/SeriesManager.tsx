@@ -437,6 +437,7 @@ export default function SeriesManager({
                     </label>
                     <input
                       id="series-file-input"
+                      name="series_files"
                       type="file"
                       multiple
                       accept="image/*"
@@ -527,17 +528,22 @@ export default function SeriesManager({
                           </div>
                           <div>
                             <input
+                              id={`queued-slide-title-${idx}`}
+                              name={`queued_slide_title_${idx}`}
                               type="text"
                               value={item.title}
                               onChange={(e) =>
                                 updateQueuedSlideTitle(idx, e.target.value)
                               }
                               placeholder={`Slide title (leave empty for auto: Frame ${idx + 1})`}
+                              aria-label={`Slide ${idx + 1} title`}
                               className="w-full rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
                             />
                           </div>
                           <div>
                             <textarea
+                              id={`queued-slide-desc-${idx}`}
+                              name={`queued_slide_desc_${idx}`}
                               rows={2}
                               value={item.description}
                               onChange={(e) =>
@@ -547,6 +553,7 @@ export default function SeriesManager({
                                 )
                               }
                               placeholder="Slide description / caption (optional, defaults to series description)"
+                              aria-label={`Slide ${idx + 1} description`}
                               className="w-full resize-none rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
                             />
                           </div>

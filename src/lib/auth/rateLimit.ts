@@ -7,6 +7,7 @@ let hasLoggedUpstashWarning = false;
 export const STAT_MAX_REQUESTS = 120;
 export const STAT_WINDOW_MS = 60 * 60 * 1000;
 const LOGIN_MAX_FAILURES = 5;
+export const GLOBAL_LOGIN_MAX_FAILURES = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 function isUpstashConfigured(): boolean {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -41,8 +42,10 @@ function getRedis(): Redis | null {
 }
 let _statLimiter: Ratelimit | null = null;
 let _loginLimiter: Ratelimit | null = null;
+let _globalLoginLimiter: Ratelimit | null = null;
 const statEphemeralCache = new Map<string, number>();
 const loginEphemeralCache = new Map<string, number>();
+const globalLoginEphemeralCache = new Map<string, number>();
 function getStatLimiter(r: Redis): Ratelimit {
   if (!_statLimiter) {
     _statLimiter = new Ratelimit({
@@ -64,6 +67,17 @@ function getLoginLimiter(r: Redis): Ratelimit {
     });
   }
   return _loginLimiter;
+}
+function getGlobalLoginLimiter(r: Redis): Ratelimit {
+  if (!_globalLoginLimiter) {
+    _globalLoginLimiter = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.fixedWindow(GLOBAL_LOGIN_MAX_FAILURES, "15 m"),
+      prefix: "rl:login:global",
+      ephemeralCache: globalLoginEphemeralCache,
+    });
+  }
+  return _globalLoginLimiter;
 }
 const MAX_MEM_CACHE_SIZE = 1_000;
 const memStatStore = new Map<string, { count: number; resetAt: number }>();
@@ -180,6 +194,71 @@ export async function recordLoginFailure(
   }
   return { lockedOut: false, retryAfterSeconds: 0 };
 }
+export async function getGlobalLoginLockout(): Promise<number> {
+  const r = getRedis();
+  if (r) {
+    try {
+      const { remaining, reset } =
+        await getGlobalLoginLimiter(r).getRemaining("system");
+      if (remaining <= 0) {
+        return Math.max(0, Math.ceil((reset - Date.now()) / 1000));
+      }
+      return 0;
+    } catch (err) {
+      console.warn(
+        "[RateLimit] Upstash global getRemaining() error, using fallback:",
+        err,
+      );
+    }
+  }
+  const now = Date.now();
+  const entry = memLoginFailures.get("login:global");
+  if (!entry) return 0;
+  if (entry.lockedUntil && now < entry.lockedUntil) {
+    return Math.max(0, Math.ceil((entry.lockedUntil - now) / 1000));
+  }
+  return 0;
+}
+export async function recordGlobalLoginFailure(): Promise<{
+  lockedOut: boolean;
+  retryAfterSeconds: number;
+}> {
+  const r = getRedis();
+  if (r) {
+    try {
+      const { success, reset } = await getGlobalLoginLimiter(r).limit("system");
+      const retryAfterSeconds = success
+        ? 0
+        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
+      return { lockedOut: !success, retryAfterSeconds };
+    } catch (err) {
+      console.warn(
+        "[RateLimit] Upstash global limit() error, using fallback:",
+        err,
+      );
+    }
+  }
+  const now = Date.now();
+  const key = "login:global";
+  const entry = memLoginFailures.get(key);
+  if (!entry || now > entry.resetAt) {
+    pruneExpiredMapEntries(memLoginFailures, now);
+    memLoginFailures.set(key, {
+      failures: 1,
+      resetAt: now + LOGIN_WINDOW_MS,
+    });
+    return { lockedOut: false, retryAfterSeconds: 0 };
+  }
+  entry.failures += 1;
+  if (entry.failures >= GLOBAL_LOGIN_MAX_FAILURES) {
+    entry.lockedUntil = now + LOGIN_WINDOW_MS;
+    return {
+      lockedOut: true,
+      retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
+    };
+  }
+  return { lockedOut: false, retryAfterSeconds: 0 };
+}
 export async function clearLoginFailures(key: string): Promise<void> {
   const r = getRedis();
   if (r) {
@@ -193,4 +272,18 @@ export async function clearLoginFailures(key: string): Promise<void> {
     }
   }
   memLoginFailures.delete(key);
+}
+export async function clearGlobalLoginFailures(): Promise<void> {
+  const r = getRedis();
+  if (r) {
+    try {
+      await getGlobalLoginLimiter(r).resetUsedTokens("system");
+    } catch (err) {
+      console.warn(
+        "[RateLimit] Upstash global resetUsedTokens() error, using fallback:",
+        err,
+      );
+    }
+  }
+  memLoginFailures.delete("login:global");
 }

@@ -2,8 +2,12 @@ import { describe, expect, it } from "bun:test";
 import { getDownloadUrlAction } from "@/actions/download";
 import {
   checkRateLimit,
+  clearGlobalLoginFailures,
   clearLoginFailures,
+  GLOBAL_LOGIN_MAX_FAILURES,
+  getGlobalLoginLockout,
   getLoginLockout,
+  recordGlobalLoginFailure,
   recordLoginFailure,
 } from "@/lib/auth/rateLimit";
 
@@ -27,6 +31,21 @@ describe("Security & Rate Limiting", () => {
     expect(lockout).toBeGreaterThan(0);
     await clearLoginFailures(ip);
     const cleared = await getLoginLockout(ip);
+    expect(cleared).toBe(0);
+  });
+  it("enforces global brute-force lockout across distributed requests", async () => {
+    await clearGlobalLoginFailures();
+    for (let i = 0; i < GLOBAL_LOGIN_MAX_FAILURES - 1; i++) {
+      const res = await recordGlobalLoginFailure();
+      expect(res.lockedOut).toBe(false);
+    }
+    const tripping = await recordGlobalLoginFailure();
+    expect(tripping.lockedOut).toBe(true);
+    expect(tripping.retryAfterSeconds).toBeGreaterThan(0);
+    const lockout = await getGlobalLoginLockout();
+    expect(lockout).toBeGreaterThan(0);
+    await clearGlobalLoginFailures();
+    const cleared = await getGlobalLoginLockout();
     expect(cleared).toBe(0);
   });
 });

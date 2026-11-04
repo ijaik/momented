@@ -241,6 +241,8 @@ export default function ShareDialog({
             <div className="flex items-center gap-2">
               <input
                 id="share-url"
+                name="share-url"
+                type="text"
                 readOnly
                 value={shareUrl}
                 className="min-w-0 flex-1 rounded-xl border border-line/80 bg-paper/60 px-3.5 py-2.5 text-sm text-ink backdrop-blur-xs transition-colors focus:border-ink/40 focus:outline-hidden"
