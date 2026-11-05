@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     template: "%s | Momented",
   },
   description:
-    "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+    "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
   keywords: [
     "photography",
     "minimalist photography",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "Momented",
     title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
     images: [
       {
         url: "/screenshots/desktop.png",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Momented — Minimalist Photography Journal & Gallery",
     description:
-      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution CC0 photography to view and download.",
+      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
     images: ["/screenshots/desktop.png"],
   },
   icons: {

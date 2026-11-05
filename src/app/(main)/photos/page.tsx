@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Photographs",
   description:
-    "Browse the full archive of minimalist photographs on Momented — quiet studies of light, shadow, and moments in between. Free CC0 download.",
+    "Browse the full archive of minimalist photographs on Momented — quiet studies of light, shadow, and moments in between. Free high-resolution download.",
   path: "/photos",
 });
 export default async function PhotosPage() {

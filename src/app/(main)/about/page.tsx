@@ -50,7 +50,7 @@ const FAQS = [
 export const metadata: Metadata = buildPageMetadata({
   title: "About",
   description:
-    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented. Free high-resolution CC0 photography.",
+    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented. Free high-resolution photography.",
   path: "/about",
 });
 export default function AboutPage() {
@@ -64,7 +64,7 @@ export default function AboutPage() {
           faqPageJsonLd(FAQS),
         ]}
       />
-      <div className="mx-auto w-full max-w-6xl 2xl:max-w-360 py-16 md:py-24">
+      <div className="mx-auto w-full max-w-6xl 2xl:max-w-360 py-10 sm:py-14 md:py-16">
         <header className="mb-16 border-b border-line pb-14 md:mb-20 md:pb-16">
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
             <span

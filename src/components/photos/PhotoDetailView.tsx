@@ -36,7 +36,7 @@ export default function PhotoDetailView({
   const hasExif = hasPhotoExif(photo);
   return (
     <>
-      <div className="mb-2 mt-4 sm:mt-6">
+      <div className="mt-8 md:mt-12">
         <Link
           href="/photos"
           className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider text-muted backdrop-blur-xs transition-all duration-150 hover:bg-soft hover:text-ink active:scale-95"
@@ -49,7 +49,7 @@ export default function PhotoDetailView({
           <span>All Photographs</span>
         </Link>
       </div>
-      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-6 md:mt-8">
+      <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start xl:gap-x-16 mt-8 md:mt-12">
         <figure className="min-w-0 lg:sticky lg:top-20">
           <button
             type="button"

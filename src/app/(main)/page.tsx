@@ -21,7 +21,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Momented — Minimalist Photography Journal & Archive",
   description:
-    "An independent minimalist photography journal and open visual archive of light, shadow, and moments in between. Free CC0 high-resolution photography.",
+    "An independent minimalist photography journal and open visual archive of light, shadow, and moments in between. Free high-resolution photography to view and download.",
   path: "/",
 });
 export default async function Home() {
@@ -45,7 +45,7 @@ export default async function Home() {
                 aria-hidden="true"
                 className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal animate-pulse"
               />
-              <span>Open Visual Archive • CC0 1.0</span>
+              <span>Open Visual Archive</span>
             </div>
             <h1 className="max-w-5xl font-serif text-5xl font-medium leading-[1.04] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
               Light, shadow, &amp; the moments in between.
@@ -328,9 +328,11 @@ export default async function Home() {
                 label: `View all ${totalPhotos} photographs`,
               }}
             />
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4 sm:gap-6">
+            <div className="columns-2 gap-4 sm:gap-6 md:columns-4">
               {recentPhotos.map((photo, idx) => (
-                <PhotoCard key={photo.id} photo={photo} index={idx} />
+                <div key={photo.id} className="break-inside-avoid mb-4 sm:mb-6">
+                  <PhotoCard photo={photo} index={idx} />
+                </div>
               ))}
             </div>
             <div className="mt-12 rounded-2xl border border-line/80 bg-paper/70 p-8 sm:p-10 backdrop-blur-md shadow-xs">
@@ -340,9 +342,8 @@ export default async function Home() {
                     The Open Photography Vault
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
-                    Every frame is preserved in original uncompressed resolution
-                    and dedicated to the public domain under CC0 1.0. View,
-                    download, and adapt without restrictions.
+                    Every frame is preserved to view, download, and adapt for personal or
+                    commercial projects without restrictions.
                   </p>
                 </div>
                 <Link
@@ -367,13 +368,13 @@ export default async function Home() {
                 id="philosophy-heading"
                 className="mt-2 font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink"
               >
-                Creative Commons Zero
+                Public Domain Archive
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-                All photographs on Momented are released under Creative Commons
-                CC0 1.0 Universal Public Domain Dedication. You are free to
-                view, download, adapt, and use any image for personal,
-                editorial, or commercial projects without permission or cost.
+                All photographs on Momented are dedicated to the public domain
+                under Creative Commons Zero (CC0). You are free to view,
+                download, adapt, and use any image for personal, editorial, or
+                commercial projects without permission, fees, or restrictions.
               </p>
             </div>
             <div className="rounded-2xl border border-line/70 bg-surface/60 p-7 sm:p-8 shadow-xs">
