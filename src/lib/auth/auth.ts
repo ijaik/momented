@@ -1,6 +1,7 @@
 import "server-only";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
+import { cache } from "react";
 export const SESSION_COOKIE = "admin_session";
 export const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const TOKEN_ISSUER = "momented";
@@ -39,9 +40,9 @@ export async function isValidAdminToken(
     return false;
   }
 }
-export async function verifyAdminSession(): Promise<boolean> {
+export const verifyAdminSession = cache(async (): Promise<boolean> => {
   const token = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!(await isValidAdminToken(token)))
     throw new Error("Unauthorized: No valid session token");
   return true;
-}
+});

@@ -1,6 +1,12 @@
 "use client";
 import { Check, Copy, Share2, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { incrementShare } from "@/actions/download";
 import { copyText, imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
@@ -38,11 +44,11 @@ export default function ShareDialog({
     : "Check out Momented\n\nVisit the link for full resolution & downloads.";
   const supportsNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const close = useCallback(() => {
+  const close = () => {
     onClose();
     setCopied(false);
     setError(null);
-  }, [onClose]);
+  };
   useEffect(() => {
     if (!panelRef.current) return;
     const newFocusables = Array.from(
@@ -52,34 +58,34 @@ export default function ShareDialog({
     );
     focusablesRef.current = newFocusables;
   }, []);
+  const onKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      close();
+      return;
+    }
+    if (e.key === "Tab" && focusablesRef.current?.length) {
+      const focusables = focusablesRef.current;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  });
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        close();
-        return;
-      }
-      if (e.key === "Tab" && focusablesRef.current?.length) {
-        const focusables = focusablesRef.current;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
     document.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
-    closeBtnRef.current?.focus();
+    closeBtnRef.current?.focus({ preventScroll: true });
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     };
-  }, [close]);
+  }, []);
   const trackShare = useCallback(async () => {
     if (!photoId || hasTrackedRef.current) return;
     hasTrackedRef.current = true;

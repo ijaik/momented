@@ -17,20 +17,20 @@ interface CoverCardItem {
 interface CoverCardProps {
   item: CoverCardItem;
   href: string;
-  index: number;
   meta?: string;
   countLabel?: { singular: string; plural: string };
   size?: "default" | "compact";
   aspectRatio?: "4/3" | "3/2" | "16/9" | "square";
+  preload?: boolean;
 }
 export default function CoverCard({
   item,
   href,
-  index,
   meta,
   countLabel,
   size = "default",
   aspectRatio = "4/3",
+  preload = false,
 }: CoverCardProps) {
   const coverImage =
     item.cloudinary_url ||
@@ -65,11 +65,9 @@ export default function CoverCard({
                   : item.title || item.description || "A Momented photograph"
               }
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              preload={preload}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-              priority={index === 0}
-              fetchPriority={index === 0 ? "high" : "low"}
-              loading={index === 0 ? undefined : "lazy"}
             />
             {photoCount > 0 && (
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">

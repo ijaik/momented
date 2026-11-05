@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb } from "@/lib/db/supabase-admin";
 import {
@@ -12,40 +12,7 @@ function revalidateAfterSeriesChange(id?: string) {
   updateTag("series");
   updateTag("series-ids");
   updateTag("photos");
-  revalidatePath("/series");
-  revalidatePath("/");
-  if (id) {
-    updateTag(`series-${id}`);
-    revalidatePath(`/series/${id}`);
-  }
-}
-export async function getSeriesAction() {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("series")
-    .select(
-      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url))",
-    )
-    .order("created_at", { ascending: false })
-    .order("position", { referencedTable: "series_photos", ascending: true });
-  if (error) throw new Error(error.message);
-  return (data || []).map((s) => {
-    const rawPhotos = s.series_photos || [];
-    const photos = rawPhotos
-      .map((sp) => sp.photos)
-      .filter((p): p is { id: string; title: string; cloudinary_url: string } =>
-        Boolean(p),
-      );
-    return {
-      id: s.id,
-      title: s.title,
-      description: s.description,
-      cover_photo_id: s.cover_photo_id,
-      created_at: s.created_at,
-      photos,
-    };
-  });
+  if (id) updateTag(`series-${id}`);
 }
 export async function createSeriesAction(
   formData: FormData,

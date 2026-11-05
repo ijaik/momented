@@ -1,6 +1,12 @@
 "use client";
 import Image from "next/image";
-import { type SubmitEvent, useState, useTransition } from "react";
+import {
+  type SubmitEvent,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { deletePhotoAction, editPhotoAction } from "@/actions/photos";
 import { savePhotoToDbAction } from "@/actions/upload";
 import Button from "@/components/ui/Button";
@@ -38,6 +44,12 @@ export default function PhotoManager({
   rules,
 }: PhotoManagerProps) {
   const [status, setStatus] = useState("");
+  const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+    };
+  }, []);
   const [editingPhotoId, setEditingPhotoId] = useState<string | number | null>(
     null,
   );
@@ -102,7 +114,8 @@ export default function PhotoManager({
         const message = error instanceof Error ? error.message : String(error);
         setStatus(`Upload failed: ${message}`);
       } finally {
-        setTimeout(() => setStatus(""), 4000);
+        if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+        statusTimeoutRef.current = setTimeout(() => setStatus(""), 4000);
       }
     });
   }
@@ -124,7 +137,6 @@ export default function PhotoManager({
       }
     });
   }
-  const isBusy = isUploadPending || Boolean(status);
   return (
     <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <div>
@@ -208,15 +220,29 @@ export default function PhotoManager({
               className="w-full cursor-pointer rounded-xl border border-dashed border-line/80 bg-paper/60 px-4 py-4 text-sm text-muted transition-colors file:mr-3 file:rounded-lg file:border-0 file:bg-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink hover:border-ink/30"
             />
           </div>
-          <SubmitButton
-            isLoading={isBusy}
-            loadingText={status || "Uploading…"}
-            text="Upload photograph"
-          />
+          <div className="flex flex-col gap-2">
+            <SubmitButton
+              isLoading={isUploadPending}
+              loadingText="Uploading…"
+              text="Upload photograph"
+            />
+            {status && (
+              <output
+                aria-live="polite"
+                className={`text-xs ${
+                  status.startsWith("Upload failed")
+                    ? "text-signal"
+                    : "text-muted"
+                }`}
+              >
+                {status}
+              </output>
+            )}
+          </div>
         </form>
       </div>
       <div className="flex min-w-0 flex-col divide-y divide-line">
-        {photos.map((photo, index) => (
+        {photos.map((photo) => (
           <div
             key={photo.id}
             className="flex flex-col gap-5 py-7 sm:flex-row sm:gap-6"
@@ -226,9 +252,8 @@ export default function PhotoManager({
               alt={photo.title || "A Momented Photograph"}
               width={200}
               height={200}
+              sizes="(max-width: 640px) 100vw, 128px"
               className="h-32 w-full shrink-0 rounded-xl border border-line/70 object-cover bg-soft sm:w-32"
-              loading={index < 4 ? "eager" : "lazy"}
-              fetchPriority={index === 0 ? "high" : "auto"}
             />
             <div className="min-w-0 flex-1">
               {editingPhotoId === photo.id ? (

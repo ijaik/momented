@@ -8,7 +8,7 @@ import {
 
 async function getLlmsText() {
   "use cache";
-  cacheTag("llms-txt", "series", "collections", "photos");
+  cacheTag("llms-txt", "series", "collections", "rules", "photos");
   cacheLife("days");
   const [seriesRes, curatedRes, rulesRes] = await Promise.all([
     getSeriesList(),

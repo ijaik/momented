@@ -26,7 +26,7 @@ export default function RelatedPhotos({
         </div>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-        {photos.map((photo, index) => (
+        {photos.map((photo) => (
           <CoverCard
             key={photo.id}
             item={{
@@ -36,7 +36,6 @@ export default function RelatedPhotos({
               cloudinary_url: photo.cloudinary_url,
             }}
             href={`/photo/${photo.id}`}
-            index={index}
             size="compact"
             meta={photo.camera_model || undefined}
           />

@@ -64,12 +64,11 @@ export default function PhotoDetailView({
             <Image
               src={photo.cloudinary_url}
               alt={alt}
-              width={photo.width}
-              height={photo.height}
-              sizes="(min-width: 1024px) 60vw, 100vw"
+              width={photo.width || 1200}
+              height={photo.height || 800}
+              sizes="(max-width: 1024px) 100vw, 750px"
+              preload
               className="block h-auto max-h-[min(72vh,calc(100vh-12rem))] w-auto max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.01]"
-              priority
-              fetchPriority="high"
             />
             <span
               aria-hidden="true"
@@ -215,7 +214,6 @@ export default function PhotoDetailView({
             fill
             sizes="100vw"
             className="object-contain pointer-events-none select-none"
-            priority
             draggable={false}
           />
         </button>

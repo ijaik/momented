@@ -9,7 +9,7 @@ import {
 
 async function getLlmsFullText() {
   "use cache";
-  cacheTag("llms-full-txt", "series", "collections", "photos");
+  cacheTag("llms-full-txt", "series", "collections", "rules", "photos");
   cacheLife("days");
   const [photosRes, seriesRes, curatedRes, rulesRes] = await Promise.all([
     getHomePhotos(),

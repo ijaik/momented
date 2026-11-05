@@ -75,12 +75,11 @@ export default async function SeriesPage() {
       />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {seriesList.map((series, index) => (
+          {seriesList.map((series) => (
             <CoverCard
               key={series.id}
               item={series}
               href={`/series/${series.id}`}
-              index={index}
               meta={formatDisplayDate(series.created_at)}
               countLabel={{ singular: "frame", plural: "frames" }}
             />

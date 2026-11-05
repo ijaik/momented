@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import SeriesCarousel from "@/components/series/SeriesCarousel";
@@ -20,9 +21,17 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_") return { title: "Series" };
+  if (id === "_")
+    return {
+      title: "Series Not Found",
+      robots: { index: false, follow: false },
+    };
   const { data: series } = await getSeriesById(id);
-  if (!series) return { title: "Series Not Found" };
+  if (!series)
+    return {
+      title: "Series Not Found",
+      robots: { index: false, follow: false },
+    };
   const title = series.title || "Photo Series";
   const description =
     series.description ||
@@ -51,9 +60,9 @@ async function SeriesDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") return <EmptyState description="No series curated yet." />;
+  if (id === "_") notFound();
   const { data: series } = await getSeriesById(id);
-  if (!series) return <EmptyState description="Series not found." />;
+  if (!series) notFound();
   const rawPhotos =
     (series.series_photos as unknown as RawSeriesPhotoJoin[]) || [];
   const sortedPhotos: SeriesSlidePhoto[] = [...rawPhotos]

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
-import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
@@ -23,12 +23,20 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_") return { title: "Rule Collections" };
+  if (id === "_")
+    return {
+      title: "Rule Collection Not Found",
+      robots: { index: false, follow: false },
+    };
   const [{ data: collection }, { data: photos }] = await Promise.all([
     getRuleCollectionById(id),
     getPhotosForRule(id),
   ]);
-  if (!collection) return { title: "Rule Collection Not Found" };
+  if (!collection)
+    return {
+      title: "Rule Collection Not Found",
+      robots: { index: false, follow: false },
+    };
   const description =
     collection.description ||
     `Photographs composed under the photographic constraint: "${collection.title}" on ${siteConfig.name}.`;
@@ -46,23 +54,13 @@ async function SingleRuleContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") {
-    return (
-      <DetailLayout
-        title="Rule Collections"
-        description="Explore compositions categorized by photographic rules."
-      >
-        <EmptyState description="No rule collection found." />
-      </DetailLayout>
-    );
-  }
+  if (id === "_") notFound();
   const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
     getRuleCollectionById(id),
     getPhotosForRule(id),
   ]);
+  if (!collection) notFound();
   const photos = rawPhotos ?? [];
-  if (!collection)
-    return <EmptyState description="Rule collection not found." />;
   const url = `${siteConfig.url}/collections/rules/${id}`;
   return (
     <>

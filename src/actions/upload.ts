@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import cloudinary from "@/lib/cloudinary/cloudinary";
@@ -210,8 +210,5 @@ export async function savePhotoToDbAction(
   updateTag(`calendar-${monthId}`);
   for (const cid of data.collectionIds ?? []) updateTag(`collection-${cid}`);
   for (const rid of data.ruleIds ?? []) updateTag(`rule-${rid}`);
-  revalidatePath("/");
-  revalidatePath("/collections");
-  revalidatePath(`/collections/calendar/${monthId}`);
   return { success: true, id: newPhoto.id };
 }

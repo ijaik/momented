@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { cacheLife, cacheTag } from "next/cache";
 import { siteConfig } from "@/config/site";
 import {
   getCalendarCollectionsList,
@@ -8,6 +9,9 @@ import {
   getSitemapPhotos,
 } from "@/lib/db/queries";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  "use cache";
+  cacheTag("photos", "series", "collections", "rules", "calendar");
+  cacheLife("days");
   const [photos, curatedRes, rulesRes, calendarsRes, seriesRes] =
     await Promise.all([
       getSitemapPhotos(),
@@ -18,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
   const latestPhotoDate = photos[0]?.created_at
     ? new Date(photos[0].created_at)
-    : new Date();
+    : new Date("2026-01-01");
   const activeCalendarRoutes: MetadataRoute.Sitemap = (calendarsRes.data ?? [])
     .filter(
       (cal) =>

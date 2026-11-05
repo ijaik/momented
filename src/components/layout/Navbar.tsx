@@ -55,6 +55,7 @@ export default function Navbar() {
       >
         <Link
           href="/"
+          onClick={() => setIsOpen(false)}
           className="group flex items-center gap-2.5 transition-all duration-150 ease-out hover:opacity-85 active:scale-95"
         >
           <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line/80 bg-surface shadow-2xs transition-transform duration-150 ease-out group-hover:scale-105">
@@ -63,7 +64,7 @@ export default function Navbar() {
               alt="Momented logo"
               width={32}
               height={32}
-              priority
+              loading="eager"
               unoptimized
               className="h-full w-full object-contain"
             />

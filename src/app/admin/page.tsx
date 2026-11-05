@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getCalendarCollectionsAction } from "@/actions/calendar";
 import {
-  getCollectionsAction,
-  getRuleCollectionsAction,
-} from "@/actions/collections";
-import { getPhotosAction } from "@/actions/photos";
-import { getSeriesAction } from "@/actions/series";
+  getAdminCalendarCollections,
+  getAdminCollections,
+  getAdminPhotos,
+  getAdminRuleCollections,
+  getAdminSeries,
+} from "@/lib/db/admin";
 import DashboardTabs from "./_components/DashboardTabs";
 export const metadata: Metadata = {
   title: "Admin",
@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 export const instant = false;
 export default async function AdminDashboard() {
   const [photos, collections, rules, calendars, series] = await Promise.all([
-    getPhotosAction(),
-    getCollectionsAction(),
-    getRuleCollectionsAction(),
-    getCalendarCollectionsAction(),
-    getSeriesAction(),
+    getAdminPhotos(),
+    getAdminCollections(),
+    getAdminRuleCollections(),
+    getAdminCalendarCollections(),
+    getAdminSeries(),
   ]);
   return (
     <DashboardTabs

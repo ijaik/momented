@@ -1,48 +1,69 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 export function useFullscreenMaximize() {
   const [isMaximized, setIsMaximized] = useState(false);
-  const enterMaximize = useCallback(async () => {
+  const enterMaximize = async () => {
     setIsMaximized(true);
     try {
       if (
         typeof document !== "undefined" &&
         document.fullscreenEnabled &&
         !document.fullscreenElement
-      ) {
+      )
         await document.documentElement.requestFullscreen().catch(() => {});
-      }
     } catch {}
-  }, []);
-  const exitMaximize = useCallback(async () => {
+  };
+  const exitMaximize = async () => {
     setIsMaximized(false);
     try {
-      if (typeof document !== "undefined" && document.fullscreenElement) {
+      if (typeof document !== "undefined" && document.fullscreenElement)
         await document.exitFullscreen().catch(() => {});
-      }
     } catch {}
-  }, []);
-  const toggleMaximize = useCallback(async () => {
-    if (isMaximized) {
-      await exitMaximize();
-    } else {
-      await enterMaximize();
+  };
+  const toggleMaximize = async () => {
+    if (isMaximized) await exitMaximize();
+    else await enterMaximize();
+  };
+  const onFullscreenChange = useEffectEvent(() => {
+    if (
+      typeof document !== "undefined" &&
+      !document.fullscreenElement &&
+      isMaximized
+    )
+      setIsMaximized(false);
+  });
+  const onWindowKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable)
+    )
+      return;
+    if (e.key === "Escape" && isMaximized) {
+      e.preventDefault();
+      void exitMaximize();
+      return;
     }
-  }, [isMaximized, enterMaximize, exitMaximize]);
+    if (
+      (e.key === "f" || e.key === "F") &&
+      !e.metaKey &&
+      !e.ctrlKey &&
+      !e.altKey
+    ) {
+      e.preventDefault();
+      void toggleMaximize();
+    }
+  });
   useEffect(() => {
-    const onFullscreenChange = () => {
-      if (
-        typeof document !== "undefined" &&
-        !document.fullscreenElement &&
-        isMaximized
-      ) {
-        setIsMaximized(false);
-      }
-    };
     document.addEventListener("fullscreenchange", onFullscreenChange);
-    return () =>
+    window.addEventListener("keydown", onWindowKeyDown);
+    return () => {
       document.removeEventListener("fullscreenchange", onFullscreenChange);
-  }, [isMaximized]);
+      window.removeEventListener("keydown", onWindowKeyDown);
+    };
+  }, []);
   useEffect(() => {
     if (isMaximized) {
       const originalOverflow = document.body.style.overflow;
@@ -52,35 +73,6 @@ export function useFullscreenMaximize() {
       };
     }
   }, [isMaximized]);
-  useEffect(() => {
-    const onWindowKeyDown = (e: globalThis.KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      if (e.key === "Escape" && isMaximized) {
-        e.preventDefault();
-        exitMaximize();
-        return;
-      }
-      if (
-        (e.key === "f" || e.key === "F") &&
-        !e.metaKey &&
-        !e.ctrlKey &&
-        !e.altKey
-      ) {
-        e.preventDefault();
-        toggleMaximize();
-      }
-    };
-    window.addEventListener("keydown", onWindowKeyDown);
-    return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [isMaximized, exitMaximize, toggleMaximize]);
   return {
     isMaximized,
     toggleMaximize,

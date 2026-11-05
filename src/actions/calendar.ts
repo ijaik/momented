@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
 import { parseEntityFormData } from "@/lib/utils/validation";
@@ -11,47 +11,6 @@ function revalidateAfterCalendarChange(id?: string | number) {
   updateTag("calendar_collections-ids");
   updateTag("photos");
   if (id) updateTag(`calendar-${id}`);
-  revalidatePath("/collections");
-  revalidatePath("/collections/calendar");
-  revalidatePath("/");
-  if (id) revalidatePath(`/collections/calendar/${id}`);
-}
-interface AdminCalendarView {
-  id: number;
-  title: string;
-  description: string | null;
-  cover_photo_id: string | null;
-  photos: { id: string | number; cloudinary_url: string; title?: string }[];
-}
-export async function getCalendarCollectionsAction(): Promise<
-  AdminCalendarView[]
-> {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("calendar_collections")
-    .select(
-      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url, title)",
-    )
-    .order("id", { ascending: true });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    cover_photo_id: row.cover_photo_id,
-    photos: (
-      (row.photos ?? []) as {
-        id: string | number;
-        cloudinary_url: string;
-        title: string | null;
-      }[]
-    ).map((p) => ({
-      id: p.id,
-      cloudinary_url: p.cloudinary_url,
-      title: p.title ?? undefined,
-    })),
-  }));
 }
 export async function editCalendarCollectionAction(
   id: string | number,

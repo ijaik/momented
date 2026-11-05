@@ -2,13 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Photo } from "@/types";
-export default function PhotoCard({
-  photo,
-  index = 0,
-}: {
-  photo: Photo;
-  index?: number;
-}) {
+export default function PhotoCard({ photo }: { photo: Photo; index?: number }) {
   const aspectRatio =
     photo.width && photo.height ? photo.width / photo.height : 1;
   const title = photo.title || "Untitled Momented";
@@ -30,9 +24,6 @@ export default function PhotoCard({
         height={photo.height || 600}
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 480px"
         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-        priority={index === 0}
-        loading={index === 0 ? undefined : "lazy"}
-        fetchPriority={index === 0 ? "high" : "low"}
       />
       <div
         aria-hidden="true"

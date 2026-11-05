@@ -1,7 +1,13 @@
 "use client";
 import { ChevronLeft, ChevronRight, Info, Maximize2 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
 import ExifSpecGrid, { hasPhotoExif } from "@/components/photos/ExifSpecGrid";
 import ShareButton from "@/components/photos/ShareButton";
@@ -29,6 +35,22 @@ function rubberband(
     (dimension + constant * Math.abs(overshoot))
   );
 }
+export function calculateNextSlideIndex(
+  deltaX: number,
+  elapsed: number,
+  currentIndex: number,
+  totalSlides: number,
+): number {
+  const velocity = Math.abs(deltaX) / Math.max(1, elapsed);
+  if (deltaX < 0 && currentIndex < totalSlides - 1) {
+    if (deltaX < -40 || (deltaX < -20 && velocity > 0.25))
+      return currentIndex + 1;
+  } else if (deltaX > 0 && currentIndex > 0) {
+    if (deltaX > 40 || (deltaX > 20 && velocity > 0.25))
+      return currentIndex - 1;
+  }
+  return currentIndex;
+}
 export default function SeriesCarousel({
   seriesTitle,
   seriesDescription,
@@ -49,6 +71,7 @@ export default function SeriesCarousel({
   const isMouseDown = useRef(false);
   const mouseStartX = useRef(0);
   const mouseStartTime = useRef(0);
+  const dragContainerWidthRef = useRef(600);
   const containerRef = useRef<HTMLDivElement>(null);
   const maxContainerRef = useRef<HTMLDivElement>(null);
   const goToSlide = useCallback(
@@ -60,33 +83,36 @@ export default function SeriesCarousel({
     },
     [totalSlides],
   );
+  const onWindowKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (
+      target &&
+      (target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable)
+    )
+      return;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      goToSlide(activeIndex - 1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      goToSlide(activeIndex + 1);
+    } else if (e.code === "Space" && !isMaximized) {
+      e.preventDefault();
+      goToSlide(activeIndex < totalSlides - 1 ? activeIndex + 1 : 0);
+    }
+  });
   useEffect(() => {
-    const onWindowKeyDown = (e: globalThis.KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        goToSlide(activeIndex - 1);
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        goToSlide(activeIndex + 1);
-      } else if (e.code === "Space" && !isMaximized) {
-        e.preventDefault();
-        goToSlide(activeIndex < totalSlides - 1 ? activeIndex + 1 : 0);
-      }
-    };
     window.addEventListener("keydown", onWindowKeyDown);
     return () => window.removeEventListener("keydown", onWindowKeyDown);
-  }, [activeIndex, goToSlide, isMaximized, totalSlides]);
+  }, []);
   const handleTouchStart = (e: React.TouchEvent) => {
     if (totalSlides <= 1) return;
+    const container = isMaximized
+      ? maxContainerRef.current
+      : containerRef.current;
+    dragContainerWidthRef.current = container?.clientWidth || 600;
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
@@ -113,7 +139,7 @@ export default function SeriesCarousel({
     }
     if (!isHorizontalSwipe.current) return;
     let dampenedOffset = deltaX;
-    const containerWidth = containerRef.current?.clientWidth || 600;
+    const containerWidth = dragContainerWidthRef.current;
     if (activeIndex === 0 && deltaX > 0)
       dampenedOffset = rubberband(deltaX, containerWidth);
     else if (activeIndex === totalSlides - 1 && deltaX < 0)
@@ -126,16 +152,13 @@ export default function SeriesCarousel({
     setIsDragging(false);
     const deltaX = currentDragOffset.current;
     const elapsed = Math.max(1, Date.now() - touchStartTime.current);
-    const velocity = Math.abs(deltaX) / elapsed;
-    if (deltaX < 0 && activeIndex < totalSlides - 1) {
-      if (deltaX < -40 || (deltaX < -20 && velocity > 0.25)) {
-        setActiveIndex((prev) => Math.min(totalSlides - 1, prev + 1));
-      }
-    } else if (deltaX > 0 && activeIndex > 0) {
-      if (deltaX > 40 || (deltaX > 20 && velocity > 0.25)) {
-        setActiveIndex((prev) => Math.max(0, prev - 1));
-      }
-    }
+    const nextIndex = calculateNextSlideIndex(
+      deltaX,
+      elapsed,
+      activeIndex,
+      totalSlides,
+    );
+    if (nextIndex !== activeIndex) setActiveIndex(nextIndex);
     setDragOffset(0);
     currentDragOffset.current = 0;
     isHorizontalSwipe.current = null;
@@ -146,6 +169,34 @@ export default function SeriesCarousel({
     currentDragOffset.current = 0;
     isHorizontalSwipe.current = null;
   };
+  const handleMouseMove = useEffectEvent((e: MouseEvent) => {
+    if (!isMouseDown.current || totalSlides <= 1) return;
+    const deltaX = e.clientX - mouseStartX.current;
+    let dampenedOffset = deltaX;
+    const containerWidth = dragContainerWidthRef.current;
+    if (activeIndex === 0 && deltaX > 0)
+      dampenedOffset = rubberband(deltaX, containerWidth);
+    else if (activeIndex === totalSlides - 1 && deltaX < 0)
+      dampenedOffset = rubberband(deltaX, containerWidth);
+    currentDragOffset.current = dampenedOffset;
+    setDragOffset(dampenedOffset);
+  });
+  const handleMouseUp = useEffectEvent(() => {
+    if (!isMouseDown.current) return;
+    isMouseDown.current = false;
+    setIsDragging(false);
+    const deltaX = currentDragOffset.current;
+    const elapsed = Math.max(1, Date.now() - mouseStartTime.current);
+    const nextIndex = calculateNextSlideIndex(
+      deltaX,
+      elapsed,
+      activeIndex,
+      totalSlides,
+    );
+    if (nextIndex !== activeIndex) setActiveIndex(nextIndex);
+    setDragOffset(0);
+    currentDragOffset.current = 0;
+  });
   useEffect(() => {
     const container = isMaximized
       ? maxContainerRef.current
@@ -157,38 +208,8 @@ export default function SeriesCarousel({
       mouseStartX.current = e.clientX;
       mouseStartTime.current = Date.now();
       currentDragOffset.current = 0;
+      dragContainerWidthRef.current = container.clientWidth || 600;
       setIsDragging(true);
-    };
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDown.current || totalSlides <= 1) return;
-      const deltaX = e.clientX - mouseStartX.current;
-      let dampenedOffset = deltaX;
-      const containerWidth = container?.clientWidth || 600;
-      if (activeIndex === 0 && deltaX > 0)
-        dampenedOffset = rubberband(deltaX, containerWidth);
-      else if (activeIndex === totalSlides - 1 && deltaX < 0)
-        dampenedOffset = rubberband(deltaX, containerWidth);
-      currentDragOffset.current = dampenedOffset;
-      setDragOffset(dampenedOffset);
-    };
-    const handleMouseUp = () => {
-      if (!isMouseDown.current) return;
-      isMouseDown.current = false;
-      setIsDragging(false);
-      const deltaX = currentDragOffset.current;
-      const elapsed = Math.max(1, Date.now() - mouseStartTime.current);
-      const velocity = Math.abs(deltaX) / elapsed;
-      if (deltaX < 0 && activeIndex < totalSlides - 1) {
-        if (deltaX < -40 || (deltaX < -20 && velocity > 0.25)) {
-          setActiveIndex((prev) => Math.min(totalSlides - 1, prev + 1));
-        }
-      } else if (deltaX > 0 && activeIndex > 0) {
-        if (deltaX > 40 || (deltaX > 20 && velocity > 0.25)) {
-          setActiveIndex((prev) => Math.max(0, prev - 1));
-        }
-      }
-      setDragOffset(0);
-      currentDragOffset.current = 0;
     };
     container.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mousemove", handleMouseMove);
@@ -198,7 +219,7 @@ export default function SeriesCarousel({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [activeIndex, totalSlides, isMaximized]);
+  }, [totalSlides, isMaximized]);
   const currentPhoto = photos[activeIndex] || photos[0];
   if (!currentPhoto) return null;
   const currentAspect =
@@ -245,7 +266,6 @@ export default function SeriesCarousel({
           }}
         >
           {photos.map((photo, index) => {
-            const isAdjacent = Math.abs(index - activeIndex) <= 1;
             const slideTitle =
               photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
             const slideAlt = photo.description || photo.title || slideTitle;
@@ -259,13 +279,9 @@ export default function SeriesCarousel({
                     src={photo.cloudinary_url}
                     alt={slideAlt}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                    preload={index === 0}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1080px"
                     className="object-cover pointer-events-none select-none"
-                    priority={index === 0}
-                    fetchPriority={index === 0 ? "high" : "auto"}
-                    loading={
-                      index === 0 ? undefined : isAdjacent ? "eager" : "lazy"
-                    }
                     draggable={false}
                   />
                 </div>
@@ -511,7 +527,6 @@ export default function SeriesCarousel({
           }}
         >
           {photos.map((photo, index) => {
-            const isAdjacent = Math.abs(index - activeIndex) <= 1;
             const slideTitle =
               photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
             const slideAlt = photo.description || photo.title || slideTitle;
@@ -527,8 +542,6 @@ export default function SeriesCarousel({
                     fill
                     sizes="100vw"
                     className="object-contain pointer-events-none select-none"
-                    fetchPriority={index === 0 ? "high" : "auto"}
-                    loading={isAdjacent ? "eager" : "lazy"}
                     draggable={false}
                   />
                 </div>

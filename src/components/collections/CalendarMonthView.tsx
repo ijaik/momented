@@ -1,7 +1,18 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useSyncExternalStore } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import type { Photo } from "@/types";
+
+function subscribeToPopState(callback: () => void) {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+}
+function getSearchSnapshot(): string {
+  return typeof window !== "undefined" ? window.location.search : "";
+}
+function getServerSearchSnapshot(): string {
+  return "";
+}
 export interface YearGroup {
   year: number;
   photos: Photo[];
@@ -47,15 +58,15 @@ export default function CalendarMonthView({
   const validTabKeys = new Set(tabs.map((t) => t.key));
   const defaultTab =
     structuredYears.length === 0 && undatedPhotos.length > 0 ? "lost" : "all";
-  const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== "undefined") {
-      const paramTab = new URLSearchParams(window.location.search).get("tab");
-      if (paramTab && validTabKeys.has(paramTab)) return paramTab;
-    }
-    return defaultTab;
-  });
+  const search = useSyncExternalStore(
+    subscribeToPopState,
+    getSearchSnapshot,
+    getServerSearchSnapshot,
+  );
+  const paramTab = new URLSearchParams(search).get("tab");
+  const activeTab =
+    paramTab && validTabKeys.has(paramTab) ? paramTab : defaultTab;
   const handleTabChange = (key: string) => {
-    setActiveTab(key);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       if (key === "all") {
@@ -64,6 +75,7 @@ export default function CalendarMonthView({
         url.searchParams.set("tab", key);
       }
       window.history.replaceState(null, "", url.toString());
+      window.dispatchEvent(new Event("popstate"));
     }
   };
   const selectedYearGroup = structuredYears.find(

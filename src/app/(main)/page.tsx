@@ -85,8 +85,8 @@ export default async function Home() {
                     src={heroPhoto.cloudinary_url}
                     alt={heroPhoto.title || "Featured Momented Photograph"}
                     fill
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 1440px"
+                    sizes="(max-width: 1024px) 100vw, 1280px"
+                    preload
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent sm:from-black/70 sm:via-transparent" />
@@ -253,7 +253,6 @@ export default async function Home() {
                 <CoverCard
                   item={featuredCollection}
                   href={`/collections/${featuredCollection.id}`}
-                  index={0}
                   aspectRatio="4/3"
                 />
               ) : (
@@ -278,7 +277,6 @@ export default async function Home() {
                 <CoverCard
                   item={featuredRule}
                   href={`/collections/rules/${featuredRule.id}`}
-                  index={1}
                   aspectRatio="4/3"
                 />
               ) : (
@@ -303,7 +301,6 @@ export default async function Home() {
                 <CoverCard
                   item={featuredCalendar}
                   href={`/collections/calendar/${featuredCalendar.id}`}
-                  index={2}
                   aspectRatio="4/3"
                 />
               ) : (
@@ -342,8 +339,8 @@ export default async function Home() {
                     The Open Photography Vault
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted sm:text-base">
-                    Every frame is preserved to view, download, and adapt for personal or
-                    commercial projects without restrictions.
+                    Every frame is preserved to view, download, and adapt for
+                    personal or commercial projects without restrictions.
                   </p>
                 </div>
                 <Link

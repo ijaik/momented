@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
@@ -20,47 +20,7 @@ function revalidateAfterPhotoChange(id?: string | number) {
   updateTag("rules");
   updateTag("calendar");
   updateTag("series");
-  if (id) {
-    updateTag(`photo-${id}`);
-    revalidatePath(`/photo/${id}`);
-  }
-  revalidatePath("/");
-  revalidatePath("/collections");
-  revalidatePath("/collections/rules");
-  revalidatePath("/collections/calendar");
-}
-interface AdminPhotoView {
-  id: string | number;
-  title: string;
-  description: string | null;
-  cloudinary_url: string;
-  cloudinary_public_id: string;
-  downloads: number;
-  shares: number;
-  collections: { id: string | number; title: string }[];
-  rules: { id: string | number; title: string }[];
-}
-export async function getPhotosAction(): Promise<AdminPhotoView[]> {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("photos")
-    .select(
-      "id, title, description, cloudinary_url, cloudinary_public_id, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title)",
-    )
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    cloudinary_url: row.cloudinary_url,
-    cloudinary_public_id: row.cloudinary_public_id,
-    downloads: row.downloads ?? 0,
-    shares: row.shares ?? 0,
-    collections: row.collections ?? [],
-    rules: row.rules ?? [],
-  }));
+  if (id) updateTag(`photo-${id}`);
 }
 export async function deletePhotoAction(
   id: string | number,

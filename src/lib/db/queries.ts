@@ -116,7 +116,7 @@ export interface HomeEditorialData {
 export async function getHomeEditorialData(): Promise<HomeEditorialData> {
   "use cache";
   cacheTag("photos", "series", "collections", "rules", "calendar");
-  cacheLife("weeks");
+  cacheLife("days");
   const [
     photosRes,
     countRes,
@@ -178,7 +178,7 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
     rules[0] ??
     null;
   const calendars = calendarRes.data ?? [];
-  const currentMonthId = new Date().getMonth() + 1;
+  const currentMonthId = new Date().getUTCMonth() + 1;
   const activeCalendars = calendars.filter(
     (c) => Array.isArray(c.photos) && c.photos.length > 0,
   );

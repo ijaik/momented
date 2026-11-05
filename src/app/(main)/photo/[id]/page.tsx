@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PhotoDetailView from "@/components/photos/PhotoDetailView";
 import JsonLd from "@/components/seo/JsonLd";
-import EmptyState from "@/components/ui/EmptyState";
 import type { ReferenceLink } from "@/components/ui/ReferenceRow";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
@@ -24,9 +24,17 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_") return { title: "Photographs" };
+  if (id === "_")
+    return {
+      title: "Photograph Not Found",
+      robots: { index: false, follow: false },
+    };
   const { data: photo } = await getPhotoById(id);
-  if (!photo) return { title: "Photo Not Found" };
+  if (!photo)
+    return {
+      title: "Photograph Not Found",
+      robots: { index: false, follow: false },
+    };
   const title = photo.title || "Photography Gallery";
   const cameraText = photo.camera_model
     ? ` Captured on ${photo.camera_model}.`
@@ -47,9 +55,9 @@ async function PhotoDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") return <EmptyState description="Photograph not found." />;
+  if (id === "_") notFound();
   const { data: photo } = await getPhotoById(id);
-  if (!photo) return <EmptyState description="Photo not found." />;
+  if (!photo) notFound();
   const typedPhoto: Photo = photo;
   const displayDate = formatDisplayDate(
     typedPhoto.created_at,

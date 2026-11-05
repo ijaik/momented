@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import CalendarMonthView, {
   type YearGroup,
@@ -35,12 +36,19 @@ export async function generateMetadata({
   const { id } = await params;
   const monthIndex = parseInt(id, 10);
   if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
-    return { title: "Month Not Found" };
+    return {
+      title: "Month Not Found",
+      robots: { index: false, follow: false },
+    };
   const [{ data: collection }, { data: photos }] = await Promise.all([
     getCalendarMonthById(monthIndex),
     getPhotosForCalendarMonth(monthIndex),
   ]);
-  if (!collection) return { title: "Month Not Found" };
+  if (!collection)
+    return {
+      title: "Month Not Found",
+      robots: { index: false, follow: false },
+    };
   const monthName = collection.title || `Month ${monthIndex}`;
   const description =
     collection.description ||
@@ -60,14 +68,13 @@ async function CalendarMonthContent({
 }) {
   const { id } = await params;
   const monthIndex = parseInt(id, 10);
-  if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12)
-    return <EmptyState description="Invalid month requested." />;
+  if (Number.isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12) notFound();
   const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
     getCalendarMonthById(monthIndex),
     getPhotosForCalendarMonth(monthIndex),
   ]);
   const monthPhotos = rawPhotos ?? [];
-  if (!collection) return <EmptyState description="Month not found." />;
+  if (!collection) notFound();
   const groupedByYear = new Map<number, Photo[]>();
   const undatedPhotos: Photo[] = [];
   for (const photo of monthPhotos) {

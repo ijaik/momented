@@ -20,6 +20,7 @@ export async function getClientIp(): Promise<string> {
     const newId = crypto.randomUUID();
     cookieStore.set("m_client_id", newId, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30,
       path: "/",

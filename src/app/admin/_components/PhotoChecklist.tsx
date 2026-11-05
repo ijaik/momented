@@ -51,7 +51,7 @@ export default function PhotoChecklist({
         </legend>
         <div className="max-h-80 overflow-y-auto rounded-2xl border border-line/80 bg-paper/60 p-3 backdrop-blur-xs">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {photos.map((p, index) => {
+            {photos.map((p) => {
               const isChecked = selectedIds.includes(p.id);
               const isCover = coverId === p.id;
               return (
@@ -75,9 +75,7 @@ export default function PhotoChecklist({
                         className={`object-cover transition-opacity ${
                           isChecked ? "" : "opacity-60"
                         }`}
-                        sizes="160px"
-                        loading={index < 8 ? "eager" : "lazy"}
-                        fetchPriority={index < 4 ? "high" : "auto"}
+                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 200px"
                       />
                       <span
                         aria-hidden="true"

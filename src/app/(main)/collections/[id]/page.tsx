@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
 import DetailLayout from "@/components/ui/DetailLayout";
-import EmptyState from "@/components/ui/EmptyState";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
@@ -23,12 +23,20 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_") return { title: "Collections" };
+  if (id === "_")
+    return {
+      title: "Collection Not Found",
+      robots: { index: false, follow: false },
+    };
   const [{ data: collection }, { data: photos }] = await Promise.all([
     getCollectionById(id),
     getPhotosForCollection(id),
   ]);
-  if (!collection) return { title: "Collection Not Found" };
+  if (!collection)
+    return {
+      title: "Collection Not Found",
+      robots: { index: false, follow: false },
+    };
   const description =
     collection.description ||
     `A curated photography collection: "${collection.title}" on ${siteConfig.name}.`;
@@ -46,22 +54,13 @@ async function SingleCollectionContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") {
-    return (
-      <DetailLayout
-        title="Collection"
-        description="A curated selection of photographs."
-      >
-        <EmptyState description="No collection found." />
-      </DetailLayout>
-    );
-  }
+  if (id === "_") notFound();
   const [{ data: collection }, { data: rawPhotos }] = await Promise.all([
     getCollectionById(id),
     getPhotosForCollection(id),
   ]);
+  if (!collection) notFound();
   const photos = rawPhotos ?? [];
-  if (!collection) return <EmptyState description="Collection not found." />;
   const url = `${siteConfig.url}/collections/${id}`;
   return (
     <>

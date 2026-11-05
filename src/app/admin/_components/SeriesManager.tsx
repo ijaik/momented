@@ -645,7 +645,7 @@ export default function SeriesManager({
                               src={photo.cloudinary_url}
                               alt={photo.title || "A Momented Photograph"}
                               fill
-                              sizes="150px"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 150px"
                               className="object-cover"
                             />
                             <span className="absolute top-1 left-1 rounded-sm bg-ink/80 px-1.5 py-0.5 text-[10px] font-mono text-paper">
@@ -748,7 +748,7 @@ export default function SeriesManager({
                               src={photo.cloudinary_url}
                               alt={photo.title || "A Momented Photograph"}
                               fill
-                              sizes="120px"
+                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 150px"
                               className="object-cover"
                             />
                             {isSelected && (

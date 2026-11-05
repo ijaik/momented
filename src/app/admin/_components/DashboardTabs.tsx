@@ -1,7 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import { type KeyboardEvent, useState } from "react";
+import { Activity, type KeyboardEvent, useState } from "react";
 import { logoutAction } from "@/actions/auth";
 import Button from "@/components/ui/Button";
 import type { CalendarItem } from "./CalendarManager";
@@ -44,12 +43,13 @@ export default function DashboardTabs({
   series,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("photos");
-  const router = useRouter();
-  async function handleLogout() {
-    await logoutAction();
-    router.push("/");
-  }
-  const activate = (tab: TabType) => setActiveTab(tab);
+  const [visitedTabs, setVisitedTabs] = useState<Set<TabType>>(
+    () => new Set(["photos"]),
+  );
+  const activate = (tab: TabType) => {
+    setActiveTab(tab);
+    setVisitedTabs((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
+  };
   const onTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, tab: TabType) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (dir === 0) return;
@@ -58,7 +58,7 @@ export default function DashboardTabs({
     const next =
       TAB_ORDER[(currentIndex + dir + TAB_ORDER.length) % TAB_ORDER.length];
     activate(next);
-    document.getElementById(`tab-${next}`)?.focus();
+    document.getElementById(`tab-${next}`)?.focus({ preventScroll: true });
   };
   return (
     <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16 2xl:max-w-360">
@@ -76,14 +76,11 @@ export default function DashboardTabs({
             Curatorial editorial workspace
           </p>
         </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleLogout}
-          type="button"
-        >
-          Log out
-        </Button>
+        <form action={logoutAction}>
+          <Button variant="secondary" size="sm" type="submit">
+            Log out
+          </Button>
+        </form>
       </header>
       <div
         role="tablist"
@@ -116,31 +113,71 @@ export default function DashboardTabs({
           })}
         </div>
       </div>
-      <div
-        id={`panel-${activeTab}`}
-        role="tabpanel"
-        aria-labelledby={`tab-${activeTab}`}
-        className="pt-10"
-      >
-        {activeTab === "photos" && (
-          <PhotoManager
-            photos={photos}
-            collections={collections}
-            rules={rules}
-          />
-        )}
-        {activeTab === "collections" && (
-          <CollectionManager collections={collections} allPhotos={photos} />
-        )}
-        {activeTab === "rules" && (
-          <RuleManager rules={rules} allPhotos={photos} />
-        )}
-        {activeTab === "calendar" && (
-          <CalendarManager calendars={calendars} allPhotos={photos} />
-        )}
-        {activeTab === "series" && (
-          <SeriesManager series={series} allPhotos={photos} />
-        )}
+      <div className="pt-10">
+        <div
+          id="panel-photos"
+          role="tabpanel"
+          aria-labelledby="tab-photos"
+          hidden={activeTab !== "photos"}
+        >
+          {visitedTabs.has("photos") && (
+            <Activity mode={activeTab === "photos" ? "visible" : "hidden"}>
+              <PhotoManager
+                photos={photos}
+                collections={collections}
+                rules={rules}
+              />
+            </Activity>
+          )}
+        </div>
+        <div
+          id="panel-collections"
+          role="tabpanel"
+          aria-labelledby="tab-collections"
+          hidden={activeTab !== "collections"}
+        >
+          {visitedTabs.has("collections") && (
+            <Activity mode={activeTab === "collections" ? "visible" : "hidden"}>
+              <CollectionManager collections={collections} allPhotos={photos} />
+            </Activity>
+          )}
+        </div>
+        <div
+          id="panel-rules"
+          role="tabpanel"
+          aria-labelledby="tab-rules"
+          hidden={activeTab !== "rules"}
+        >
+          {visitedTabs.has("rules") && (
+            <Activity mode={activeTab === "rules" ? "visible" : "hidden"}>
+              <RuleManager rules={rules} allPhotos={photos} />
+            </Activity>
+          )}
+        </div>
+        <div
+          id="panel-calendar"
+          role="tabpanel"
+          aria-labelledby="tab-calendar"
+          hidden={activeTab !== "calendar"}
+        >
+          {visitedTabs.has("calendar") && (
+            <Activity mode={activeTab === "calendar" ? "visible" : "hidden"}>
+              <CalendarManager calendars={calendars} allPhotos={photos} />
+            </Activity>
+          )}
+        </div>
+        <div
+          id="panel-series"
+          role="tabpanel"
+          aria-labelledby="tab-series"
+          hidden={activeTab !== "series"}
+        >
+          {visitedTabs.has("series") && (
+            <Activity mode={activeTab === "series" ? "visible" : "hidden"}>
+              <SeriesManager series={series} allPhotos={photos} />
+            </Activity>
+          )}
+        </div>
       </div>
     </main>
   );

@@ -46,7 +46,7 @@ export default function WallpaperPreviewDialog({
     };
     document.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
-    closeBtnRef.current?.focus();
+    closeBtnRef.current?.focus({ preventScroll: true });
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
@@ -152,7 +152,6 @@ export default function WallpaperPreviewDialog({
                 fill
                 sizes="(max-width: 640px) 260px, 310px"
                 className="object-cover pointer-events-none select-none transition-transform duration-500 ease-out"
-                priority
               />
               <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-30 h-5 w-24 rounded-full bg-black shadow-xs flex items-center justify-between px-2.5">
                 <div className="h-2 w-2 rounded-full bg-neutral-900" />
@@ -210,7 +209,6 @@ export default function WallpaperPreviewDialog({
                 fill
                 sizes="(max-width: 768px) 100vw, 680px"
                 className="object-cover pointer-events-none select-none transition-transform duration-500 ease-out"
-                priority
               />
               {showUiOverlay && (
                 <div className="absolute top-0 inset-x-0 z-20 h-5 bg-black/35 backdrop-blur-md flex items-center justify-between px-3 text-[10px] text-white/90 border-b border-white/10 select-none">

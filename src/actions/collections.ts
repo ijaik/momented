@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath, updateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import {
   getAdminDb,
@@ -17,15 +17,7 @@ function revalidateAfterCollectionChange(
   updateTag("collections-ids");
   updateTag("rule_collections-ids");
   updateTag("photos");
-  if (id) {
-    updateTag(`${kind}-${id}`);
-    revalidatePath(
-      kind === "rule" ? `/collections/rules/${id}` : `/collections/${id}`,
-    );
-  }
-  revalidatePath("/collections");
-  revalidatePath("/collections/rules");
-  revalidatePath("/");
+  if (id) updateTag(`${kind}-${id}`);
 }
 type ContentTable = "collections" | "rule_collections";
 interface CollectionSpec {
@@ -125,47 +117,6 @@ async function editCollection(
   revalidateAfterCollectionChange(kind, id);
   return { success: true };
 }
-interface AdminCollectionView {
-  id: string;
-  title: string;
-  description: string | null;
-  cover_photo_id: string | null;
-  photos: { id: string; cloudinary_url: string; title?: string }[];
-}
-async function getCollections(
-  kind: keyof typeof COLLECTION_SPECS,
-): Promise<AdminCollectionView[]> {
-  await verifyAdminSession();
-  const spec = COLLECTION_SPECS[kind];
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from(spec.table)
-    .select(
-      `id, title, description, cover_photo_id, photos!${spec.junction.table}(id, cloudinary_url, title)`,
-    )
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: (row as { description: string | null }).description,
-    cover_photo_id: (row as { cover_photo_id: string | null }).cover_photo_id,
-    photos: (
-      (row.photos ?? []) as {
-        id: string;
-        cloudinary_url: string;
-        title: string | null;
-      }[]
-    ).map((p) => ({
-      id: String(p.id),
-      cloudinary_url: p.cloudinary_url,
-      title: p.title ?? undefined,
-    })),
-  }));
-}
-export async function getCollectionsAction() {
-  return getCollections("collection");
-}
 export async function createCollectionAction(
   formData: FormData,
 ): Promise<{ success: boolean }> {
@@ -181,9 +132,6 @@ export async function deleteCollectionAction(
   id: string,
 ): Promise<{ success: boolean }> {
   return deleteCollection("collection", id);
-}
-export async function getRuleCollectionsAction() {
-  return getCollections("rule");
 }
 export async function createRuleCollectionAction(
   formData: FormData,

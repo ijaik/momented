@@ -50,12 +50,11 @@ export default async function CollectionsPage() {
       <CollectionsTabs activeTab="curated" />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {displayCollections.map((col, index) => (
+          {displayCollections.map((col) => (
             <CoverCard
               key={col.id}
               item={col}
               href={`/collections/${col.id}`}
-              index={index}
             />
           ))}
         </div>
