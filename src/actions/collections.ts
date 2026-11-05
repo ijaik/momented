@@ -1,120 +1,59 @@
 "use server";
-import { updateTag } from "next/cache";
 import { verifyAdminSession } from "@/lib/auth/auth";
+import { revalidateCollections, revalidateRules } from "@/lib/cache/tags";
 import {
-  getAdminDb,
-  type JunctionTable,
-  syncJunction,
-} from "@/lib/db/supabase-admin";
+  createCollectionInDb,
+  deleteCollectionFromDb,
+  updateCollectionInDb,
+} from "@/lib/db/mutations";
 import { assertValidUUID, parseEntityFormData } from "@/lib/utils/validation";
 
-function revalidateAfterCollectionChange(
-  kind: "collection" | "rule",
-  id?: string,
-) {
-  updateTag("collections");
-  updateTag("rules");
-  updateTag("collections-ids");
-  updateTag("rule_collections-ids");
-  updateTag("photos");
-  if (id) updateTag(`${kind}-${id}`);
+function revalidate(kind: "collection" | "rule", id?: string) {
+  if (kind === "collection") revalidateCollections(id);
+  else revalidateRules(id);
 }
-type ContentTable = "collections" | "rule_collections";
-interface CollectionSpec {
-  table: ContentTable;
-  junction: { table: JunctionTable; mainCol: string };
-}
-const COLLECTION_SPECS = {
-  collection: {
-    table: "collections",
-    junction: { table: "photo_collections", mainCol: "collection_id" },
-  },
-  rule: {
-    table: "rule_collections",
-    junction: {
-      table: "photo_rule_collections",
-      mainCol: "rule_id",
-    },
-  },
-} as const satisfies Record<string, CollectionSpec>;
 async function deleteCollection(
-  kind: keyof typeof COLLECTION_SPECS,
+  kind: "collection" | "rule",
   id: string,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Item ID");
-  const spec = COLLECTION_SPECS[kind];
-  const db = getAdminDb();
-  const { error } = await db
-    .from(spec.table)
-    .delete()
-    .eq("id" as never, id as never);
-  if (error) throw new Error(error.message);
-  revalidateAfterCollectionChange(kind, id);
+  await deleteCollectionFromDb(kind, id);
+  revalidate(kind, id);
   return { success: true };
 }
 async function createCollection(
-  kind: keyof typeof COLLECTION_SPECS,
+  kind: "collection" | "rule",
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const spec = COLLECTION_SPECS[kind];
-  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseEntityFormData(formData);
-  const { data, error } = await db
-    .from(spec.table)
-    .insert([
-      {
-        title,
-        description,
-        cover_photo_id,
-      } as never,
-    ])
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-  await syncJunction(
-    db,
-    spec.junction.table,
-    spec.junction.mainCol,
-    data.id,
-    "photo_id",
+  const id = await createCollectionInDb(kind, {
+    title,
+    description,
+    cover_photo_id,
     photoIds,
-    { skipDelete: true },
-  );
-  revalidateAfterCollectionChange(kind, data.id);
+  });
+  revalidate(kind, id);
   return { success: true };
 }
 async function editCollection(
-  kind: keyof typeof COLLECTION_SPECS,
+  kind: "collection" | "rule",
   id: string,
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Item ID");
-  const spec = COLLECTION_SPECS[kind];
-  const db = getAdminDb();
   const { title, description, cover_photo_id, photoIds } =
     parseEntityFormData(formData);
-  const { error } = await db
-    .from(spec.table)
-    .update({
-      title,
-      description,
-      cover_photo_id,
-    } as never)
-    .eq("id" as never, id as never);
-  if (error) throw new Error(error.message);
-  await syncJunction(
-    db,
-    spec.junction.table,
-    spec.junction.mainCol,
-    id,
-    "photo_id",
+  await updateCollectionInDb(kind, id, {
+    title,
+    description,
+    cover_photo_id,
     photoIds,
-  );
-  revalidateAfterCollectionChange(kind, id);
+  });
+  revalidate(kind, id);
   return { success: true };
 }
 export async function createCollectionAction(

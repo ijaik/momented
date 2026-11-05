@@ -1,12 +1,5 @@
 "use client";
-import {
-  ArrowDown,
-  ArrowUp,
-  Image as ImageIcon,
-  Plus,
-  Trash2,
-  Upload,
-} from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import Image from "next/image";
 import {
   type ChangeEvent,
@@ -34,31 +27,15 @@ import {
   FormTextarea,
   SubmitButton,
 } from "./AdminForms";
-
-interface SeriesItemPhoto {
-  id: string;
-  title?: string | null;
-  cloudinary_url: string;
-}
-export interface SeriesAdminItem {
-  id: string;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | null;
-  created_at: string;
-  photos: SeriesItemPhoto[];
-}
-interface PhotoOption {
-  id: string | number;
-  title?: string | null;
-  cloudinary_url: string;
-}
-interface QueuedSlideFile {
-  file: File;
-  preview: string;
-  title: string;
-  description: string;
-}
+import SeriesCardList from "./series/SeriesCardList";
+import SeriesSlideList from "./series/SeriesSlideList";
+import SeriesUploadQueue from "./series/SeriesUploadQueue";
+import type {
+  PhotoOption,
+  QueuedSlideFile,
+  SeriesAdminItem,
+} from "./series/types";
+export type { SeriesAdminItem, PhotoOption, QueuedSlideFile };
 interface SeriesManagerProps {
   series: SeriesAdminItem[];
   allPhotos: PhotoOption[];
@@ -451,118 +428,14 @@ export default function SeriesManager({
                   </div>
                 </div>
               </div>
-              {queuedFiles.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium uppercase tracking-wider text-muted">
-                      Queued Slides ({queuedFiles.length})
-                    </span>
-                    <button
-                      type="button"
-                      onClick={clearQueuedFiles}
-                      className="text-xs text-muted hover:text-ink"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    {queuedFiles.map((item, idx) => (
-                      <div
-                        key={`queued-${item.file.name}-${idx}`}
-                        className="group relative flex flex-col gap-3 rounded-xl border border-line/70 bg-soft/40 p-3.5 backdrop-blur-xs sm:flex-row sm:items-start"
-                      >
-                        <div className="flex items-center gap-3 sm:flex-col sm:items-center">
-                          <div className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-line sm:h-24 sm:w-24">
-                            <Image
-                              unoptimized
-                              src={item.preview}
-                              alt={item.title || "A Momented Photograph"}
-                              fill
-                              sizes="96px"
-                              className="object-cover"
-                            />
-                            <span className="absolute top-1 left-1 rounded-sm bg-ink/80 px-1.5 py-0.5 text-[10px] font-mono text-paper">
-                              #{idx + 1}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1 sm:justify-center">
-                            <button
-                              type="button"
-                              onClick={() => moveQueuedFile(idx, -1)}
-                              disabled={idx === 0}
-                              aria-label="Move slide up"
-                              title="Move slide up"
-                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-90 disabled:opacity-30"
-                            >
-                              <ArrowUp size={14} aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveQueuedFile(idx, 1)}
-                              disabled={idx === queuedFiles.length - 1}
-                              aria-label="Move slide down"
-                              title="Move slide down"
-                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-90 disabled:opacity-30"
-                            >
-                              <ArrowDown size={14} aria-hidden="true" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeQueuedFile(idx)}
-                              aria-label="Remove slide from queue"
-                              title="Remove slide from queue"
-                              className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-90"
-                            >
-                              <Trash2 size={14} aria-hidden="true" />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex min-w-0 flex-1 flex-col gap-2">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs font-medium text-ink">
-                              Slide {idx + 1}
-                            </span>
-                            <span className="truncate text-[11px] text-muted">
-                              {item.file.name}
-                            </span>
-                          </div>
-                          <div>
-                            <input
-                              id={`queued-slide-title-${idx}`}
-                              name={`queued_slide_title_${idx}`}
-                              type="text"
-                              value={item.title}
-                              onChange={(e) =>
-                                updateQueuedSlideTitle(idx, e.target.value)
-                              }
-                              placeholder={`Slide title (leave empty for auto: Frame ${idx + 1})`}
-                              aria-label={`Slide ${idx + 1} title`}
-                              className="w-full rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
-                            />
-                          </div>
-                          <div>
-                            <textarea
-                              id={`queued-slide-desc-${idx}`}
-                              name={`queued_slide_desc_${idx}`}
-                              rows={2}
-                              value={item.description}
-                              onChange={(e) =>
-                                updateQueuedSlideDescription(
-                                  idx,
-                                  e.target.value,
-                                )
-                              }
-                              placeholder="Slide description / caption (optional, defaults to series description)"
-                              aria-label={`Slide ${idx + 1} description`}
-                              className="w-full resize-none rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <SeriesUploadQueue
+                queuedFiles={queuedFiles}
+                onClear={clearQueuedFiles}
+                onMove={moveQueuedFile}
+                onRemove={removeQueuedFile}
+                onUpdateTitle={updateQueuedSlideTitle}
+                onUpdateDescription={updateQueuedSlideDescription}
+              />
               {uploadStatus && (
                 <div
                   aria-live="polite"
@@ -613,113 +486,14 @@ export default function SeriesManager({
                   rows={2}
                 />
               </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-ink">
-                    Slide Sequence ({orderedPhotoIds.length} frames)
-                  </span>
-                  <span className="text-xs text-muted">
-                    Use arrows to reorder slides 1 →{" "}
-                    {orderedPhotoIds.length || 1}
-                  </span>
-                </div>
-                {orderedPhotoIds.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 rounded-2xl border border-line/70 bg-soft/40 p-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                    {orderedPhotoIds.map((pId, idx) => {
-                      const photo = allPhotos.find(
-                        (p) => String(p.id) === String(pId),
-                      );
-                      if (!photo) return null;
-                      const isCover = coverPhotoId === String(photo.id);
-                      return (
-                        <div
-                          key={`ordered-${pId}`}
-                          className={`relative flex flex-col rounded-xl border p-2 transition-all duration-150 ${
-                            isCover
-                              ? "border-signal/70 bg-surface shadow-xs"
-                              : "border-line bg-surface"
-                          }`}
-                        >
-                          <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-line">
-                            <Image
-                              src={photo.cloudinary_url}
-                              alt={photo.title || "A Momented Photograph"}
-                              fill
-                              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 150px"
-                              className="object-cover"
-                            />
-                            <span className="absolute top-1 left-1 rounded-sm bg-ink/80 px-1.5 py-0.5 text-[10px] font-mono text-paper">
-                              Slide {idx + 1}
-                            </span>
-                            {isCover && (
-                              <span className="absolute bottom-1 right-1 rounded-sm bg-signal px-1.5 py-0.5 text-[9px] font-medium text-paper">
-                                Cover
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1.5 truncate text-[11px] text-muted">
-                            {photo.title || `Photo #${photo.id}`}
-                          </p>
-                          <div className="mt-2 flex items-center justify-between border-t border-line/60 pt-1.5">
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() => movePhoto(idx, -1)}
-                                disabled={idx === 0}
-                                aria-label="Move slide up"
-                                className="rounded p-1 text-muted hover:bg-soft hover:text-ink disabled:opacity-30"
-                              >
-                                <ArrowUp size={13} aria-hidden="true" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => movePhoto(idx, 1)}
-                                disabled={idx === orderedPhotoIds.length - 1}
-                                aria-label="Move slide down"
-                                className="rounded p-1 text-muted hover:bg-soft hover:text-ink disabled:opacity-30"
-                              >
-                                <ArrowDown size={13} aria-hidden="true" />
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCoverPhotoId(String(photo.id))
-                                }
-                                title="Set as series cover photo"
-                                aria-label="Set as cover"
-                                className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
-                                  isCover
-                                    ? "bg-signal text-paper"
-                                    : "text-muted hover:bg-soft hover:text-ink"
-                                }`}
-                              >
-                                Cover
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  removePhotoFromQueue(String(photo.id))
-                                }
-                                aria-label="Remove from series"
-                                className="rounded p-1 text-muted hover:bg-soft hover:text-danger"
-                              >
-                                <Trash2 size={13} aria-hidden="true" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-md border border-dashed border-line bg-soft/30 p-8 text-center text-sm text-muted">
-                    No slides selected yet. Pick photographs below to add them
-                    to this series.
-                  </div>
-                )}
-              </div>
+              <SeriesSlideList
+                orderedPhotoIds={orderedPhotoIds}
+                allPhotos={allPhotos}
+                coverPhotoId={coverPhotoId}
+                onMovePhoto={movePhoto}
+                onSetCoverPhoto={setCoverPhotoId}
+                onRemovePhoto={removePhotoFromQueue}
+              />
               <div>
                 <FieldLabel htmlFor="library-picker">
                   Select Photographs From Library
@@ -791,86 +565,12 @@ export default function SeriesManager({
           )}
         </section>
       )}
-      <section aria-label="Existing series list">
-        {series.length === 0 ? (
-          <div className="rounded-lg border border-line bg-soft/40 p-12 text-center">
-            <ImageIcon
-              size={32}
-              className="mx-auto mb-3 text-muted"
-              aria-hidden="true"
-            />
-            <p className="text-sm font-medium text-ink">
-              No series created yet
-            </p>
-            <p className="mt-1 text-xs text-muted">
-              Create your first multi-photo series to display carousel slide
-              stories.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-line/70 bg-surface/75 backdrop-blur-md">
-            <ul className="divide-y divide-line">
-              {series.map((item) => {
-                const coverPhoto =
-                  item.photos.find((p) => p.id === item.cover_photo_id) ||
-                  item.photos[0];
-                return (
-                  <li
-                    key={item.id}
-                    className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
-                  >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-line/70 bg-soft">
-                        {coverPhoto ? (
-                          <Image
-                            src={coverPhoto.cloudinary_url}
-                            alt={coverPhoto.title || "A Momented Photograph"}
-                            fill
-                            sizes="56px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-[10px] text-muted">
-                            No cover
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h4 className="truncate font-medium text-ink">
-                          {item.title}
-                        </h4>
-                        <p className="mt-0.5 truncate text-xs text-muted">
-                          {item.photos.length}{" "}
-                          {item.photos.length === 1 ? "slide" : "slides"}
-                          {item.description ? ` · ${item.description}` : ""}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => openEditForm(item)}
-                        disabled={isPending}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(item.id)}
-                        disabled={isPending}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </section>
+      <SeriesCardList
+        series={series}
+        isPending={isPending}
+        onEdit={openEditForm}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { updateTag } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import cloudinary from "@/lib/cloudinary/cloudinary";
-import { getAdminDb, syncJunction } from "@/lib/db/supabase-admin";
+import { insertPhotoToDb } from "@/lib/db/mutations";
 import { parsePhotoDate } from "@/lib/utils/dateUtils";
 import {
   CLOUDINARY_PUBLIC_ID_PATTERN,
@@ -124,7 +124,6 @@ export async function savePhotoToDbAction(
 ): Promise<{ success: boolean; id: string }> {
   await verifyAdminSession();
   assertSafeAsset(data);
-  const db = getAdminDb();
   const meta = data.image_metadata || {};
   const rawFocal = meta.FocalLength || "";
   const cleanFocal = rawFocal
@@ -141,67 +140,24 @@ export async function savePhotoToDbAction(
     meta.CreateDate ||
     meta.DateCreated) as string | undefined;
   const takenAtDate = parsePhotoDate(rawExifDate)?.toISOString() ?? null;
-  const { data: newPhoto, error: dbError } = await db
-    .from("photos")
-    .insert([
-      {
-        title: data.title,
-        description: data.description,
-        cloudinary_url: data.secure_url,
-        cloudinary_public_id: data.public_id,
-        width: data.width,
-        height: data.height,
-        camera_make: meta.Make || null,
-        camera_model: meta.Model || null,
-        focal_length: cleanFocal,
-        aperture: meta.FNumber ? `f/${meta.FNumber}` : null,
-        shutter_speed: meta.ExposureTime ? `${meta.ExposureTime}s` : null,
-        iso: cleanIso,
-        artist: data.artistInput || exifArtist || siteConfig.author.name,
-        taken_at: takenAtDate,
-      },
-    ])
-    .select("id")
-    .single();
-  if (dbError) throw new Error(`Database Error: ${dbError.message}`);
-  const photoDate = takenAtDate ? new Date(takenAtDate) : new Date();
-  const monthId = photoDate.getUTCMonth() + 1;
-  await Promise.all([
-    db
-      .from("photo_calendar_collections")
-      .insert([{ photo_id: newPhoto.id, calendar_id: monthId }]),
-    syncJunction(
-      db,
-      "photo_collections",
-      "photo_id",
-      newPhoto.id,
-      "collection_id",
-      data.collectionIds ?? [],
-      { skipDelete: true },
-    ),
-    syncJunction(
-      db,
-      "photo_rule_collections",
-      "photo_id",
-      newPhoto.id,
-      "rule_id",
-      data.ruleIds ?? [],
-      { skipDelete: true },
-    ),
-  ]);
-  const { data: latestCalendarPhoto } = await db
-    .from("photos")
-    .select("id, photo_calendar_collections!inner()")
-    .eq("photo_calendar_collections.calendar_id", monthId)
-    .order("taken_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (latestCalendarPhoto?.id)
-    await db
-      .from("calendar_collections")
-      .update({ cover_photo_id: latestCalendarPhoto.id })
-      .eq("id", monthId);
+  const { id, monthId } = await insertPhotoToDb({
+    title: data.title,
+    description: data.description,
+    artist: data.artistInput || exifArtist || siteConfig.author.name,
+    cloudinary_url: data.secure_url,
+    cloudinary_public_id: data.public_id,
+    width: data.width,
+    height: data.height,
+    camera_make: meta.Make || null,
+    camera_model: meta.Model || null,
+    focal_length: cleanFocal,
+    aperture: meta.FNumber ? `f/${meta.FNumber}` : null,
+    shutter_speed: meta.ExposureTime ? `${meta.ExposureTime}s` : null,
+    iso: cleanIso,
+    taken_at: takenAtDate,
+    collectionIds: data.collectionIds ?? [],
+    ruleIds: data.ruleIds ?? [],
+  });
   updateTag("photos");
   updateTag("photos-ids");
   updateTag("collections");
@@ -210,5 +166,5 @@ export async function savePhotoToDbAction(
   updateTag(`calendar-${monthId}`);
   for (const cid of data.collectionIds ?? []) updateTag(`collection-${cid}`);
   for (const rid of data.ruleIds ?? []) updateTag(`rule-${rid}`);
-  return { success: true, id: newPhoto.id };
+  return { success: true, id };
 }
