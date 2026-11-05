@@ -74,7 +74,7 @@ export default async function Home() {
             </div>
           </header>
           {heroPhoto && (
-            <div className="group relative overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all duration-500 hover:border-signal/40 hover:shadow-[0_20px_48px_rgba(0,0,0,0.08)]">
+            <div className="group relative overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_8px_32px_rgba(0,0,0,0.04)] transition-all duration-500 hover:border-signal/40 hover:shadow-[0_20px_48px_rgba(0,0,0,0.08)] active:scale-99">
               <Link
                 href={`/photo/${heroPhoto.id}`}
                 className="focus-media block"
@@ -87,7 +87,7 @@ export default async function Home() {
                     fill
                     sizes="(max-width: 1024px) 100vw, 1280px"
                     preload
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent sm:from-black/70 sm:via-transparent" />
                   <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
@@ -147,7 +147,7 @@ export default async function Home() {
                 <div className="lg:col-span-7">
                   <Link
                     href={`/series/${featuredSeries.id}`}
-                    className="focus-media group block relative aspect-16/10 overflow-hidden rounded-xl border border-line/60 bg-soft shadow-xs"
+                    className="focus-media group block relative aspect-16/10 overflow-hidden rounded-xl border border-line/60 bg-soft shadow-xs active:scale-99"
                     aria-label={`Open series: ${featuredSeries.title}`}
                   >
                     {featuredSeries.photos[0] ? (
@@ -158,7 +158,7 @@ export default async function Home() {
                         }
                         fill
                         sizes="(max-width: 1024px) 100vw, 700px"
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-sm text-muted">
@@ -244,7 +244,7 @@ export default async function Home() {
                 </span>
                 <Link
                   href="/collections"
-                  className="text-xs font-medium text-signal hover:underline"
+                  className="text-xs font-medium text-signal hover:underline active:scale-95"
                 >
                   All themes →
                 </Link>
@@ -268,7 +268,7 @@ export default async function Home() {
                 </span>
                 <Link
                   href="/collections/rules"
-                  className="text-xs font-medium text-signal hover:underline"
+                  className="text-xs font-medium text-signal hover:underline active:scale-95"
                 >
                   All rules →
                 </Link>
@@ -292,7 +292,7 @@ export default async function Home() {
                 </span>
                 <Link
                   href="/collections/calendar"
-                  className="text-xs font-medium text-signal hover:underline"
+                  className="text-xs font-medium text-signal hover:underline active:scale-95"
                 >
                   Full calendar →
                 </Link>
@@ -387,7 +387,7 @@ export default async function Home() {
               <div className="mt-5">
                 <Link
                   href="/about"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-signal hover:underline underline-offset-4"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-signal hover:underline underline-offset-4 active:scale-95"
                 >
                   <span>Read creator note &amp; camera gear</span>
                   <ArrowRight size={14} aria-hidden="true" />
