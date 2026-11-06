@@ -9,9 +9,8 @@ import { getCuratedCollections } from "@/lib/db/queries";
 import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
-  title: "Collections",
-  description:
-    "Moments gathered by hand — themes and moods curated on Momented.",
+  title: "Thematic Collections",
+  description: "Photographs grouped by atmosphere, texture, and mood.",
   path: "/collections",
 });
 export default async function CollectionsPage() {
@@ -23,9 +22,9 @@ export default async function CollectionsPage() {
       <JsonLd
         data={[
           hubPageJsonLd({
-            title: "Collections — Curated Photography Archives",
+            title: "Thematic Collections",
             description:
-              "Moments gathered by hand — themes and moods curated on Momented.",
+              "Photographs grouped by atmosphere, texture, and mood.",
             url: `${siteConfig.url}/collections`,
             items: displayCollections.map((col) => ({
               name: col.title,
@@ -40,9 +39,9 @@ export default async function CollectionsPage() {
         ]}
       />
       <PageHeader
-        badge="02 / Curated Lenses"
+        badge="02 / Themes"
         title="Thematic Collections"
-        description="Moments gathered by hand — architectural textures, shadows, and fleeting atmospheres."
+        description="Photographs grouped by atmosphere, texture, and mood."
         meta={
           count > 0 ? `${count} ${count === 1 ? "theme" : "themes"}` : undefined
         }
@@ -59,7 +58,7 @@ export default async function CollectionsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState description="Nothing here yet — this view is still waiting for its first collection." />
+        <EmptyState description="No collections have been added yet." />
       )}
     </>
   );

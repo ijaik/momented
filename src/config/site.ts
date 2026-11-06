@@ -23,9 +23,9 @@ export const siteConfig: SiteConfig = {
   },
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://momented.vercel.app",
   description:
-    "A momented journal exploring light, shadow, and moments in between.",
+    "A photography journal of light, shadow, & the moments in between.",
   license:
-    "The photographs can speak for themselves. If you mention where they came from, I'm grateful.",
+    "Photographs are dedicated to the public domain under Creative Commons CC0 1.0 Universal.",
   cloudinary: {
     cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "momented",
     folderDev: "momented-dev",

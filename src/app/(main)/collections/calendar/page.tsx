@@ -10,8 +10,7 @@ import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Calendar Collections",
-  description:
-    "Moments as they happened, grouped by the month they were captured.",
+  description: "Photographs grouped by the month they were taken.",
   path: "/collections/calendar",
 });
 export default async function CalendarCollectionsPage() {
@@ -25,9 +24,8 @@ export default async function CalendarCollectionsPage() {
       <JsonLd
         data={[
           hubPageJsonLd({
-            title: "Calendar Collections — Moments by Month",
-            description:
-              "Moments as they happened, grouped by the month they were captured.",
+            title: "Calendar Collections",
+            description: "Photographs grouped by the month they were taken.",
             url: `${siteConfig.url}/collections/calendar`,
             items: displayCollections.map((col) => ({
               name: col.title,
@@ -46,9 +44,9 @@ export default async function CalendarCollectionsPage() {
         ]}
       />
       <PageHeader
-        badge="02 / Curated Lenses"
-        title="Seasonal Calendar"
-        description="Moments as they happened, chronicled through the changing light of each month."
+        badge="02 / Calendar"
+        title="Photographs by Month"
+        description="Photographs organized by the month they were taken."
         meta={
           count > 0
             ? `${count} active ${count === 1 ? "month" : "months"}`
@@ -67,7 +65,7 @@ export default async function CalendarCollectionsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState description="Nothing here yet — this view is still waiting for its first collection." />
+        <EmptyState description="No calendar collections have been added yet." />
       )}
     </>
   );

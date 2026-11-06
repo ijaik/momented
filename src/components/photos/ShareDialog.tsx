@@ -40,8 +40,8 @@ export default function ShareDialog({
     return new URL(url || window.location.href, window.location.origin).href;
   })();
   const shareText = title
-    ? `Check out "${title}" on Momented\n\nVisit the link for full resolution & downloads.`
-    : "Check out Momented\n\nVisit the link for full resolution & downloads.";
+    ? `Check out "${title}" on Momented.`
+    : "Check out Momented.";
   const supportsNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
   const close = () => {
@@ -135,7 +135,7 @@ export default function ShareDialog({
     let shared = false;
     try {
       const file = await getShareFile();
-      const shareMessage = `${shareText}\n\nView full high-resolution photo: ${shareUrl}`;
+      const shareMessage = `${shareText}\n\nView photograph on Momented: ${shareUrl}`;
       const standardData = {
         title: title || "Momented",
         text: shareMessage,

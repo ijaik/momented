@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import type { PhotoOption } from "./types";
+
 interface SeriesSlideListProps {
   orderedPhotoIds: string[];
   allPhotos: PhotoOption[];

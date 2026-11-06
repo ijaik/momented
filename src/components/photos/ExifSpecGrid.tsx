@@ -66,12 +66,8 @@ export default function ExifSpecGrid({
             <Camera size={compact ? 14 : 18} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <span
-              className={`block font-semibold uppercase tracking-wider text-muted ${
-                compact ? "text-[10px]" : "text-[11px]"
-              }`}
-            >
-              {compact ? "Camera" : "Camera Body"}
+            <span className="block font-semibold uppercase tracking-wider text-muted text-[10px]">
+              Camera
             </span>
             <p
               className={`truncate font-medium text-ink ${

@@ -39,7 +39,7 @@ export async function generateMetadata({
     };
   const description =
     collection.description ||
-    `Photographs composed under the photographic constraint: "${collection.title}" on ${siteConfig.name}.`;
+    `Photographs by the "${collection.title}" on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: collection.title,
     description,
@@ -74,7 +74,7 @@ async function SingleRuleContent({
           ),
           breadcrumbJsonLd([
             {
-              name: "Collections",
+              name: "Rule Collections",
               url: `${siteConfig.url}/collections/rules`,
             },
             { name: collection.title, url },
@@ -94,7 +94,7 @@ async function SingleRuleContent({
       >
         <PhotoGrid
           photos={photos}
-          emptyMessage="No photographs have been tagged with this rule yet."
+          emptyMessage="No photographs by this rule yet."
         />
       </DetailLayout>
     </>

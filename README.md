@@ -2,7 +2,7 @@
   <br />
   <h1><img src="/public/icons/favicon.svg" height="32" width="32" alt="Momented Logo" /> Momented</h1>
   <p>
-    <b>A minimalist photo journal exploring light, shadow, and the moments in between.</b>
+    <b>A photography journal documenting light, shadows, and everyday moments.</b>
   </p>
   <p>
     <a href="https://github.com/ijaik/momented/blob/main/LICENSE"><img src="https://img.shields.io/badge/Code_License-MIT-blue.svg?style=for-the-badge" alt="MIT License" /></a>
@@ -13,9 +13,6 @@
 </div>
 
 <br />
-
-> "Momented" is a personal portfolio and content management system designed to showcase photography while allowing visitors to easily download and use the captured moments.
-> Art is meant to be shared, not locked away.
 
 ---
 
@@ -32,12 +29,12 @@
 
 ## ✨ Features
 
-- **Masonry Photo Grid** — A beautiful, responsive gallery designed specifically for high-resolution images.
-- **Collections** — Group photos by thematic collections, photography rules, or calendar months.
-- **High-Res Downloads** — Built-in functionality for visitors to download original, high-resolution images directly.
-- **Exif Data Extraction** — Automatically reads and displays camera metadata (Focal Length, Aperture, Shutter Speed, ISO, Camera Model) when viewing a photo.
-- **Secure Admin Dashboard** — A protected route (`/admin`) utilizing JWT authentication to upload photos and curate collections.
-- **Direct Cloudinary Uploads** — Secure, signed image uploads directly from the admin dashboard to your Cloudinary storage.
+- **Masonry Grid** — A responsive gallery designed to browse photographs easily.
+- **Collections** — Group photographs by themes, rules, and calendar months.
+- **Direct Downloads** — Built-in button for visitors to download photographs directly.
+- **Phone EXIF Data** — Reads and displays phone camera metadata (Focal Length, Aperture, Shutter Speed, ISO, Camera Model) when available.
+- **Secure Admin Dashboard** — A protected route (`/admin`) utilizing JWT authentication to upload photographs and manage collections.
+- **Direct Cloudinary Uploads** — Image uploads directly from the admin dashboard to Cloudinary storage.
 
 ---
 
@@ -94,7 +91,7 @@ Create a `.env.local` file in the root directory. You will need active accounts 
 
 ## 📄 License
 
-This repository is dual-licensed to accommodate both open-source software development and the open sharing of photography assets.
+This repository is dual-licensed to distinguish between software code and photographic works:
 
-- **💻 Codebase:** The source code in this repository is licensed under the MIT License. You are free to use, modify, and distribute the code to build your own projects.
-- **🖼️ Photography & Content:** All original photography, content, and written narratives are dedicated to the public domain under **CC0 1.0 Universal**. The photographs can speak for themselves. You are free to download, share, and adapt the photography for any purpose, even commercially, without asking permission. If you mention where they came from, I'm grateful, but it is never legally required.
+- **💻 Codebase:** The software source code in this repository is licensed under the [MIT License](LICENSE).
+- **🖼️ Photography Assets:** Photographs are dedicated to the public domain under the [Creative Commons CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). You are free to download, share, and adapt the photographs for any purpose, including commercial projects, without permission. Attribution is appreciated, but not legally required. The CC0 dedication applies to copyright in the photographic works; website prose and trademarks are not dedicated to the public domain.

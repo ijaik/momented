@@ -35,13 +35,13 @@ export async function generateMetadata({
       title: "Photograph Not Found",
       robots: { index: false, follow: false },
     };
-  const title = photo.title || "Photography Gallery";
+  const title = photo.title || "Untitled Momented";
   const cameraText = photo.camera_model
-    ? ` Captured on ${photo.camera_model}.`
+    ? ` Shot on ${photo.camera_model}.`
     : "";
   const description = photo.description
     ? `${title} — ${photo.description}.${cameraText}`.replace(/\.\./g, ".")
-    : `Explore "${title}" on ${siteConfig.name}.${cameraText}`;
+    : `View "${title}" on ${siteConfig.name}.${cameraText}`;
   return buildPageMetadata({
     title,
     description,

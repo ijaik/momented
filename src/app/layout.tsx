@@ -26,21 +26,16 @@ export const metadata: Metadata = {
     },
   },
   title: {
-    default: "Momented — Minimalist Photography Journal & Gallery",
+    default: "Momented | Captured Moment",
     template: "%s | Momented",
   },
   description:
-    "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
+    "A photography journal documenting light, shadows, and everyday moments.",
   keywords: [
     "photography",
-    "minimalist photography",
-    "photo journal",
-    "photography portfolio",
-    "street photography",
-    "architecture photography",
-    "nature photography",
-    "high-resolution downloads",
-    "CC0 photography",
+    "mobile photography",
+    "everyday moments",
+    "photographs journal",
     "momented",
   ],
   authors: [{ name: siteConfig.author.name, url: siteConfig.author.github }],
@@ -51,23 +46,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteConfig.url,
     siteName: "Momented",
-    title: "Momented — Minimalist Photography Journal & Gallery",
+    title: "Momented",
     description:
-      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
+      "A photography journal documenting light, shadows, and everyday moments.",
     images: [
       {
         url: "/screenshots/desktop.png",
         width: 1280,
         height: 720,
-        alt: "Momented — Minimalist Photography Journal & Gallery",
+        alt: "Momented",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Momented — Minimalist Photography Journal & Gallery",
+    title: "Momented",
     description:
-      "A minimalist photography journal and open visual archive exploring light, shadow, and moments in between. Free high-resolution photography to view and download.",
+      "A photography journal documenting light, shadows, and everyday moments.",
     images: ["/screenshots/desktop.png"],
   },
   icons: {

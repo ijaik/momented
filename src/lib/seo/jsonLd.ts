@@ -19,7 +19,7 @@ export function websiteJsonLd(): JsonLdObject {
     "@type": "WebSite",
     "@id": `${siteConfig.url}/#website`,
     name: siteConfig.name,
-    alternateName: ["Momented Photography", "Momented Journal"],
+    alternateName: ["Momented - A photography journal"],
     url: siteConfig.url,
     description: siteConfig.description,
     inLanguage: "en-US",
@@ -156,9 +156,7 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     "@id": `${siteConfig.url}/photo/${photo.id}#image`,
     name,
     caption: photo.description || name,
-    description:
-      photo.description ||
-      `Photograph "${name}" exploring light and shadow by ${artistName}.`,
+    description: photo.description || `Photograph "${name}" by ${artistName}.`,
     contentUrl: photo.cloudinary_url,
     thumbnailUrl: getSocialShareImageUrl(photo.cloudinary_url),
     encodingFormat: "image/jpeg",
@@ -166,7 +164,7 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     image: getSocialShareImageUrl(photo.cloudinary_url),
     representativeOfPage: true,
     inLanguage: "en-US",
-    genre: "Fine Art Photography",
+    genre: "Photography",
     isPartOf: {
       "@type": "WebSite",
       "@id": `${siteConfig.url}/#website`,
@@ -291,7 +289,7 @@ export function homePageGalleryJsonLd(
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${siteConfig.name} — Photography Gallery & Journal`,
+    name: `${siteConfig.name} — A photography journal`,
     description: siteConfig.description,
     url: `${siteConfig.url}/`,
     inLanguage: "en-US",

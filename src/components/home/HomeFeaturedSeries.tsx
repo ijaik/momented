@@ -18,10 +18,10 @@ export default function HomeFeaturedSeries({
       className="border-t border-line/80 pt-16 sm:pt-20"
     >
       <SectionHeader
-        label="01 / Visual Sequences"
+        label="01 / Series"
         icon={Film}
-        title="Stories framed in progression"
-        description="Sequenced visual narratives exploring a single continuum of light, atmosphere, and movement."
+        title="Photographs in sequence"
+        description="Sequence of photographs exploring changes in light and scenes."
         action={{
           href: "/series",
           label: "Browse all series",
@@ -45,12 +45,12 @@ export default function HomeFeaturedSeries({
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-muted">
-                  No frames yet
+                  No photographs yet
                 </div>
               )}
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
                 <Layers size={13} aria-hidden="true" />
-                <span>{featuredSeries.photos.length} frames</span>
+                <span>{featuredSeries.photos.length} photographs</span>
               </span>
             </Link>
           </div>
@@ -99,7 +99,7 @@ export default function HomeFeaturedSeries({
                 href={`/series/${featuredSeries.id}`}
                 className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-all hover:opacity-90 active:scale-95"
               >
-                <span>Experience Series</span>
+                <span>View Series</span>
                 <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>

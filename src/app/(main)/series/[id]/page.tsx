@@ -32,10 +32,10 @@ export async function generateMetadata({
       title: "Series Not Found",
       robots: { index: false, follow: false },
     };
-  const title = series.title || "Photo Series";
+  const title = series.title || "Series";
   const description =
     series.description ||
-    `Explore "${title}" — a multi-photo series on ${siteConfig.name}.`;
+    `Explore "${title}" — a series on ${siteConfig.name}.`;
   const rawPhotos =
     (series.series_photos as unknown as {
       position: number;
@@ -88,11 +88,11 @@ async function SeriesDetailContent({
         ]}
       />
       <DetailLayout
-        badge="Visual Sequence"
+        badge="Series"
         backLink={{ href: "/series", label: "All Series" }}
         title={series.title}
         description={series.description}
-        meta={`${sortedPhotos.length} ${sortedPhotos.length === 1 ? "frame" : "frames"} • ${displayDate}`}
+        meta={`${sortedPhotos.length} ${sortedPhotos.length === 1 ? "photograph" : "photographs"} • ${displayDate}`}
       >
         {sortedPhotos.length > 0 ? (
           <SeriesCarousel

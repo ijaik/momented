@@ -1,69 +1,20 @@
-import {
-  ArrowUpRight,
-  Camera,
-  Film,
-  HelpCircle,
-  Layers,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowUpRight, Camera, Film, Layers, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import JsonLd from "@/components/seo/JsonLd";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { siteConfig } from "@/config/site";
-import {
-  aboutPageJsonLd,
-  faqPageJsonLd,
-  personJsonLd,
-  websiteJsonLd,
-} from "@/lib/seo/jsonLd";
+import { aboutPageJsonLd, personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
-
-const FAQS = [
-  {
-    question: "What is Momented?",
-    answer:
-      "Momented is an independent minimalist photography journal and open visual archive created by Jai, dedicated to capturing quiet studies in light, shadow, urban textures, and moments in between.",
-  },
-  {
-    question:
-      "Are photographs on Momented free for commercial and personal use?",
-    answer:
-      "Yes. All photographs on Momented are released under Creative Commons CC0 1.0 Universal Public Domain Dedication. You are free to view, download, adapt, and use them for personal, editorial, or commercial projects without permission or cost.",
-  },
-  {
-    question: "Is attribution required when using Momented photos?",
-    answer:
-      "Attribution is not legally required under the CC0 dedication, but mentioning 'Jai / Momented' or linking back to https://momented.vercel.app is appreciated whenever you share the work.",
-  },
-  {
-    question: "What camera gear and technical settings are used?",
-    answer:
-      "Photographs are captured across varied camera systems and prime lenses. Full technical exposure data—including camera model, focal length, aperture, shutter speed, and ISO—is preserved in the EXIF metadata on each photograph's view page.",
-  },
-  {
-    question: "How can I download the highest resolution file?",
-    answer:
-      "Open any individual photograph and select 'Download' in the details panel to save the original high-resolution uncompressed file directly to your device.",
-  },
-];
 export const metadata: Metadata = buildPageMetadata({
   title: "About",
-  description:
-    "Hi, I'm Jai — an observer behind the lens, making a quiet record of light, shadow, and the moments in between on Momented. Free high-resolution photography.",
+  description: "About Jai and Momented — A photography journal.",
   path: "/about",
 });
 export default function AboutPage() {
   return (
     <>
-      <JsonLd
-        data={[
-          aboutPageJsonLd(),
-          personJsonLd(),
-          websiteJsonLd(),
-          faqPageJsonLd(FAQS),
-        ]}
-      />
+      <JsonLd data={[aboutPageJsonLd(), personJsonLd(), websiteJsonLd()]} />
       <div className="mx-auto w-full max-w-6xl 2xl:max-w-360 py-10 sm:py-14 md:py-16">
         <header className="mb-16 border-b border-line pb-14 md:mb-20 md:pb-16">
           <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
@@ -71,18 +22,14 @@ export default function AboutPage() {
               aria-hidden="true"
               className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal animate-pulse"
             />
-            <span>Behind the lens</span>
+            <span>About</span>
           </div>
           <h1 className="font-serif text-5xl font-medium leading-[1.05] tracking-tight text-ink sm:text-6xl md:text-7xl">
             Hi, I&apos;m Jai.
           </h1>
           <p className="mt-8 max-w-2xl font-serif text-xl font-light leading-relaxed text-ink/90 sm:text-2xl sm:leading-relaxed">
-            {siteConfig.author.role} — making a quiet record of light, shadow,
-            and the moments in between.
-          </p>
-          <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted sm:text-base">
-            Every photograph is a study in pause — letting textures, geometries,
-            and fleeting atmospheres speak for themselves.
+            I am not a photographer but I enjoy capturing moments, and Momented
+            is where I put them together.
           </p>
         </header>
         <div className="flex flex-col gap-16 md:gap-20">
@@ -93,25 +40,25 @@ export default function AboutPage() {
                 <SectionLabel>The Concept</SectionLabel>
               </div>
               <p className="text-[15px] leading-relaxed text-muted">
-                <span className="font-serif text-ink">Momented</span> — the term
-                for a captured moment. Through it, I preserve the quiet
-                conversations between natural light, urban shadow, and time.
+                <span className="font-serif text-ink">Momented</span> — a word I
+                thought for a captured moment. Through it, I try to preserve the
+                light, shadow, & the moments in between.
               </p>
             </div>
             <div className="rounded-2xl border border-line/70 bg-surface/60 backdrop-blur-md p-6 sm:p-7 shadow-xs">
               <div className="mb-3 flex items-center gap-2 text-ink">
                 <Layers size={18} className="text-signal" />
-                <SectionLabel>The Philosophy</SectionLabel>
+                <SectionLabel>The Idea</SectionLabel>
               </div>
               <p className="text-[15px] leading-relaxed text-muted">
-                Art is meant to be shared, lived with, and explored. Take these
-                high-resolution visual records wherever they bring a moment of
-                stillness to your day.
+                Photographs are meant to be shared. If you find a photograph you
+                like, feel free to download and use it for personal or
+                commercial projects without asking for permission.
               </p>
             </div>
           </section>
           <section className="border-t border-line pt-12">
-            <SectionLabel>Explore the Work</SectionLabel>
+            <SectionLabel>Explore</SectionLabel>
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Link
                 href="/series"
@@ -126,10 +73,11 @@ export default function AboutPage() {
                     />
                   </div>
                   <h3 className="mt-4 font-serif text-lg font-medium text-ink">
-                    Curated Series
+                    Series
                   </h3>
                   <p className="mt-1 text-xs text-muted">
-                    Sequential cinematic photographic narratives.
+                    Sequence of photographs exploring changes in light and
+                    scenes.
                   </p>
                 </div>
                 <span className="mt-4 text-xs font-mono text-signal">
@@ -152,7 +100,7 @@ export default function AboutPage() {
                     Collections
                   </h3>
                   <p className="mt-1 text-xs text-muted">
-                    Thematic archives grouped by subject and mood.
+                    Photographs grouped by atmosphere, texture, and mood.
                   </p>
                 </div>
                 <span className="mt-4 text-xs font-mono text-signal">
@@ -172,14 +120,15 @@ export default function AboutPage() {
                     />
                   </div>
                   <h3 className="mt-4 font-serif text-lg font-medium text-ink">
-                    Full Archive
+                    Photographs
                   </h3>
                   <p className="mt-1 text-xs text-muted">
-                    The complete chronological journal of moments.
+                    Light, shadow, & the moments in between — one photograph at
+                    a time.
                   </p>
                 </div>
                 <span className="mt-4 text-xs font-mono text-signal">
-                  Explore archive →
+                  Explore photographs →
                 </span>
               </Link>
             </div>
@@ -192,7 +141,8 @@ export default function AboutPage() {
                   &ldquo;{siteConfig.license}&rdquo;
                 </blockquote>
                 <p className="mt-4 text-xs text-muted leading-relaxed">
-                  Dedicated under{" "}
+                  Free for commercial, personal, and artistic use worldwide
+                  without copyright restrictions.{" "}
                   <a
                     href="https://creativecommons.org/publicdomain/zero/1.0/"
                     target="_blank"
@@ -200,8 +150,8 @@ export default function AboutPage() {
                     className="underline hover:text-ink"
                   >
                     Creative Commons CC0 1.0 Universal
-                  </a>
-                  . Free for commercial, personal, and artistic use worldwide.
+                  </a>{" "}
+                  does not affect third-party trademark or privacy rights.
                 </p>
               </div>
               <div className="flex flex-col justify-center rounded-2xl border border-line/70 bg-surface/50 p-6">
@@ -219,8 +169,7 @@ export default function AboutPage() {
                     <span className="text-signal">✓</span> No permission needed
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-signal">✓</span> Full original
-                    resolution
+                    <span className="text-signal">✓</span> Direct downloads
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-signal">✓</span> Attribution
@@ -228,27 +177,6 @@ export default function AboutPage() {
                   </li>
                 </ul>
               </div>
-            </div>
-          </section>
-          <section className="border-t border-line pt-12">
-            <div className="mb-6 flex items-center gap-2">
-              <HelpCircle size={18} className="text-signal" />
-              <SectionLabel>Frequently Asked Questions</SectionLabel>
-            </div>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {FAQS.map((faq) => (
-                <article
-                  key={faq.question}
-                  className="rounded-2xl border border-line/70 bg-surface/60 backdrop-blur-md p-6 sm:p-7 shadow-xs"
-                >
-                  <h3 className="font-serif text-lg font-medium text-ink">
-                    {faq.question}
-                  </h3>
-                  <p className="mt-3 text-[15px] leading-relaxed text-muted">
-                    {faq.answer}
-                  </p>
-                </article>
-              ))}
             </div>
           </section>
         </div>

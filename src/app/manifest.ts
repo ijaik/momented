@@ -46,7 +46,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Momented | Captured Moment",
     short_name: "Momented",
     description:
-      "A minimalist photography journal and open visual archive of light, shadow, and moments in between.",
+      "A photography journal of light, shadow, & the moments in between.",
     lang: "en-US",
     dir: "ltr",
     display: "standalone",
@@ -58,20 +58,20 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#ffffff",
     theme_color: "#faf9f6",
     prefer_related_applications: false,
-    categories: ["photo", "lifestyle", "portfolio", "entertainment"],
+    categories: ["photographs", "lifestyle", "entertainment"],
     icons,
     shortcuts: [
       {
         name: "View Collections",
         short_name: "Collections",
-        description: "Browse curated photo collections.",
+        description: "Browse collections by theme, rules and months.",
         url: "/collections",
         icons,
       },
       {
         name: "About Momented",
         short_name: "About",
-        description: "Learn more about the momented.",
+        description: "Learn more about Momented.",
         url: "/about",
         icons,
       },

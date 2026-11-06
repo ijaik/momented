@@ -9,29 +9,24 @@ interface HomeHeroProps {
 export default function HomeHero({ heroPhoto }: HomeHeroProps) {
   return (
     <section aria-label="Introduction and featured photograph">
-      <header className="my-12 md:my-16 xl:my-20">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
+      <header className="my-10 sm:my-14 md:my-16">
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-soft/70 px-3.5 py-1 text-xs font-medium text-muted">
           <span
             aria-hidden="true"
             className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal animate-pulse"
           />
-          <span>Open Visual Archive</span>
+          <span>Photographs Journal</span>
         </div>
-        <h1 className="max-w-5xl font-serif text-5xl font-medium leading-[1.04] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
-          Light, shadow, &amp; the moments in between.
-        </h1>
-        <div className="mt-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
-          <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
-            An independent minimalist photography journal capturing quiet
-            stillness, architectural geometries, and fleeting atmospheric
-            studies.
-          </p>
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <h1 className="max-w-5xl font-serif text-5xl font-medium leading-[1.04] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
+            Light, shadow, &amp; the moments in between.
+          </h1>
           <div className="flex shrink-0 items-center gap-3">
             <Link
               href="/photos"
               className="inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-all duration-150 hover:opacity-90 active:scale-95"
             >
-              <span>Explore Archive</span>
+              <span>Explore Photographs</span>
               <ArrowRight size={15} aria-hidden="true" />
             </Link>
             <Link
@@ -63,7 +58,7 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
               <div className="absolute left-4 top-4 sm:left-6 sm:top-6">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-3 py-1 text-xs font-medium text-white/95 backdrop-blur-md shadow-xs">
                   <Sparkles size={13} className="text-white/80" />
-                  Frame of the Moment
+                  New
                 </span>
               </div>
               <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 flex flex-col justify-end">

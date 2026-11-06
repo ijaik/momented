@@ -39,7 +39,7 @@ export async function generateMetadata({
     };
   const description =
     collection.description ||
-    `A curated photography collection: "${collection.title}" on ${siteConfig.name}.`;
+    `Photographs from the "${collection.title}" collection on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: collection.title,
     description,
@@ -73,13 +73,16 @@ async function SingleCollectionContent({
             photos,
           ),
           breadcrumbJsonLd([
-            { name: "Collections", url: `${siteConfig.url}/collections` },
+            {
+              name: "Thematic Collections",
+              url: `${siteConfig.url}/collections`,
+            },
             { name: collection.title, url },
           ]),
         ]}
       />
       <DetailLayout
-        badge="Thematic Collection"
+        badge="Thematic Collections"
         backLink={{ href: "/collections", label: "All Collections" }}
         title={collection.title}
         description={collection.description}

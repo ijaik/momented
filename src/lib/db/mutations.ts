@@ -6,6 +6,7 @@ import {
   syncJunction,
 } from "@/lib/db/supabase-admin";
 import { CLOUDINARY_PUBLIC_ID_PATTERN } from "@/lib/utils/validation";
+
 type ContentTable = "collections" | "rule_collections";
 interface CollectionSpec {
   table: ContentTable;

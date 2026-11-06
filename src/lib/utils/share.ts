@@ -11,7 +11,7 @@ export async function imageUrlToFile(imageUrl: string): Promise<File | null> {
       throw new Error(`Fetch failed with status ${response.status}`);
     const blob = await response.blob();
     if (!blob.type.startsWith("image/")) throw new Error("Not an image");
-    return new File([blob], "momented-photo.jpg", {
+    return new File([blob], "momented-photograph.jpg", {
       type: blob.type || "image/jpeg",
     });
   } catch (error) {
@@ -38,7 +38,7 @@ export async function imageUrlToFile(imageUrl: string): Promise<File | null> {
       img.src = jpegUrl;
     });
     if (!blob) return null;
-    return new File([blob], "momented-photo.jpg", { type: "image/jpeg" });
+    return new File([blob], "momented-photograph.jpg", { type: "image/jpeg" });
   }
 }
 export async function copyText(text: string): Promise<void> {

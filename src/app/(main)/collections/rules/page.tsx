@@ -9,9 +9,9 @@ import { getRuleCollectionsList } from "@/lib/db/queries";
 import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
-  title: "Rule Collections",
+  title: "Composition Rules",
   description:
-    "Moments made under a deliberate constraint — one photography rule at a time.",
+    "Photographs by rule of thirds, leading lines, framing, and more.",
   path: "/collections/rules",
 });
 export default async function RuleCollectionsPage() {
@@ -23,9 +23,9 @@ export default async function RuleCollectionsPage() {
       <JsonLd
         data={[
           hubPageJsonLd({
-            title: "Rule Collections — Composition Constraints",
+            title: "Composition Rules",
             description:
-              "Moments made under a deliberate constraint — one photography rule at a time.",
+              "Photographs by rule of thirds, leading lines, framing, and more.",
             url: `${siteConfig.url}/collections/rules`,
             items: displayCollections.map((col) => ({
               name: col.title,
@@ -44,9 +44,9 @@ export default async function RuleCollectionsPage() {
         ]}
       />
       <PageHeader
-        badge="02 / Curated Lenses"
+        badge="02 / Rules"
         title="Composition Rules"
-        description="Moments made under deliberate geometric and optical constraints — rule of thirds, framing, and leading lines."
+        description="Photographs by rule of thirds, leading lines, framing, and more."
         meta={
           count > 0 ? `${count} ${count === 1 ? "rule" : "rules"}` : undefined
         }
@@ -63,7 +63,7 @@ export default async function RuleCollectionsPage() {
           ))}
         </div>
       ) : (
-        <EmptyState description="Nothing here yet — this view is still waiting for its first collection." />
+        <EmptyState description="No rule collections have been added yet." />
       )}
     </>
   );

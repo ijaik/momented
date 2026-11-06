@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import type { QueuedSlideFile } from "./types";
+
 interface SeriesUploadQueueProps {
   queuedFiles: QueuedSlideFile[];
   onClear: () => void;

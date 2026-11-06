@@ -52,7 +52,7 @@ export async function generateMetadata({
   const monthName = collection.title || `Month ${monthIndex}`;
   const description =
     collection.description ||
-    `Photographs and captured moments from ${monthName} on ${siteConfig.name}.`;
+    `Photographs taken in ${monthName} on ${siteConfig.name}.`;
   return buildPageMetadata({
     title: monthName,
     description,
@@ -103,7 +103,7 @@ async function CalendarMonthContent({
           ),
           breadcrumbJsonLd([
             {
-              name: "Collections",
+              name: "Calendar Collections",
               url: `${siteConfig.url}/collections/calendar`,
             },
             { name: collection.title, url },
@@ -111,7 +111,7 @@ async function CalendarMonthContent({
         ]}
       />
       <DetailLayout
-        badge="Seasonal Light"
+        badge="Photographs by Month"
         backLink={{ href: "/collections/calendar", label: "Calendar" }}
         title={collection.title}
         description={collection.description}
@@ -129,7 +129,7 @@ async function CalendarMonthContent({
           />
         ) : (
           <EmptyState
-            description={`No photographs were captured in ${collection.title.toLowerCase()} yet.`}
+            description={`No photographs were taken in ${collection.title.toLowerCase()} yet.`}
             className="pt-6"
           />
         )}

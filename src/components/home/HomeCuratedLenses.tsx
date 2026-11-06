@@ -21,10 +21,10 @@ export default function HomeCuratedLenses({
       className="border-t border-line/80 pt-16 sm:pt-20"
     >
       <SectionHeader
-        label="02 / Curated Lenses"
+        label="02 / Collections"
         icon={Compass}
-        title="Three ways to experience the collection"
-        description="Beyond individual frames, photographs are organized through thematic atmosphere, compositional craft, and seasonal light."
+        title="Three ways to explore"
+        description="Photographs organized by theme, rules and months."
       />
       <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
         <div className="flex flex-col">

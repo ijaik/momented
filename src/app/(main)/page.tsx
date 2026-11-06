@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import HomeCuratedLenses from "@/components/home/HomeCuratedLenses";
 import HomeFeaturedSeries from "@/components/home/HomeFeaturedSeries";
 import HomeHero from "@/components/home/HomeHero";
-import HomePhilosophy from "@/components/home/HomePhilosophy";
 import HomeRecentPhotos from "@/components/home/HomeRecentPhotos";
 import JsonLd from "@/components/seo/JsonLd";
 import { getHomeEditorialData } from "@/lib/db/queries";
 import { websiteJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
-  title: "Momented — Minimalist Photography Journal & Archive",
+  title: "Momented",
   description:
-    "An independent minimalist photography journal and open visual archive of light, shadow, and moments in between. Free high-resolution photography to view and download.",
+    "A photography journal of light, shadow, & the moments in between.",
   path: "/",
 });
 export default async function Home() {
@@ -39,7 +38,6 @@ export default async function Home() {
           recentPhotos={recentPhotos}
           totalPhotos={totalPhotos}
         />
-        <HomePhilosophy />
       </div>
     </>
   );

@@ -96,7 +96,7 @@ export default function CoverCard({
             isCompact ? "text-base sm:text-lg" : "text-2xl"
           } font-medium leading-tight tracking-tight text-ink transition-colors group-hover:text-signal`}
         >
-          <span className="truncate">{item.title}</span>
+          {item.title}
           <ArrowUpRight
             size={isCompact ? 14 : 16}
             aria-hidden="true"

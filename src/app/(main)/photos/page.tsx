@@ -10,7 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Photographs",
   description:
-    "Browse the full archive of minimalist photographs on Momented — quiet studies of light, shadow, and moments in between. Free high-resolution download.",
+    "Light, shadow, & the moments in between — one photograph at a time.",
   path: "/photos",
 });
 export default async function PhotosPage() {
@@ -32,12 +32,12 @@ export default async function PhotosPage() {
         ]}
       />
       <PageHeader
-        badge="01 / Full Archive"
+        badge="01 / All Photographs"
         title="Photographs"
-        description="A journal of light, shadow, and the moments in between — one frame at a time."
+        description="Light, shadow, & the moments in between — one photograph at a time."
         meta={
           count > 0
-            ? `${count} ${count === 1 ? "moment" : "moments"} in the vault`
+            ? `${count} ${count === 1 ? "photograph" : "photographs"}`
             : undefined
         }
       />

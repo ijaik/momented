@@ -52,7 +52,7 @@ export const config = {
   matcher: [
     {
       source:
-        "/((?!_next/static|_next/image|favicon.ico|icons|screenshots|sitemap.xml|robots.txt|manifest.webmanifest|llms\\.txt|llms-full\\.txt).*)",
+        "/((?!_next/static|_next/image|favicon.ico|icons|screenshots|sitemap.xml|robots.txt|manifest.webmanifest).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

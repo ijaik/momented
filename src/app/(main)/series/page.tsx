@@ -10,8 +10,7 @@ import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
 export const metadata: Metadata = buildPageMetadata({
   title: "Series",
-  description:
-    "Ordered sequences of moments captured in the same frame of time — continuous visual narratives on Momented.",
+  description: "Sequence of photographs exploring changes in light and scenes.",
   path: "/series",
 });
 interface RawSeriesPhoto {
@@ -47,9 +46,9 @@ export default async function SeriesPage() {
       <JsonLd
         data={[
           hubPageJsonLd({
-            title: "Series — Cinematic Photographic Narratives",
+            title: "Series",
             description:
-              "Ordered sequences of moments captured in the same continuum of light, movement, and time.",
+              "Sequence of photographs exploring changes in light and scenes.",
             url: `${siteConfig.url}/series`,
             items: seriesList.map((series) => ({
               name: series.title,
@@ -64,14 +63,10 @@ export default async function SeriesPage() {
         ]}
       />
       <PageHeader
-        badge="03 / Visual Sequences"
-        title="Visual Series"
-        description="Ordered photographic essays exploring a single continuum of light, movement, and atmosphere."
-        meta={
-          count > 0
-            ? `${count} sequenced ${count === 1 ? "essay" : "essays"}`
-            : undefined
-        }
+        badge="03 / All Series"
+        title="Series"
+        description="Sequence of photographs exploring changes in light and scenes."
+        meta={count > 0 ? `${count} series` : undefined}
       />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
@@ -81,12 +76,12 @@ export default async function SeriesPage() {
               item={series}
               href={`/series/${series.id}`}
               meta={formatDisplayDate(series.created_at)}
-              countLabel={{ singular: "frame", plural: "frames" }}
+              countLabel={{ singular: "photograph", plural: "photographs" }}
             />
           ))}
         </div>
       ) : (
-        <EmptyState description="No photo series have been curated yet." />
+        <EmptyState description="No series have been added yet." />
       )}
     </>
   );
