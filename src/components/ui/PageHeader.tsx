@@ -26,7 +26,7 @@ export default function PageHeader({
         <div className="mb-6">
           <Link
             href={backLink.href}
-            className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+            className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
           >
             <ArrowLeft
               size={13}
@@ -47,7 +47,7 @@ export default function PageHeader({
       )}
       <div className="flex flex-col gap-6 border-b border-line/70 pb-8 md:flex-row md:items-end md:justify-between md:gap-12 sm:pb-10 md:pb-12">
         <div className="max-w-3xl">
-          <h1 className="font-serif text-4xl font-medium leading-[1.03] tracking-tight text-ink sm:text-5xl lg:text-6xl xl:text-7xl">
+          <h1 className="font-serif text-4xl leading-[1.03] tracking-tight text-ink sm:text-5xl lg:text-6xl xl:text-7xl">
             {title}
           </h1>
           {description && (

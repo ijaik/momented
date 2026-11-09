@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 interface SectionHeaderProps {
+  id?: string;
   label?: string;
   icon?: LucideIcon;
   title: string;
@@ -14,6 +15,7 @@ interface SectionHeaderProps {
   className?: string;
 }
 export default function SectionHeader({
+  id,
   label,
   icon: Icon,
   title,
@@ -40,7 +42,10 @@ export default function SectionHeader({
             </span>
           </div>
         )}
-        <h2 className="font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl md:text-[2.75rem] leading-[1.08]">
+        <h2
+          id={id}
+          className="font-serif text-3xl tracking-tight text-ink sm:text-4xl md:text-[2.75rem] leading-[1.08]"
+        >
           {title}
         </h2>
         {description && (
@@ -52,7 +57,7 @@ export default function SectionHeader({
       {action && (
         <Link
           href={action.href}
-          className="group inline-flex shrink-0 items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+          className="group inline-flex shrink-0 items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
         >
           <span>{action.label}</span>
           <ArrowRight

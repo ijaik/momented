@@ -84,7 +84,7 @@ export default function Navbar() {
             />
           </span>
           <span
-            className={`font-serif text-2xl font-medium tracking-tight transition-colors duration-200 ${
+            className={`font-serif text-2xl tracking-tight transition-colors duration-200 ${
               isHeroTransparent ? "text-white" : "text-ink"
             }`}
           >
@@ -99,7 +99,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`relative py-1 text-xs font-mono uppercase tracking-wider transition-colors duration-200 active:scale-95 ${
+                className={`relative py-1 text-xs font-medium uppercase tracking-wider transition-colors duration-200 active:scale-95 ${
                   isHeroTransparent
                     ? active
                       ? "text-white font-semibold"
@@ -156,51 +156,54 @@ export default function Navbar() {
           </span>
         </button>
       </nav>
-      {isOpen && (
-        <div
-          id="mobile-menu"
-          className="fixed inset-x-0 top-16 bottom-0 z-40 bg-paper/95 backdrop-blur-2xl md:hidden overflow-y-auto animate-[fade-up_200ms_cubic-bezier(0.16,1,0.3,1)]"
-        >
-          <div className="mx-auto flex h-full max-w-6xl flex-col justify-between px-6 py-6 sm:px-8">
-            <nav aria-label="Mobile Navigation" className="flex flex-col">
-              {links.map(({ name, href }) => {
-                const active = isActivePath(pathname, href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center justify-between border-b border-line/60 py-4 text-lg font-serif transition-colors duration-200 active:scale-95 ${
-                      active
-                        ? "text-ink font-medium"
-                        : "text-muted hover:text-ink"
-                    }`}
-                  >
-                    <span>{name}</span>
-                    {active ? (
-                      <span
-                        aria-hidden="true"
-                        className="h-2 w-2 rounded-full bg-signal"
-                      />
-                    ) : (
-                      <ArrowRight
-                        size={15}
-                        className="text-muted/40"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="pt-6 border-t border-line/60 flex items-center justify-between text-xs font-mono text-muted">
-              <span>Public Domain Journal</span>
-              <span className="text-signal font-medium">CC0 1.0</span>
-            </div>
+      <div
+        id="mobile-menu"
+        inert={!isOpen}
+        className={`fixed inset-x-0 top-16 bottom-0 z-40 overflow-y-auto overscroll-contain bg-paper/95 backdrop-blur-2xl transition-[opacity,transform,visibility] duration-300 ease-out md:hidden ${
+          isOpen
+            ? "visible translate-y-0 opacity-100"
+            : "pointer-events-none invisible -translate-y-2 opacity-0"
+        }`}
+      >
+        <div className="mx-auto flex h-full max-w-6xl flex-col justify-between px-6 py-6 sm:px-8">
+          <nav aria-label="Mobile Navigation" className="flex flex-col">
+            {links.map(({ name, href }) => {
+              const active = isActivePath(pathname, href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center justify-between border-b border-line/60 py-4 text-lg font-medium transition-colors duration-200 active:scale-95 ${
+                    active
+                      ? "text-ink font-medium"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <span>{name}</span>
+                  {active ? (
+                    <span
+                      aria-hidden="true"
+                      className="h-2 w-2 rounded-full bg-signal"
+                    />
+                  ) : (
+                    <ArrowRight
+                      size={15}
+                      className="text-muted/40"
+                      aria-hidden="true"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="pt-6 border-t border-line/60 flex items-center justify-between text-xs font-mono text-muted">
+            <span>Public Domain Journal</span>
+            <span className="text-signal font-medium">CC0 1.0</span>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

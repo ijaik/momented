@@ -15,9 +15,10 @@ export default function HomeFeaturedSeries({
     <section
       id="series"
       aria-labelledby="series-heading"
-      className="border-t border-line/70 pt-16 sm:pt-24"
+      className="reveal border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
+        id="series-heading"
         label="01 / Series"
         icon={Film}
         title="Photographs in sequence"
@@ -40,10 +41,10 @@ export default function HomeFeaturedSeries({
                 alt={featuredSeries.photos[0].title || featuredSeries.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 750px"
-                className="object-cover transition-transform duration-700 ease-linear group-hover:scale-105"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm font-mono text-muted">
+              <div className="flex h-full items-center justify-center text-sm text-muted">
                 No photographs yet
               </div>
             )}
@@ -58,7 +59,7 @@ export default function HomeFeaturedSeries({
             <span className="editorial-label text-signal/90 font-medium">
               Featured Series
             </span>
-            <h3 className="mt-2 font-serif text-3xl sm:text-4xl font-medium tracking-tight text-ink leading-tight">
+            <h3 className="mt-2 font-serif text-3xl sm:text-4xl tracking-tight text-ink leading-tight">
               {featuredSeries.title}
             </h3>
             {featuredSeries.description && (
@@ -96,7 +97,7 @@ export default function HomeFeaturedSeries({
           <div>
             <Link
               href={`/series/${featuredSeries.id}`}
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-2.5 text-xs font-mono uppercase tracking-wider text-paper transition-all hover:opacity-90 active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-paper transition-all hover:opacity-90 active:scale-95 shadow-xs"
             >
               <span>View Series</span>
               <ArrowRight size={13} aria-hidden="true" />

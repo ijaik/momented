@@ -14,7 +14,7 @@ export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 block text-xs font-mono uppercase tracking-wider text-muted font-medium"
+      className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted"
     >
       {children}
     </label>
@@ -103,15 +103,15 @@ export function SubmitButton({
   ...props
 }: SubmitButtonProps) {
   const sizes = {
-    sm: "px-4 py-2 text-xs font-mono uppercase tracking-wider gap-1.5 rounded-full font-semibold",
-    md: "px-6 py-2.5 text-xs font-mono uppercase tracking-wider gap-2 rounded-full font-semibold",
+    sm: "px-4 py-2 text-xs uppercase tracking-wider gap-1.5 rounded-full",
+    md: "px-6 py-2.5 text-xs uppercase tracking-wider gap-2 rounded-full",
   };
   return (
     <button
       {...props}
       type="submit"
       disabled={isLoading || props.disabled}
-      className={`inline-flex items-center justify-center font-medium bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-95 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-95 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
     >
       {isLoading ? loadingText : text}
     </button>

@@ -100,7 +100,7 @@ export default function CalendarMonthView({
                 aria-selected={isActive}
                 aria-controls={`${tabListId}-panel-${tab.key}`}
                 onClick={() => handleTabChange(tab.key)}
-                className={`relative whitespace-nowrap pb-3.5 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-100 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
+                className={`relative whitespace-nowrap pb-3.5 text-xs sm:text-sm font-medium uppercase tracking-wider transition-all duration-100 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
                   isActive
                     ? "text-ink font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
                     : "text-muted hover:text-ink"
@@ -173,7 +173,7 @@ export default function CalendarMonthView({
             <div className="mb-8 rounded-lg border border-line bg-surface/80 p-4 sm:p-5 shadow-xs backdrop-blur-xs">
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between">
                 <div>
-                  <h2 className="text-base font-serif font-medium text-ink flex items-center gap-2">
+                  <h2 className="text-base font-serif text-ink flex items-center gap-2">
                     <span>I lost it 😭</span>
                   </h2>
                   <p className="mt-1 text-xs sm:text-sm text-muted">

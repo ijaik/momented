@@ -19,9 +19,10 @@ export default function Footer() {
                     alt="Momented logo"
                     width={28}
                     height={28}
+                    unoptimized
                   />
                 </span>
-                <span className="font-serif text-2xl font-medium tracking-tight text-ink">
+                <span className="font-serif text-2xl tracking-tight text-ink">
                   {siteConfig.name}
                 </span>
               </Link>
@@ -34,7 +35,7 @@ export default function Footer() {
             <span className="editorial-label text-ink font-semibold">
               Journal
             </span>
-            <ul className="mt-4 space-y-2.5 text-xs font-mono uppercase tracking-wider text-muted">
+            <ul className="mt-4 space-y-2.5 text-xs font-medium uppercase tracking-wider text-muted">
               <li>
                 <Link
                   href="/photos"
@@ -73,7 +74,7 @@ export default function Footer() {
             <span className="editorial-label text-ink font-semibold">
               Curations &amp; Info
             </span>
-            <ul className="mt-4 space-y-2.5 text-xs font-mono uppercase tracking-wider text-muted">
+            <ul className="mt-4 space-y-2.5 text-xs font-medium uppercase tracking-wider text-muted">
               <li>
                 <Link
                   href="/collections/rules"

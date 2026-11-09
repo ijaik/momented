@@ -32,7 +32,7 @@ export default function FullscreenDialog({
     >
       <header className="flex w-full items-center justify-between gap-4 border-b border-line/60 pb-3.5">
         <div className="min-w-0">
-          <h2 className="font-serif text-lg font-medium tracking-tight text-ink sm:text-xl">
+          <h2 className="font-serif text-lg tracking-tight text-ink sm:text-xl">
             {title}
           </h2>
           {subtitle}
@@ -44,7 +44,7 @@ export default function FullscreenDialog({
             onClick={onClose}
             aria-label="Exit fullscreen (Esc)"
             title="Minimize (Esc)"
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider text-muted transition-all duration-100 hover:bg-soft hover:text-ink active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-muted transition-all duration-100 hover:bg-soft hover:text-ink active:scale-95"
           >
             <Minimize2 size={14} aria-hidden="true" />
             <span className="hidden sm:inline">Minimize</span>

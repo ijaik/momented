@@ -14,100 +14,80 @@ export default function HomeCuratedLenses({
   featuredRule,
   featuredCalendar,
 }: HomeCuratedLensesProps) {
+  const lenses = [
+    {
+      key: "atmosphere",
+      label: "By Atmosphere",
+      href: "/collections",
+      linkLabel: "All themes",
+      basePath: "/collections",
+      item: featuredCollection,
+      empty: "No collections yet",
+    },
+    {
+      key: "technique",
+      label: "By Technique",
+      href: "/collections/rules",
+      linkLabel: "All rules",
+      basePath: "/collections/rules",
+      item: featuredRule,
+      empty: "No rule collections yet",
+    },
+    {
+      key: "season",
+      label: "By Season",
+      href: "/collections/calendar",
+      linkLabel: "Full calendar",
+      basePath: "/collections/calendar",
+      item: featuredCalendar,
+      empty: "No calendar collections yet",
+    },
+  ];
   return (
     <section
       id="perspectives"
       aria-labelledby="perspectives-heading"
-      className="border-t border-line/70 pt-16 sm:pt-24"
+      className="reveal border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
+        id="perspectives-heading"
         label="02 / Perspectives"
         icon={Compass}
         title="Three ways to explore"
         description="Photographs organized by atmosphere, photographic rules, and months."
       />
       <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-        <div className="flex flex-col">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="editorial-label text-muted">By Atmosphere</span>
-            <Link
-              href="/collections"
-              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
-            >
-              <span>All themes</span>
-              <ArrowRight
-                size={11}
-                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
-          </div>
-          {featuredCollection ? (
-            <CoverCard
-              item={featuredCollection}
-              href={`/collections/${featuredCollection.id}`}
-              aspectRatio="4/3"
-            />
-          ) : (
-            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
-              No collections yet
+        {lenses.map(
+          ({ key, label, href, linkLabel, basePath, item, empty }) => (
+            <div key={key} className="flex flex-col">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="editorial-label text-muted">{label}</span>
+                <Link
+                  href={href}
+                  className="group/link inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
+                >
+                  <span>{linkLabel}</span>
+                  <ArrowRight
+                    size={11}
+                    className="transition-transform duration-200 group-hover/link:translate-x-0.5"
+                    aria-hidden="true"
+                  />
+                </Link>
+              </div>
+              {item ? (
+                <CoverCard
+                  item={item}
+                  href={`${basePath}/${item.id}`}
+                  aspectRatio="4/3"
+                />
+              ) : (
+                <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs text-muted">
+                  {empty}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <div className="flex flex-col">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="editorial-label text-muted">By Technique</span>
-            <Link
-              href="/collections/rules"
-              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
-            >
-              <span>All rules</span>
-              <ArrowRight
-                size={11}
-                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
-          </div>
-          {featuredRule ? (
-            <CoverCard
-              item={featuredRule}
-              href={`/collections/rules/${featuredRule.id}`}
-              aspectRatio="4/3"
-            />
-          ) : (
-            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
-              No rule collections yet
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col">
-          <div className="mb-4 flex items-center justify-between">
-            <span className="editorial-label text-muted">By Season</span>
-            <Link
-              href="/collections/calendar"
-              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
-            >
-              <span>Full calendar</span>
-              <ArrowRight
-                size={11}
-                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </Link>
-          </div>
-          {featuredCalendar ? (
-            <CoverCard
-              item={featuredCalendar}
-              href={`/collections/calendar/${featuredCalendar.id}`}
-              aspectRatio="4/3"
-            />
-          ) : (
-            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
-              No calendar collections yet
-            </div>
-          )}
-        </div>
+          ),
+        )}
       </div>
     </section>
   );

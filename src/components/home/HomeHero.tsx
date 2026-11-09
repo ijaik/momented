@@ -19,20 +19,20 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
             Photographs Journal
           </span>
         </div>
-        <h1 className="max-w-5xl font-serif text-5xl font-medium leading-[1.02] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
+        <h1 className="max-w-5xl font-serif text-5xl leading-[1.02] tracking-tight text-ink sm:text-6xl md:text-7xl lg:text-8xl">
           Light, shadow, &amp; the moments in between.
         </h1>
         <div className="mt-8 flex items-center gap-4">
           <Link
             href="/photos"
-            className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-xs font-mono uppercase tracking-wider text-paper transition-all hover:opacity-90 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-xs font-medium uppercase tracking-wider text-paper transition-all hover:opacity-90 active:scale-95"
           >
             <span>Explore Photographs</span>
             <ArrowRight size={14} aria-hidden="true" />
           </Link>
           <Link
             href="/about"
-            className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink underline underline-offset-4 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted hover:text-ink underline underline-offset-4 transition-colors"
           >
             About
           </Link>
@@ -49,9 +49,9 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
           src={heroPhoto.cloudinary_url}
           alt={heroPhoto.title || "Featured Momented Photograph"}
           fill
-          priority
+          preload
           sizes="100vw"
-          className="object-cover object-center transition-transform duration-1000 ease-linear"
+          className="object-cover object-center"
         />
         <div
           aria-hidden="true"
@@ -70,7 +70,7 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
                 Photographs Journal
               </span>
             </div>
-            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-medium leading-[1.02] tracking-tight text-white">
+            <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl leading-[1.02] tracking-tight text-white">
               Light, shadow, &amp; the moments in between.
             </h1>
           </div>
@@ -81,7 +81,7 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
                 className="group inline-flex items-center gap-2 text-white hover:text-white/85 transition-colors"
                 aria-label={`View featured frame: ${heroPhoto.title || "Untitled"}`}
               >
-                <span className="font-serif text-xl sm:text-2xl font-medium tracking-tight">
+                <span className="font-serif text-xl sm:text-2xl tracking-tight">
                   {heroPhoto.title || "Untitled Frame"}
                 </span>
                 <ArrowUpRight
@@ -104,14 +104,14 @@ export default function HomeHero({ heroPhoto }: HomeHeroProps) {
             <div className="flex shrink-0 items-center gap-4">
               <Link
                 href="/photos"
-                className="inline-flex items-center gap-2 rounded-full bg-white text-black px-6 py-3 text-xs font-mono uppercase tracking-wider font-semibold transition-all hover:bg-white/90 active:scale-95 shadow-md"
+                className="inline-flex items-center gap-2 rounded-full bg-white text-black px-6 py-3 text-xs font-semibold uppercase tracking-wider transition-all hover:bg-white/90 active:scale-95 shadow-md"
               >
                 <span>Explore Photographs</span>
                 <ArrowRight size={13} aria-hidden="true" />
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-white/80 hover:text-white underline underline-offset-4 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-white/80 hover:text-white underline underline-offset-4 transition-colors"
               >
                 About
               </Link>

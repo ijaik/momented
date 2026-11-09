@@ -8,6 +8,7 @@ import { getSeriesList } from "@/lib/db/queries";
 import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
+import { sortSeriesPhotos } from "@/lib/utils/series";
 export const metadata: Metadata = buildPageMetadata({
   title: "Series",
   description: "Sequence of photographs exploring changes in light and scenes.",
@@ -27,8 +28,7 @@ export default async function SeriesPage() {
   const { data: rawSeries } = await getSeriesList();
   const seriesList = (rawSeries || []).map((s) => {
     const rawPhotos = (s.series_photos as unknown as RawSeriesPhoto[]) || [];
-    const sortedPhotos = [...rawPhotos]
-      .sort((a, b) => a.position - b.position)
+    const sortedPhotos = sortSeriesPhotos(rawPhotos)
       .map((sp) => sp.photos)
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
     return {

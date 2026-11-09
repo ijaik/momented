@@ -15,11 +15,11 @@ export default function RelatedPhotos({
   return (
     <section
       aria-label="Related photographs"
-      className="mt-20 border-t border-line/70 pt-12"
+      className="reveal mt-20 border-t border-line/70 pt-12"
     >
       <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-medium tracking-tight text-ink sm:text-3xl">
+          <h2 className="font-serif text-2xl tracking-tight text-ink sm:text-3xl">
             {title}
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-muted">{description}</p>

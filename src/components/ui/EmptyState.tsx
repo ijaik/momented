@@ -15,7 +15,7 @@ export default function EmptyState({
       className={`flex flex-col items-center justify-center gap-2.5 py-24 text-center ${className}`}
     >
       {title && (
-        <h2 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink">
+        <h2 className="font-serif text-2xl sm:text-3xl tracking-tight text-ink">
           {title}
         </h2>
       )}

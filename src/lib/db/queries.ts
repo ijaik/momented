@@ -1,6 +1,7 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { supabase } from "@/lib/db/supabase";
+import { sortSeriesPhotos } from "@/lib/utils/series";
 import type { Photo } from "@/types";
 
 const PHOTO_CARD_COLUMNS =
@@ -156,8 +157,7 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
           height: number;
         } | null;
       }[]) || [];
-    const sortedPhotos = [...rawPhotos]
-      .sort((a, b) => a.position - b.position)
+    const sortedPhotos = sortSeriesPhotos(rawPhotos)
       .map((sp) => sp.photos)
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
     featuredSeries = {

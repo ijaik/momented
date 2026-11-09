@@ -1,13 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
+import {
+  Instrument_Serif,
+  JetBrains_Mono,
+  Schibsted_Grotesk,
+} from "next/font/google";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
-const fraunces = Fraunces({
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
   subsets: ["latin"],
-  axes: ["opsz"],
+  style: ["normal", "italic"],
   display: "swap",
-  variable: "--font-fraunces",
+  variable: "--font-instrument-serif",
 });
 const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
@@ -115,7 +120,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${schibsted.variable} ${jetbrains.variable}`}
+      className={`${instrumentSerif.variable} ${schibsted.variable} ${jetbrains.variable}`}
     >
       <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
         {children}

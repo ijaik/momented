@@ -20,7 +20,7 @@ export default function AdminError({
       <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-danger/10 text-danger">
         <AlertCircle size={24} aria-hidden="true" />
       </div>
-      <h2 className="font-serif text-2xl font-medium tracking-tight text-ink">
+      <h2 className="font-serif text-2xl tracking-tight text-ink">
         {isNetworkError
           ? "Database connection interrupted"
           : "Could not load admin dashboard"}

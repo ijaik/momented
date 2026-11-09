@@ -146,7 +146,9 @@ export default function PhotoManager({
           className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md lg:sticky lg:top-8"
         >
           <div>
-            <h2 className="text-lg font-medium text-ink">Add a photograph</h2>
+            <h2 className="font-serif text-lg tracking-tight text-ink">
+              Add a photograph
+            </h2>
             <p className="mt-0.5 text-sm text-muted">
               Exif data is read automatically.
             </p>
@@ -347,7 +349,7 @@ export default function PhotoManager({
               ) : (
                 <div>
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="font-serif text-xl font-medium leading-snug tracking-tight text-ink">
+                    <h3 className="font-serif text-xl leading-snug tracking-tight text-ink">
                       {photo.title}
                     </h3>
                     <div className="flex items-center gap-3 text-xs text-muted font-mono">

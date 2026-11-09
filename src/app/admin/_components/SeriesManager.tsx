@@ -296,9 +296,7 @@ export default function SeriesManager({
     <div className="flex flex-col gap-10">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-6">
         <div>
-          <h2 className="font-serif text-2xl font-medium text-ink">
-            Photo Series
-          </h2>
+          <h2 className="font-serif text-2xl text-ink">Photo Series</h2>
           <p className="mt-1 text-sm text-muted">
             Curate ordered multi-photo narratives and moment progressions.
           </p>
@@ -333,7 +331,7 @@ export default function SeriesManager({
         >
           <div className="mb-6 flex items-center justify-between border-b border-line pb-4">
             <div>
-              <h3 className="font-serif text-xl font-medium text-ink">
+              <h3 className="font-serif text-xl text-ink">
                 {editingSeries ? "Edit Series" : "New Photo Series"}
               </h3>
               <p className="mt-0.5 text-xs text-muted">

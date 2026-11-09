@@ -115,7 +115,9 @@ export default function ItemManager<
     <div className="flex w-full flex-col gap-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-medium text-ink">{title}</h2>
+          <h2 className="font-serif text-xl tracking-tight text-ink">
+            {title}
+          </h2>
           <p className="mt-0.5 text-sm text-muted">
             {subtitle ||
               `${items.length} ${items.length === 1 ? "entry" : "entries"}`}
@@ -233,7 +235,7 @@ export default function ItemManager<
             ) : (
               <>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                  <h3 className="font-serif text-2xl font-medium leading-snug tracking-tight text-ink">
+                  <h3 className="font-serif text-2xl leading-snug tracking-tight text-ink">
                     {item.title}
                   </h3>
                   <div className="flex gap-4">

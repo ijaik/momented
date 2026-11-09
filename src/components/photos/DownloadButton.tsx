@@ -130,7 +130,7 @@ export default function DownloadButton({
       aria-live="polite"
       className={
         className ||
-        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border px-5 py-2 text-xs font-mono uppercase tracking-wider transition-all duration-100 active:scale-95 ${
+        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border px-5 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-100 active:scale-95 ${
           isSuccess
             ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
             : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft hover:border-ink/20 disabled:opacity-70"

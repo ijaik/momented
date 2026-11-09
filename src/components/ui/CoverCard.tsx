@@ -67,7 +67,7 @@ export default function CoverCard({
               fill
               preload={preload}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-              className="object-cover transition-transform duration-700 ease-linear group-hover:scale-105"
+              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             />
             {photoCount > 0 && (
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-mono tracking-wider text-white/95 backdrop-blur-md shadow-xs">
@@ -84,7 +84,7 @@ export default function CoverCard({
           </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm font-mono text-muted">No cover yet</span>
+            <span className="text-sm text-muted">No cover yet</span>
           </div>
         )}
       </div>
@@ -94,7 +94,7 @@ export default function CoverCard({
         <h2
           className={`flex items-center gap-1.5 font-serif ${
             isCompact ? "text-base sm:text-lg" : "text-xl sm:text-2xl"
-          } font-medium leading-tight tracking-tight text-ink transition-colors group-hover:text-signal/90`}
+          } leading-tight tracking-tight text-ink transition-colors group-hover:text-signal/90`}
         >
           {item.title}
           <ArrowUpRight

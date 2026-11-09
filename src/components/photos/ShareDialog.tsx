@@ -202,7 +202,7 @@ export default function ShareDialog({
           <div className="min-w-0">
             <h3
               id="share-dialog-title"
-              className="font-serif text-xl font-medium leading-snug tracking-tight text-ink"
+              className="font-serif text-xl leading-snug tracking-tight text-ink"
             >
               Share this moment
             </h3>

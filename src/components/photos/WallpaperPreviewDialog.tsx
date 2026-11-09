@@ -65,7 +65,7 @@ export default function WallpaperPreviewDialog({
     >
       <header className="relative z-30 mx-auto flex w-full max-w-5xl items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="min-w-0">
-          <h2 className="font-serif text-wrap text-lg font-medium tracking-tight text-white sm:text-xl truncate">
+          <h2 className="font-serif text-wrap text-lg tracking-tight text-white sm:text-xl truncate">
             Preview as Wallpaper
           </h2>
           <p className="hidden text-xs text-white/60 sm:block">{title}</p>
@@ -174,7 +174,7 @@ export default function WallpaperPreviewDialog({
                   <p className="text-[11px] font-medium tracking-wide uppercase opacity-90">
                     Saturday, October 31
                   </p>
-                  <p className="font-serif text-5xl font-light tracking-tight mt-0.5">
+                  <p className="font-mono text-5xl tracking-tight mt-0.5">
                     9:41
                   </p>
                 </div>

@@ -25,7 +25,7 @@ export default function DetailLayout({
           <div className="mb-5">
             <Link
               href={backLink.href}
-              className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+              className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
             >
               <ArrowLeft
                 size={13}
@@ -46,7 +46,7 @@ export default function DetailLayout({
         )}
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <h1 className="font-serif text-3xl font-medium leading-[1.06] tracking-tight text-ink sm:text-4xl md:text-5xl lg:text-6xl">
+            <h1 className="font-serif text-3xl leading-[1.06] tracking-tight text-ink sm:text-4xl md:text-5xl lg:text-6xl">
               {title}
             </h1>
             {description && (

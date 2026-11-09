@@ -11,6 +11,7 @@ import { getAllIds, getSeriesById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, seriesPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
+import { sortSeriesPhotos } from "@/lib/utils/series";
 import type { PageProps, Photo, SeriesSlidePhoto } from "@/types";
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("series");
@@ -41,8 +42,7 @@ export async function generateMetadata({
       position: number;
       photos: Photo;
     }[]) || [];
-  const firstPhoto = [...rawPhotos].sort((a, b) => a.position - b.position)[0]
-    ?.photos;
+  const firstPhoto = sortSeriesPhotos(rawPhotos)[0]?.photos;
   return buildPageMetadata({
     title,
     description,
@@ -65,8 +65,7 @@ async function SeriesDetailContent({
   if (!series) notFound();
   const rawPhotos =
     (series.series_photos as unknown as RawSeriesPhotoJoin[]) || [];
-  const sortedPhotos: SeriesSlidePhoto[] = [...rawPhotos]
-    .sort((a, b) => a.position - b.position)
+  const sortedPhotos: SeriesSlidePhoto[] = sortSeriesPhotos(rawPhotos)
     .filter((sp): sp is { position: number; photos: Photo } =>
       Boolean(sp.photos),
     )

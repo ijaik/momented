@@ -341,7 +341,7 @@ export default function SeriesCarousel({
       )}
       <div className="flex w-full flex-col gap-4 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-serif text-xl font-medium tracking-tight text-ink sm:text-2xl">
+          <h2 className="font-serif text-xl tracking-tight text-ink sm:text-2xl">
             {currentPhoto.title || `${seriesTitle} — Frame ${activeIndex + 1}`}
           </h2>
           {(currentPhoto.description || seriesDescription) && (
@@ -426,7 +426,7 @@ export default function SeriesCarousel({
         onClose={exitMaximize}
         ariaLabel={`${seriesTitle} fullscreen gallery`}
         title={seriesTitle}
-        subtitle={<p className="text-xs text-muted">{createdAt}</p>}
+        subtitle={<p className="text-xs font-mono text-muted">{createdAt}</p>}
         actions={
           <>
             <WallpaperPreviewButton
@@ -451,7 +451,7 @@ export default function SeriesCarousel({
         footer={
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="truncate font-serif text-base font-medium text-ink">
+              <p className="truncate font-serif text-base text-ink">
                 {currentPhoto.title ||
                   `${seriesTitle} — Frame ${activeIndex + 1}`}
               </p>

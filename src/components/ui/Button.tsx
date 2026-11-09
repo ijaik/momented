@@ -16,8 +16,8 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const sizes = {
-    sm: "px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider gap-1.5 rounded-full",
-    md: "px-5 py-2.5 text-xs font-mono uppercase tracking-wider gap-2 rounded-full",
+    sm: "px-3.5 py-1.5 text-xs uppercase tracking-wider gap-1.5 rounded-full",
+    md: "px-5 py-2.5 text-xs uppercase tracking-wider gap-2 rounded-full",
   };
   const variants = {
     primary:
@@ -33,7 +33,7 @@ export default function Button({
     <button
       {...props}
       disabled={isLoading || props.disabled}
-      className={`inline-flex items-center justify-center font-medium transition-all duration-100 ease-out select-none disabled:pointer-events-none disabled:opacity-50 active:scale-95 ${sizes[size]} ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center transition-all duration-100 ease-out select-none disabled:pointer-events-none disabled:opacity-50 active:scale-95 ${sizes[size]} ${variants[variant]} ${className}`}
     >
       {isLoading ? loadingText || children : children}
     </button>

@@ -68,7 +68,7 @@ export default function ExifSpecGrid({
               Camera
             </span>
             <p
-              className={`truncate font-serif font-medium text-ink ${
+              className={`truncate font-mono font-medium text-ink ${
                 compact ? "text-xs" : "text-sm sm:text-base"
               }`}
             >

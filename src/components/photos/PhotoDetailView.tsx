@@ -39,7 +39,7 @@ export default function PhotoDetailView({
       <div className="mt-6 md:mt-8">
         <Link
           href="/photos"
-          className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+          className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
         >
           <ArrowLeft
             size={13}
@@ -72,14 +72,14 @@ export default function PhotoDetailView({
             />
             <span
               aria-hidden="true"
-              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-surface/80 px-3 py-1.5 text-xs font-mono text-ink opacity-0 shadow-xs backdrop-blur-md transition-all duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 hover:bg-surface active:scale-95"
+              className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-surface/80 px-3 py-1.5 text-xs font-medium text-ink opacity-0 shadow-xs backdrop-blur-md transition-all duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 hover:bg-surface active:scale-95"
             >
               <Maximize2 size={13} aria-hidden="true" />
               <span>Maximize</span>
             </span>
           </button>
           <figcaption className="mt-6 border-b border-line/70 pb-6">
-            <h1 className="font-serif text-3xl font-medium leading-tight tracking-tight text-ink sm:text-4xl md:text-[2.5rem]">
+            <h1 className="font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl md:text-[2.5rem]">
               {title}
             </h1>
             {photo.description && (

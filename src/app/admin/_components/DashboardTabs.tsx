@@ -65,14 +65,14 @@ export default function DashboardTabs({
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-4 border-b border-line/70 pb-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <p className="font-serif text-2xl font-medium tracking-tight text-ink">
+            <p className="font-serif text-2xl tracking-tight text-ink">
               Momented
             </p>
             <span className="editorial-label text-muted px-2.5 py-0.5 rounded-full border border-line/80 bg-soft/80 font-medium">
               Studio
             </span>
           </div>
-          <p className="mt-1.5 text-xs font-mono text-muted">
+          <p className="mt-1.5 text-xs text-muted">
             Curatorial editorial workspace
           </p>
         </div>
@@ -101,7 +101,7 @@ export default function DashboardTabs({
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => activate(tab)}
                 onKeyDown={(e) => onTabKeyDown(e, tab)}
-                className={`rounded-full px-4 py-2 text-xs font-mono uppercase tracking-wider transition-all duration-150 ease-out active:scale-95 whitespace-nowrap cursor-pointer ${
+                className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-150 ease-out active:scale-95 whitespace-nowrap cursor-pointer ${
                   isActive
                     ? "bg-surface text-ink shadow-xs font-semibold"
                     : "text-muted hover:text-ink hover:bg-surface/50"

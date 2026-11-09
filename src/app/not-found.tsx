@@ -13,7 +13,7 @@ export default function NotFound() {
           404 — Lost Frame
         </span>
       </div>
-      <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-ink">
+      <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl tracking-tight text-ink">
         This moment slipped away.
       </h1>
       <p className="mt-3.5 max-w-sm text-sm sm:text-base leading-relaxed text-muted">
@@ -22,7 +22,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-mono uppercase tracking-wider text-paper shadow-xs transition-all duration-150 ease-out hover:opacity-90 active:scale-95"
+        className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-medium uppercase tracking-wider text-paper shadow-xs transition-all duration-150 ease-out hover:opacity-90 active:scale-95"
       >
         Return to journal
       </Link>
