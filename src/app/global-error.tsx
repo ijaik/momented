@@ -27,7 +27,7 @@ export default function GlobalError({
         <button
           type="button"
           onClick={reset}
-          className="mt-8 inline-flex items-center justify-center rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="mt-8 inline-flex items-center justify-center rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           Try again
         </button>

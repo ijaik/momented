@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Trash2 } from "lucide-react";
 import Image from "next/image";
 import type { PhotoOption } from "./types";
 
@@ -24,8 +24,10 @@ export default function SeriesSlideList({
         <span className="text-sm font-medium text-ink">
           Slide Sequence ({orderedPhotoIds.length} frames)
         </span>
-        <span className="text-xs text-muted">
-          Use arrows to reorder slides 1 → {orderedPhotoIds.length || 1}
+        <span className="inline-flex items-center gap-1 text-xs text-muted">
+          Use arrows to reorder slides 1
+          <ArrowRight size={11} aria-hidden="true" />
+          {orderedPhotoIds.length || 1}
         </span>
       </div>
       {orderedPhotoIds.length > 0 ? (

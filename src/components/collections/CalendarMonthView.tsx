@@ -87,7 +87,7 @@ export default function CalendarMonthView({
         <div
           role="tablist"
           aria-label={`Filter ${collectionTitle} photographs by year`}
-          className="mb-10 -mt-2 flex gap-6 overflow-x-auto overflow-y-hidden border-b border-line"
+          className="mb-10 -mt-2 flex gap-7 sm:gap-9 overflow-x-auto overflow-y-hidden border-b border-line/70"
         >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
@@ -100,9 +100,9 @@ export default function CalendarMonthView({
                 aria-selected={isActive}
                 aria-controls={`${tabListId}-panel-${tab.key}`}
                 onClick={() => handleTabChange(tab.key)}
-                className={`relative whitespace-nowrap pb-3 text-sm font-medium transition-all duration-100 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
+                className={`relative whitespace-nowrap pb-3.5 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-100 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
                   isActive
-                    ? "text-ink after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
+                    ? "text-ink font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
                     : "text-muted hover:text-ink"
                 }`}
               >
@@ -125,11 +125,11 @@ export default function CalendarMonthView({
         aria-labelledby={`${tabListId}-tab-${activeTab}`}
       >
         {activeTab === "all" && (
-          <div className="flex flex-col gap-16 sm:gap-20">
+          <div className="flex flex-col gap-16 sm:gap-24">
             {structuredYears.map(({ year, photos }) => (
               <section key={year}>
-                <h2 className="mb-8 border-b border-line pb-3 text-sm font-medium text-muted">
-                  {year} · {photos.length}{" "}
+                <h2 className="mb-8 border-b border-line/70 pb-3.5 editorial-label text-muted font-medium">
+                  {year} — {photos.length}{" "}
                   {photos.length === 1 ? "photograph" : "photographs"}
                 </h2>
                 <PhotoGrid photos={photos} />
@@ -137,10 +137,10 @@ export default function CalendarMonthView({
             ))}
             {undatedPhotos.length > 0 && (
               <section key="undated-section">
-                <div className="mb-8 flex flex-col gap-1.5 border-b border-line pb-3 sm:flex-row sm:items-baseline sm:justify-between">
-                  <h2 className="text-sm font-medium text-ink flex items-center gap-2">
+                <div className="mb-8 flex flex-col gap-1.5 border-b border-line/70 pb-3.5 sm:flex-row sm:items-baseline sm:justify-between">
+                  <h2 className="editorial-label text-ink font-medium flex items-center gap-2">
                     <span>I lost it 😭</span>
-                    <span className="text-muted">·</span>
+                    <span className="text-muted">—</span>
                     <span className="text-muted font-normal">
                       {undatedPhotos.length}{" "}
                       {undatedPhotos.length === 1
@@ -148,7 +148,7 @@ export default function CalendarMonthView({
                         : "photographs"}
                     </span>
                   </h2>
-                  <span className="text-xs text-muted">
+                  <span className="editorial-label text-muted/80">
                     EXIF capture date unavailable
                   </span>
                 </div>
@@ -159,8 +159,8 @@ export default function CalendarMonthView({
         )}
         {selectedYearGroup && (
           <section key={selectedYearGroup.year}>
-            <h2 className="mb-8 border-b border-line pb-3 text-sm font-medium text-muted">
-              {selectedYearGroup.year} · {selectedYearGroup.photos.length}{" "}
+            <h2 className="mb-8 border-b border-line/70 pb-3.5 editorial-label text-muted font-medium">
+              {selectedYearGroup.year} — {selectedYearGroup.photos.length}{" "}
               {selectedYearGroup.photos.length === 1
                 ? "photograph"
                 : "photographs"}

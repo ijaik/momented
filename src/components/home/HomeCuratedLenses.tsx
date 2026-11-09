@@ -1,4 +1,4 @@
-import { Compass } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 import Link from "next/link";
 import CoverCard from "@/components/ui/CoverCard";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -18,25 +18,28 @@ export default function HomeCuratedLenses({
     <section
       id="perspectives"
       aria-labelledby="perspectives-heading"
-      className="border-t border-line/80 pt-16 sm:pt-20"
+      className="border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
-        label="02 / Collections"
+        label="02 / Perspectives"
         icon={Compass}
         title="Three ways to explore"
-        description="Photographs organized by theme, rules and months."
+        description="Photographs organized by atmosphere, photographic rules, and months."
       />
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
         <div className="flex flex-col">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted">
-              By Atmosphere
-            </span>
+          <div className="mb-4 flex items-center justify-between">
+            <span className="editorial-label text-muted">By Atmosphere</span>
             <Link
               href="/collections"
-              className="text-xs font-medium text-signal hover:underline active:scale-95"
+              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
             >
-              All themes →
+              <span>All themes</span>
+              <ArrowRight
+                size={11}
+                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
           </div>
           {featuredCollection ? (
@@ -46,21 +49,24 @@ export default function HomeCuratedLenses({
               aspectRatio="4/3"
             />
           ) : (
-            <div className="rounded-xl border border-line bg-soft p-8 text-center text-sm text-muted">
+            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
               No collections yet
             </div>
           )}
         </div>
         <div className="flex flex-col">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted">
-              By Technique
-            </span>
+          <div className="mb-4 flex items-center justify-between">
+            <span className="editorial-label text-muted">By Technique</span>
             <Link
               href="/collections/rules"
-              className="text-xs font-medium text-signal hover:underline active:scale-95"
+              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
             >
-              All rules →
+              <span>All rules</span>
+              <ArrowRight
+                size={11}
+                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
           </div>
           {featuredRule ? (
@@ -70,21 +76,24 @@ export default function HomeCuratedLenses({
               aspectRatio="4/3"
             />
           ) : (
-            <div className="rounded-xl border border-line bg-soft p-8 text-center text-sm text-muted">
+            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
               No rule collections yet
             </div>
           )}
         </div>
         <div className="flex flex-col">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted">
-              By Season
-            </span>
+          <div className="mb-4 flex items-center justify-between">
+            <span className="editorial-label text-muted">By Season</span>
             <Link
               href="/collections/calendar"
-              className="text-xs font-medium text-signal hover:underline active:scale-95"
+              className="group/link inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
             >
-              Full calendar →
+              <span>Full calendar</span>
+              <ArrowRight
+                size={11}
+                className="transition-transform duration-200 group-hover/link:translate-x-0.5"
+                aria-hidden="true"
+              />
             </Link>
           </div>
           {featuredCalendar ? (
@@ -94,7 +103,7 @@ export default function HomeCuratedLenses({
               aspectRatio="4/3"
             />
           ) : (
-            <div className="rounded-xl border border-line bg-soft p-8 text-center text-sm text-muted">
+            <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs font-mono text-muted">
               No calendar collections yet
             </div>
           )}

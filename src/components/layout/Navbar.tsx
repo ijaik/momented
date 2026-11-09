@@ -1,5 +1,5 @@
 "use client";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,37 +18,45 @@ const isActivePath = (pathname: string, href: string) =>
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setIsOpen(false);
+  }
+  const isHeroTransparent = pathname === "/" && !isScrolled && !isOpen;
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   useEffect(() => {
     if (!isOpen) return;
     const closeOnEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
     };
     document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
-  const renderLinks = (mobile = false) =>
-    links.map(({ name, href }) => {
-      const active = isActivePath(pathname, href);
-      return (
-        <Link
-          key={href}
-          href={href}
-          aria-current={active ? "page" : undefined}
-          onClick={mobile ? () => setIsOpen(false) : undefined}
-          className={`${
-            mobile
-              ? "border-b border-line/70 py-3.5 text-[15px] last:border-b-0 active:scale-[0.98]"
-              : "relative text-sm active:scale-95"
-          } transition-all duration-100 ease-out ${
-            active ? "font-medium text-signal" : "text-muted hover:text-ink"
-          }`}
-        >
-          {name}
-        </Link>
-      );
-    });
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-paper transition-colors">
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-out ${
+        isOpen
+          ? "border-b border-line bg-paper shadow-xs"
+          : isScrolled
+            ? "border-b border-line/70 bg-paper/85 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+            : isHeroTransparent
+              ? "bg-linear-to-b from-black/55 via-black/20 to-transparent"
+              : "bg-transparent"
+      }`}
+    >
       <nav
         aria-label="Main"
         className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360"
@@ -56,9 +64,15 @@ export default function Navbar() {
         <Link
           href="/"
           onClick={() => setIsOpen(false)}
-          className="group flex items-center gap-2.5 transition-all duration-150 ease-out hover:opacity-85 active:scale-95"
+          className="group flex items-center gap-2.5 transition-all duration-200 ease-out hover:opacity-85 active:scale-95"
         >
-          <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line/80 bg-surface shadow-2xs transition-transform duration-150 ease-out group-hover:scale-105">
+          <span
+            className={`relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-2xs transition-all duration-200 ease-out group-hover:scale-105 ${
+              isHeroTransparent
+                ? "border-white/30 bg-white/10"
+                : "border-line/80 bg-surface"
+            }`}
+          >
             <Image
               src="/icons/favicon.svg"
               alt="Momented logo"
@@ -69,37 +83,122 @@ export default function Navbar() {
               className="h-full w-full object-contain"
             />
           </span>
-          <span className="font-serif text-2xl font-medium tracking-tight text-ink">
+          <span
+            className={`font-serif text-2xl font-medium tracking-tight transition-colors duration-200 ${
+              isHeroTransparent ? "text-white" : "text-ink"
+            }`}
+          >
             Momented
           </span>
         </Link>
-        <div className="hidden items-center gap-7 md:flex">{renderLinks()}</div>
+        <div className="hidden items-center gap-8 md:flex">
+          {links.map(({ name, href }) => {
+            const active = isActivePath(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`relative py-1 text-xs font-mono uppercase tracking-wider transition-colors duration-200 active:scale-95 ${
+                  isHeroTransparent
+                    ? active
+                      ? "text-white font-semibold"
+                      : "text-white/80 hover:text-white"
+                    : active
+                      ? "text-ink font-semibold"
+                      : "text-muted hover:text-ink"
+                }`}
+              >
+                <span>{name}</span>
+                {active && (
+                  <span
+                    aria-hidden="true"
+                    className={`absolute -bottom-1.5 left-0 right-0 h-0.5 rounded-full transition-colors ${
+                      isHeroTransparent ? "bg-white" : "bg-signal"
+                    }`}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </div>
         <button
           type="button"
-          className="-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-md text-ink transition-all duration-100 ease-out hover:bg-soft active:scale-90 md:hidden"
+          className={`-mr-2 inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 ease-out active:scale-95 md:hidden cursor-pointer ${
+            isHeroTransparent
+              ? "text-white hover:bg-white/15"
+              : "text-ink hover:bg-soft"
+          }`}
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
           aria-controls="mobile-menu"
-          aria-label={isOpen ? "Close menu" : "Open menu"}
+          aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
         >
-          {isOpen ? (
-            <X size={20} aria-hidden="true" />
-          ) : (
-            <Menu size={20} aria-hidden="true" />
-          )}
+          <span className="relative flex h-5 w-5 items-center justify-center">
+            <Menu
+              size={20}
+              aria-hidden="true"
+              className={`absolute transition-all duration-200 ease-out ${
+                isOpen
+                  ? "scale-75 opacity-0 rotate-90"
+                  : "scale-100 opacity-100 rotate-0"
+              }`}
+            />
+            <X
+              size={20}
+              aria-hidden="true"
+              className={`absolute transition-all duration-200 ease-out ${
+                isOpen
+                  ? "scale-100 opacity-100 rotate-0"
+                  : "scale-75 opacity-0 -rotate-90"
+              }`}
+            />
+          </span>
         </button>
       </nav>
       {isOpen && (
         <div
           id="mobile-menu"
-          className="border-t border-line bg-paper md:hidden"
+          className="fixed inset-x-0 top-16 bottom-0 z-40 bg-paper/95 backdrop-blur-2xl md:hidden overflow-y-auto animate-[fade-up_200ms_cubic-bezier(0.16,1,0.3,1)]"
         >
-          <nav
-            aria-label="Mobile"
-            className="mx-auto flex max-w-6xl flex-col px-5 py-3 sm:px-8"
-          >
-            {renderLinks(true)}
-          </nav>
+          <div className="mx-auto flex h-full max-w-6xl flex-col justify-between px-6 py-6 sm:px-8">
+            <nav aria-label="Mobile Navigation" className="flex flex-col">
+              {links.map(({ name, href }) => {
+                const active = isActivePath(pathname, href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center justify-between border-b border-line/60 py-4 text-lg font-serif transition-colors duration-200 active:scale-95 ${
+                      active
+                        ? "text-ink font-medium"
+                        : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    <span>{name}</span>
+                    {active ? (
+                      <span
+                        aria-hidden="true"
+                        className="h-2 w-2 rounded-full bg-signal"
+                      />
+                    ) : (
+                      <ArrowRight
+                        size={15}
+                        className="text-muted/40"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="pt-6 border-t border-line/60 flex items-center justify-between text-xs font-mono text-muted">
+              <span>Public Domain Journal</span>
+              <span className="text-signal font-medium">CC0 1.0</span>
+            </div>
+          </div>
         </div>
       )}
     </header>

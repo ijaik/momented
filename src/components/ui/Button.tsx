@@ -16,18 +16,18 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const sizes = {
-    sm: "px-3.5 py-2 text-sm gap-1.5 rounded-xl",
-    md: "px-5 py-2.5 text-sm gap-2 rounded-xl",
+    sm: "px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider gap-1.5 rounded-full",
+    md: "px-5 py-2.5 text-xs font-mono uppercase tracking-wider gap-2 rounded-full",
   };
   const variants = {
     primary:
-      "bg-solid text-on-solid shadow-xs hover:opacity-90 active:scale-95",
+      "bg-solid text-on-solid shadow-xs hover:opacity-90 active:scale-95 font-semibold",
     secondary:
-      "border border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft active:scale-95 shadow-2xs",
+      "border border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft active:scale-95 shadow-2xs font-medium",
     danger:
-      "bg-danger-soft text-danger hover:brightness-[0.97] active:scale-95",
+      "bg-danger-soft text-danger hover:brightness-[0.97] active:scale-95 font-medium",
     ghost:
-      "border border-line/50 bg-soft/70 text-muted hover:text-ink hover:bg-soft active:scale-95",
+      "border border-line/50 bg-soft/70 text-muted hover:text-ink hover:bg-soft active:scale-95 font-medium",
   };
   return (
     <button

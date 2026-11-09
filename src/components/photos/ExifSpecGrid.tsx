@@ -1,4 +1,4 @@
-import { Camera, CircleDot, Clock, Film } from "lucide-react";
+import { Aperture, Camera, CircleDot, Clock, Film } from "lucide-react";
 import type { Photo } from "@/types";
 
 interface ExifSpecGridProps {
@@ -35,9 +35,7 @@ export default function ExifSpecGrid({
     {
       label: "Aperture",
       value: photo.aperture || "—",
-      icon: (
-        <span className="font-serif text-xs font-bold leading-none">ƒ</span>
-      ),
+      icon: <Aperture size={compact ? 11 : 13} aria-hidden="true" />,
     },
     {
       label: "Shutter",
@@ -63,15 +61,15 @@ export default function ExifSpecGrid({
               compact ? "h-7 w-7 rounded-lg" : "h-9 w-9 rounded-xl"
             }`}
           >
-            <Camera size={compact ? 14 : 18} aria-hidden="true" />
+            <Camera size={compact ? 14 : 17} aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <span className="block font-semibold uppercase tracking-wider text-muted text-[10px]">
+            <span className="block editorial-label text-muted text-[10px]">
               Camera
             </span>
             <p
-              className={`truncate font-medium text-ink ${
-                compact ? "text-xs" : "text-sm"
+              className={`truncate font-serif font-medium text-ink ${
+                compact ? "text-xs" : "text-sm sm:text-base"
               }`}
             >
               {photo.camera_model}
@@ -90,7 +88,7 @@ export default function ExifSpecGrid({
             className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs"
           >
             <dt
-              className={`flex items-center text-[10px] font-semibold uppercase tracking-wider text-muted ${
+              className={`flex items-center editorial-label text-[10px] text-muted ${
                 compact ? "gap-1" : "gap-1.5"
               }`}
             >
@@ -98,7 +96,7 @@ export default function ExifSpecGrid({
               <span>{spec.label}</span>
             </dt>
             <dd
-              className={`font-sans font-semibold tabular-nums text-ink ${
+              className={`font-mono font-medium tabular-nums text-ink ${
                 compact ? "mt-0.5 text-xs" : "mt-1 text-sm"
               }`}
             >

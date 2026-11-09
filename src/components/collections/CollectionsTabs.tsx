@@ -29,9 +29,9 @@ export default function CollectionsTabs({
   return (
     <nav
       aria-label="Collection categories"
-      className="mb-10 sm:mb-12 flex items-center justify-start overflow-x-auto pb-2"
+      className="mb-10 sm:mb-12 flex items-center justify-start overflow-x-auto border-b border-line/70"
     >
-      <div className="inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-soft/70 p-1.5 backdrop-blur-md shadow-2xs">
+      <div className="flex items-center gap-7 sm:gap-9">
         {TAB_LABELS.map((t) => {
           const isActive = t.key === activeTab;
           return (
@@ -39,10 +39,10 @@ export default function CollectionsTabs({
               key={t.key}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-150 ease-out active:scale-95 whitespace-nowrap ${
+              className={`relative pb-3.5 text-xs sm:text-sm font-mono uppercase tracking-wider transition-all duration-150 ease-out active:scale-95 whitespace-nowrap ${
                 isActive
-                  ? "bg-surface text-ink shadow-xs font-semibold"
-                  : "text-muted hover:text-ink hover:bg-surface/50"
+                  ? "text-ink font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
+                  : "text-muted hover:text-ink"
               }`}
             >
               {t.name}

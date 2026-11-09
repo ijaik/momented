@@ -243,7 +243,7 @@ export default function SeriesCarousel({
       className="flex flex-col gap-5"
     >
       <div
-        className="relative mx-auto w-full overflow-hidden rounded-xl border border-line/70 bg-soft shadow-xs touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
+        className="relative mx-auto w-full overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_2px_14px_rgba(0,0,0,0.03)] touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
         style={{
           aspectRatio: `${currentAspect}`,
           maxHeight: "min(78vh, 680px)",
@@ -293,8 +293,9 @@ export default function SeriesCarousel({
       {totalSlides > 1 && (
         <div className="flex w-full items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-medium tabular-nums text-muted">
-              {activeIndex + 1} / {totalSlides}
+            <span className="text-xs font-mono tabular-nums text-muted">
+              {String(activeIndex + 1).padStart(2, "0")} /{" "}
+              {String(totalSlides).padStart(2, "0")}
             </span>
             <nav
               aria-label="Slide indicators"
@@ -307,7 +308,7 @@ export default function SeriesCarousel({
                   onClick={() => goToSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   aria-current={idx === activeIndex ? "true" : undefined}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-0.75 rounded-full transition-all duration-300 ${
                     idx === activeIndex
                       ? "w-6 bg-signal"
                       : "w-1.5 bg-line hover:bg-muted"
@@ -322,7 +323,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex - 1)}
               disabled={activeIndex === 0}
               aria-label="Previous photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-90 disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-95 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
@@ -331,7 +332,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex + 1)}
               disabled={activeIndex === totalSlides - 1}
               aria-label="Next photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-90 disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-95 disabled:pointer-events-none disabled:opacity-30"
             >
               <ChevronRight size={18} aria-hidden="true" />
             </button>
@@ -406,7 +407,7 @@ export default function SeriesCarousel({
           aria-label="Camera specifications for active frame"
           className="w-full rounded-2xl border border-line/60 bg-surface/85 p-5 shadow-xs backdrop-blur-md transition-all animate-[dialog-panel-in_200ms_cubic-bezier(0.16,1,0.3,1)]"
         >
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted border-b border-line/60 pb-2.5">
+          <h3 className="editorial-label text-muted border-b border-line/60 pb-2.5 font-medium">
             Frame {activeIndex + 1} Details
           </h3>
           {hasPhotoExif(currentPhoto) ? (
@@ -462,8 +463,9 @@ export default function SeriesCarousel({
             </div>
             {totalSlides > 1 && (
               <div className="flex items-center gap-3 self-end sm:self-center">
-                <span className="text-xs font-medium tabular-nums text-muted">
-                  {activeIndex + 1} / {totalSlides}
+                <span className="text-xs font-mono tabular-nums text-muted">
+                  {String(activeIndex + 1).padStart(2, "0")} /{" "}
+                  {String(totalSlides).padStart(2, "0")}
                 </span>
                 <nav
                   aria-label="Slide indicators"
@@ -476,7 +478,7 @@ export default function SeriesCarousel({
                       onClick={() => goToSlide(idx)}
                       aria-label={`Go to slide ${idx + 1}`}
                       aria-current={idx === activeIndex ? "true" : undefined}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                      className={`h-0.75 rounded-full transition-all duration-300 ${
                         idx === activeIndex
                           ? "w-6 bg-signal"
                           : "w-1.5 bg-line hover:bg-muted"

@@ -6,6 +6,9 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-serif:
     var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
+  --font-mono:
+    var(--font-jetbrains), ui-monospace, "SF Mono", "Cascadia Code", Menlo,
+    Consolas, monospace;
   --color-paper: #faf9f6;
   --color-surface: #ffffff;
   --color-ink: #201e1a;
@@ -41,6 +44,7 @@
     color-scheme: light;
   }
   html {
+    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -67,6 +71,21 @@
     0 0 0 4px rgb(0 0 0 / 35%),
     0 0 0 1px rgb(255 255 255 / 90%) inset;
 }
+@layer components {
+  .editorial-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .journal-caption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -88,10 +107,20 @@
 @keyframes dialog-panel-in {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.97) translateY(8px);
   }
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

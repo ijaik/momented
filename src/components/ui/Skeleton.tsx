@@ -19,13 +19,13 @@ export function SkeletonHeader() {
 }
 export function SkeletonGrid() {
   return (
-    <div className="columns-1 sm:columns-2 gap-5 lg:columns-3 xl:gap-8">
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-4/3 rounded-xl border border-line/60 bg-soft" />
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-3/2 rounded-xl border border-line/60 bg-soft" />
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-square rounded-xl border border-line/60 bg-soft" />
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-4/3 rounded-xl border border-line/60 bg-soft" />
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-3/2 rounded-xl border border-line/60 bg-soft" />
-      <div className="break-inside-avoid mb-5 xl:mb-8 aspect-square rounded-xl border border-line/60 bg-soft" />
+    <div className="columns-1 sm:columns-2 gap-6 lg:columns-3 xl:gap-8">
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-4/3 rounded-2xl border border-line/60 bg-soft" />
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-3/2 rounded-2xl border border-line/60 bg-soft" />
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-square rounded-2xl border border-line/60 bg-soft" />
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-4/3 rounded-2xl border border-line/60 bg-soft" />
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-3/2 rounded-2xl border border-line/60 bg-soft" />
+      <div className="break-inside-avoid mb-6 xl:mb-8 aspect-square rounded-2xl border border-line/60 bg-soft" />
     </div>
   );
 }
@@ -37,8 +37,8 @@ export function PhotoDetailSkeleton() {
     >
       <figure className="min-w-0">
         <div
-          className="mx-auto aspect-4/3 w-full max-w-full rounded-xl border border-line/70 bg-soft"
-          style={{ maxHeight: "min(72vh, calc(100vh - 12rem))" }}
+          className="mx-auto aspect-4/3 w-full max-w-full rounded-2xl border border-line/70 bg-soft"
+          style={{ maxHeight: "min(78vh, calc(100vh - 10rem))" }}
         />
         <div className="mt-6 border-b border-line pb-6">
           <div className="h-9 w-2/3 rounded-lg bg-soft" />

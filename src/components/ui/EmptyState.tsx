@@ -12,12 +12,14 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center gap-2 py-20 text-center ${className}`}
+      className={`flex flex-col items-center justify-center gap-2.5 py-24 text-center ${className}`}
     >
       {title && (
-        <h2 className="font-serif text-2xl font-medium text-ink">{title}</h2>
+        <h2 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-ink">
+          {title}
+        </h2>
       )}
-      <p className="max-w-sm text-[15px] leading-relaxed text-muted">
+      <p className="max-w-sm text-sm sm:text-base leading-relaxed text-muted">
         {description}
       </p>
     </div>

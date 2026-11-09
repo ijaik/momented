@@ -71,7 +71,7 @@ export default function ShareButton({
           aria-expanded={isOpen}
           className={
             className ||
-            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft hover:border-ink/20 active:scale-[0.98] sm:px-5"
+            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border border-line/80 bg-surface/80 backdrop-blur-xs px-5 py-2 text-xs font-mono uppercase tracking-wider text-ink transition-all duration-100 hover:bg-soft hover:border-ink/20 active:scale-95"
           }
         >
           <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">

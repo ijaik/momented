@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Schibsted_Grotesk } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
@@ -13,6 +13,12 @@ const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-schibsted",
+});
+const jetbrains = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jetbrains",
+  weight: ["400", "500"],
 });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -107,7 +113,10 @@ export const viewport: Viewport = {
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${schibsted.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${schibsted.variable} ${jetbrains.variable}`}
+    >
       <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
         {children}
       </body>

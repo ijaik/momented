@@ -14,7 +14,7 @@ export default function HomeRecentPhotos({
   return (
     <section
       aria-labelledby="recent-heading"
-      className="border-t border-line/80 pt-16 sm:pt-20"
+      className="border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
         label="03 / New Photographs"
@@ -25,9 +25,9 @@ export default function HomeRecentPhotos({
           label: `View all ${totalPhotos} photographs`,
         }}
       />
-      <div className="columns-2 gap-4 sm:gap-6 md:columns-3">
+      <div className="columns-1 sm:columns-2 gap-6 md:columns-3 xl:gap-8">
         {recentPhotos.map((photo, idx) => (
-          <div key={photo.id} className="break-inside-avoid mb-4 sm:mb-6">
+          <div key={photo.id} className="break-inside-avoid mb-6 xl:mb-8">
             <PhotoCard photo={photo} index={idx} />
           </div>
         ))}

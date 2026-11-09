@@ -51,7 +51,7 @@ export default function CoverCard({
   return (
     <Link href={href} className="focus-media group block">
       <div
-        className={`relative ${aspectClass} overflow-hidden rounded-xl border border-line/70 bg-soft shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-500 ease-out group-hover:border-signal/50 group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.09)] group-active:scale-[0.99]`}
+        className={`relative ${aspectClass} overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_2px_14px_rgba(0,0,0,0.03)] transition-all duration-500 ease-out group-hover:border-line group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.07)] group-active:scale-95`}
       >
         {coverImage ? (
           <>
@@ -67,10 +67,10 @@ export default function CoverCard({
               fill
               preload={preload}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="object-cover transition-transform duration-700 ease-linear group-hover:scale-105"
             />
             {photoCount > 0 && (
-              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 text-[11px] font-medium text-white/95 backdrop-blur-md shadow-xs">
+              <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-mono tracking-wider text-white/95 backdrop-blur-md shadow-xs">
                 <Layers
                   size={12}
                   aria-hidden="true"
@@ -84,7 +84,7 @@ export default function CoverCard({
           </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-sm text-muted">No cover yet</span>
+            <span className="text-sm font-mono text-muted">No cover yet</span>
           </div>
         )}
       </div>
@@ -93,19 +93,19 @@ export default function CoverCard({
       >
         <h2
           className={`flex items-center gap-1.5 font-serif ${
-            isCompact ? "text-base sm:text-lg" : "text-2xl"
-          } font-medium leading-tight tracking-tight text-ink transition-colors group-hover:text-signal`}
+            isCompact ? "text-base sm:text-lg" : "text-xl sm:text-2xl"
+          } font-medium leading-tight tracking-tight text-ink transition-colors group-hover:text-signal/90`}
         >
           {item.title}
           <ArrowUpRight
-            size={isCompact ? 14 : 16}
+            size={isCompact ? 13 : 15}
             aria-hidden="true"
             className="shrink-0 opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
           />
         </h2>
         {meta && (
           <span
-            className={`shrink-0 ${isCompact ? "text-xs" : "text-[13px]"} text-muted`}
+            className={`shrink-0 ${isCompact ? "text-[11px]" : "text-xs"} font-mono text-muted tabular-nums`}
           >
             {meta}
           </span>
@@ -113,7 +113,7 @@ export default function CoverCard({
       </div>
       {item.description && (
         <p
-          className={`mt-1 line-clamp-2 ${isCompact ? "text-xs" : "text-sm"} leading-relaxed text-muted`}
+          className={`mt-1.5 line-clamp-2 ${isCompact ? "text-xs" : "text-sm"} leading-relaxed text-muted`}
         >
           {item.description}
         </p>

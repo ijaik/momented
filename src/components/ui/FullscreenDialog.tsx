@@ -44,9 +44,9 @@ export default function FullscreenDialog({
             onClick={onClose}
             aria-label="Exit fullscreen (Esc)"
             title="Minimize (Esc)"
-            className="inline-flex items-center gap-1.5 rounded-full border border-signal/40 bg-signal/10 px-3.5 py-1.5 text-xs font-medium text-signal transition-all duration-100 hover:bg-signal/20 active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider text-muted transition-all duration-100 hover:bg-soft hover:text-ink active:scale-95"
           >
-            <Minimize2 size={15} aria-hidden="true" />
+            <Minimize2 size={14} aria-hidden="true" />
             <span className="hidden sm:inline">Minimize</span>
           </button>
         </div>

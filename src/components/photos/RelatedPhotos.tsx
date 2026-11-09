@@ -15,17 +15,17 @@ export default function RelatedPhotos({
   return (
     <section
       aria-label="Related photographs"
-      className="mt-16 border-t border-line pt-10"
+      className="mt-20 border-t border-line/70 pt-12"
     >
-      <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+      <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <div>
-          <h2 className="font-serif text-xl font-medium tracking-tight text-ink sm:text-2xl">
+          <h2 className="font-serif text-2xl font-medium tracking-tight text-ink sm:text-3xl">
             {title}
           </h2>
-          <p className="mt-1 text-xs text-muted">{description}</p>
+          <p className="mt-1.5 text-xs sm:text-sm text-muted">{description}</p>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 md:grid-cols-3">
         {photos.map((photo) => (
           <CoverCard
             key={photo.id}

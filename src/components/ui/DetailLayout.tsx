@@ -20,12 +20,12 @@ export default function DetailLayout({
 }: DetailLayoutProps) {
   return (
     <>
-      <header className="my-8 md:my-12 border-b border-line pb-8 md:pb-10">
+      <header className="my-8 md:my-12 border-b border-line/70 pb-8 md:pb-10">
         {backLink && (
           <div className="mb-5">
             <Link
               href={backLink.href}
-              className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface/80 px-3.5 py-1.5 text-xs font-mono uppercase tracking-wider text-muted backdrop-blur-xs transition-all duration-150 hover:bg-soft hover:text-ink active:scale-95"
+              className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
             >
               <ArrowLeft
                 size={13}
@@ -37,33 +37,28 @@ export default function DetailLayout({
           </div>
         )}
         {badge && (
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-line bg-soft/70 px-3 py-1 text-xs font-medium text-muted">
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal animate-pulse"
-            />
-            <span>{badge}</span>
+          <div className="mb-4 flex items-center gap-3">
+            <span className="h-px w-6 bg-signal/70" aria-hidden="true" />
+            <span className="editorial-label text-signal/90 font-medium">
+              {badge}
+            </span>
           </div>
         )}
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
-            <h1 className="font-serif text-3xl font-medium leading-[1.08] tracking-tight text-ink sm:text-4xl md:text-5xl">
+            <h1 className="font-serif text-3xl font-medium leading-[1.06] tracking-tight text-ink sm:text-4xl md:text-5xl lg:text-6xl">
               {title}
             </h1>
             {description && (
-              <p className="mt-3.5 max-w-2xl whitespace-pre-wrap text-[15px] leading-relaxed text-muted md:text-base">
+              <p className="mt-3.5 max-w-2xl whitespace-pre-wrap text-base leading-relaxed text-muted">
                 {description}
               </p>
             )}
           </div>
           {meta && (
-            <div className="inline-flex shrink-0 items-center gap-2 rounded-full border border-line/80 bg-soft/50 px-3.5 py-1.5 text-xs font-mono text-muted">
-              <span
-                aria-hidden="true"
-                className="h-1.5 w-1.5 shrink-0 rounded-full bg-signal"
-              />
-              <span>{meta}</span>
-            </div>
+            <span className="editorial-label text-muted/90 tabular-nums shrink-0">
+              {meta}
+            </span>
           )}
         </div>
       </header>

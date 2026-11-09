@@ -23,28 +23,28 @@ export default function SectionHeader({
 }: SectionHeaderProps) {
   return (
     <div
-      className={`mb-8 sm:mb-12 flex flex-col justify-between gap-4 md:flex-row md:items-end ${className}`}
+      className={`mb-10 sm:mb-14 flex flex-col justify-between gap-5 md:flex-row md:items-end ${className}`}
     >
       <div>
         {label && (
-          <div className="mb-2.5 flex items-center gap-2">
+          <div className="mb-3 flex items-center gap-2.5">
             {Icon && (
               <Icon
-                size={15}
-                className="text-signal shrink-0"
+                size={14}
+                className="text-signal/90 shrink-0"
                 aria-hidden="true"
               />
             )}
-            <span className="text-xs font-mono uppercase tracking-widest text-signal">
+            <span className="editorial-label text-signal/90 font-medium">
               {label}
             </span>
           </div>
         )}
-        <h2 className="font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+        <h2 className="font-serif text-3xl font-medium tracking-tight text-ink sm:text-4xl md:text-[2.75rem] leading-[1.08]">
           {title}
         </h2>
         {description && (
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
+          <p className="mt-2.5 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
             {description}
           </p>
         )}
@@ -52,11 +52,11 @@ export default function SectionHeader({
       {action && (
         <Link
           href={action.href}
-          className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-signal hover:underline underline-offset-4 active:scale-95 transition-transform duration-100"
+          className="group inline-flex shrink-0 items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
         >
           <span>{action.label}</span>
           <ArrowRight
-            size={14}
+            size={13}
             className="transition-transform duration-150 group-hover:translate-x-1"
             aria-hidden="true"
           />

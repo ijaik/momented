@@ -6,21 +6,25 @@ export const metadata: Metadata = {
 };
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      <p className="font-serif text-2xl font-medium tracking-tight text-ink">
-        Momented
-      </p>
-      <h1 className="mt-6 font-serif text-6xl font-medium tracking-tight text-ink sm:text-7xl">
-        404
+    <main className="flex min-h-[80vh] flex-col items-center justify-center px-6 py-20 text-center">
+      <div className="mb-4 flex items-center gap-3">
+        <span className="h-px w-6 bg-signal/70" aria-hidden="true" />
+        <span className="editorial-label text-signal/90 font-medium">
+          404 — Lost Frame
+        </span>
+      </div>
+      <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-ink">
+        This moment slipped away.
       </h1>
-      <p className="mt-4 max-w-sm leading-relaxed text-muted">
-        This moment doesn&apos;t exist, or it may have been moved.
+      <p className="mt-3.5 max-w-sm text-sm sm:text-base leading-relaxed text-muted">
+        The photograph or page you were looking for doesn&apos;t exist or has
+        moved.
       </p>
       <Link
         href="/"
-        className="mt-8 inline-flex items-center justify-center rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-[0.98] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2"
+        className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-mono uppercase tracking-wider text-paper shadow-xs transition-all duration-150 ease-out hover:opacity-90 active:scale-95"
       >
-        Back to home
+        Return to journal
       </Link>
     </main>
   );

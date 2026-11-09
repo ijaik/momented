@@ -1,4 +1,5 @@
 "use client";
+import { Download, Share2 } from "lucide-react";
 import Image from "next/image";
 import {
   type SubmitEvent,
@@ -350,8 +351,20 @@ export default function PhotoManager({
                       {photo.title}
                     </h3>
                     <div className="flex items-center gap-3 text-xs text-muted font-mono">
-                      <span title="Downloads">↓ {photo.downloads ?? 0}</span>
-                      <span title="Shares">↗ {photo.shares ?? 0}</span>
+                      <span
+                        title="Downloads"
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Download size={11} aria-hidden="true" />
+                        {photo.downloads ?? 0}
+                      </span>
+                      <span
+                        title="Shares"
+                        className="inline-flex items-center gap-1"
+                      >
+                        <Share2 size={11} aria-hidden="true" />
+                        {photo.shares ?? 0}
+                      </span>
                     </div>
                   </div>
                   {photo.description && (

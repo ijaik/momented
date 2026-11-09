@@ -54,7 +54,7 @@ export default function WallpaperPreviewButton({
           aria-expanded={isOpen}
           className={
             className ||
-            "inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-xl bg-solid px-4 py-2 text-sm font-medium text-on-solid shadow-xs transition-all duration-100 hover:opacity-90 active:scale-[0.98] sm:px-5"
+            "inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-full bg-solid px-5 py-2 text-xs font-mono uppercase tracking-wider font-semibold text-on-solid shadow-xs transition-all duration-100 hover:opacity-90 active:scale-95"
           }
         >
           <Smartphone

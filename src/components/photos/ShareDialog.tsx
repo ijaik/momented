@@ -227,7 +227,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={handleNativeShare}
                 disabled={isSharing}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
               >
                 <Share2 size={16} aria-hidden="true" />
                 {isSharing ? "Preparing…" : "Send the photograph"}
@@ -258,7 +258,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={copyLink}
                 aria-live="polite"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-[0.97]"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-95"
               >
                 {copied ? (
                   <>

@@ -14,7 +14,7 @@ export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-1.5 block text-sm font-medium text-ink"
+      className="mb-1.5 block text-xs font-mono uppercase tracking-wider text-muted font-medium"
     >
       {children}
     </label>
@@ -103,8 +103,8 @@ export function SubmitButton({
   ...props
 }: SubmitButtonProps) {
   const sizes = {
-    sm: "px-3.5 py-2 text-sm gap-1.5 rounded-xl",
-    md: "px-5 py-2.5 text-sm gap-2 rounded-xl",
+    sm: "px-4 py-2 text-xs font-mono uppercase tracking-wider gap-1.5 rounded-full font-semibold",
+    md: "px-6 py-2.5 text-xs font-mono uppercase tracking-wider gap-2 rounded-full font-semibold",
   };
   return (
     <button
