@@ -414,8 +414,8 @@ export default function SeriesCarousel({
             <ExifSpecGrid photo={currentPhoto} compact />
           ) : (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm sm:text-base md:text-lg font-medium text-muted">
-                I lost it 😭
+              <p className="text-sm font-medium text-muted">
+                EXIF camera metadata was not recorded for this frame.
               </p>
             </div>
           )}

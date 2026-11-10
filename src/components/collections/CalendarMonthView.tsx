@@ -50,7 +50,7 @@ export default function CalendarMonthView({
     if (undatedPhotos.length > 0) {
       tabs.push({
         key: "lost",
-        label: "I lost it 😭",
+        label: "Undated",
         count: undatedPhotos.length,
       });
     }
@@ -139,7 +139,7 @@ export default function CalendarMonthView({
               <section key="undated-section">
                 <div className="mb-8 flex flex-col gap-1.5 border-b border-line/70 pb-3.5 sm:flex-row sm:items-baseline sm:justify-between">
                   <h2 className="editorial-label text-ink font-medium flex items-center gap-2">
-                    <span>I lost it 😭</span>
+                    <span>Undated Archive</span>
                     <span className="text-muted">—</span>
                     <span className="text-muted font-normal">
                       {undatedPhotos.length}{" "}
@@ -174,7 +174,7 @@ export default function CalendarMonthView({
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:justify-between">
                 <div>
                   <h2 className="text-base font-serif text-ink flex items-center gap-2">
-                    <span>I lost it 😭</span>
+                    <span>Undated Archive</span>
                   </h2>
                   <p className="mt-1 text-xs sm:text-sm text-muted">
                     These photographs don&apos;t have EXIF capture timestamps

@@ -4,8 +4,16 @@ import { supabase } from "@/lib/db/supabase";
 import { sortSeriesPhotos } from "@/lib/utils/series";
 import type { Photo } from "@/types";
 
+function throwIfUnexpectedDbError(
+  error: { code?: string; message: string } | null,
+  context: string,
+): void {
+  if (!error) return;
+  if (error.code === "PGRST116") return;
+  throw new Error(`Database error in ${context}: ${error.message}`);
+}
 const PHOTO_CARD_COLUMNS =
-  "id, title, description, cloudinary_url, width, height, camera_model, taken_at";
+  "id, title, description, cloudinary_url, width, height, camera_make, camera_model, taken_at";
 type IdTable =
   | "photos"
   | "collections"
@@ -43,7 +51,7 @@ export async function getAllIds(table: IdTable): Promise<string[]> {
   cacheLife("weeks");
   const { data, error } = await supabase.from(table).select("id");
   if (error) {
-    console.warn(`Failed to fetch IDs for ${table}:`, error.message);
+    throwIfUnexpectedDbError(error, `getAllIds(${table})`);
     return [];
   }
   return (data ?? []).map((row) => String(row.id));
@@ -54,10 +62,11 @@ export async function getSitemapPhotos(): Promise<
   "use cache";
   cacheTag("photos");
   cacheLife("weeks");
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("photos")
     .select("id, created_at, cloudinary_url")
     .order("created_at", { ascending: false });
+  throwIfUnexpectedDbError(error, "getSitemapPhotos");
   return (data ?? []) as {
     id: string;
     created_at: string | null;
@@ -71,9 +80,10 @@ export async function getHomePhotos() {
   const { data, error } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_model",
+      "id, title, description, cloudinary_url, width, height, camera_make, camera_model",
     )
     .order("created_at", { ascending: false });
+  throwIfUnexpectedDbError(error, "getHomePhotos");
   return { data: (data ?? []) as Photo[], error: error?.message ?? null };
 }
 export interface HomeEditorialData {
@@ -129,19 +139,21 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
     supabase
       .from("photos")
       .select(
-        "id, title, description, cloudinary_url, width, height, camera_model, focal_length, aperture, shutter_speed, iso, taken_at, created_at",
+        "id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, taken_at, created_at",
       )
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(13),
     supabase.from("photos").select("id", { count: "exact", head: true }),
     getSeriesList(),
     getCuratedCollections(),
     getRuleCollectionsList(),
     getCalendarCollectionsList(),
   ]);
+  throwIfUnexpectedDbError(photosRes.error, "getHomeEditorialData(photos)");
+  throwIfUnexpectedDbError(countRes.error, "getHomeEditorialData(count)");
   const allPhotos = (photosRes.data ?? []) as Photo[];
   const heroPhoto = allPhotos[0] ?? null;
-  const recentPhotos = allPhotos.slice(1, 5);
+  const recentPhotos = allPhotos.slice(1, 13);
   const totalPhotos = countRes.count ?? allPhotos.length;
   const rawLatestSeries = seriesRes.data?.[0] ?? null;
   let featuredSeries: HomeEditorialData["featuredSeries"] = null;
@@ -204,10 +216,11 @@ export async function getPhotoById(id: string) {
   const { data, error } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
+      "id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title), calendars:calendar_collections!photo_calendar_collections(id, title), series:series!series_photos(id, title)",
     )
     .eq("id", id)
     .single();
+  throwIfUnexpectedDbError(error, `getPhotoById(${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
 async function getPhotosForEntity(
@@ -225,6 +238,7 @@ async function getPhotosForEntity(
     .select(`${PHOTO_CARD_COLUMNS}, ${junction.table}!inner()`)
     .eq(`${junction.table}.${junction.column}`, entityId)
     .order("created_at", { ascending });
+  throwIfUnexpectedDbError(error, `getPhotosForEntity(${junction.table})`);
   return {
     data: (data ?? []) as unknown as Photo[],
     error: error?.message ?? null,
@@ -264,65 +278,52 @@ export async function getRelatedPhotos({
   "use cache";
   cacheTag("photos", "collections", "rules", "series", "calendar");
   cacheLife("weeks");
-  const relatedMap = new Map<string, Photo>();
-  if (collectionId) {
-    const { data } = await getPhotosForCollection(collectionId);
-    for (const p of data) {
-      if (p.id !== photoId && !relatedMap.has(p.id)) {
-        relatedMap.set(p.id, p);
-        if (relatedMap.size >= 3) break;
-      }
-    }
-  }
-  if (relatedMap.size < 3 && seriesId) {
-    const { data: s } = await getSeriesById(seriesId);
-    if (s?.series_photos) {
-      const rawPhotos = s.series_photos as unknown as {
-        position: number;
-        photos: Photo;
-      }[];
-      for (const sp of rawPhotos) {
-        if (
-          sp.photos &&
-          sp.photos.id !== photoId &&
-          !relatedMap.has(sp.photos.id)
-        ) {
-          relatedMap.set(sp.photos.id, sp.photos);
-          if (relatedMap.size >= 3) break;
-        }
-      }
-    }
-  }
-  if (relatedMap.size < 3 && ruleId) {
-    const { data } = await getPhotosForRule(ruleId);
-    for (const p of data) {
-      if (p.id !== photoId && !relatedMap.has(p.id)) {
-        relatedMap.set(p.id, p);
-        if (relatedMap.size >= 3) break;
-      }
-    }
-  }
-  if (
-    relatedMap.size < 3 &&
+  const validMonth =
     monthIndex !== null &&
     monthIndex !== undefined &&
     monthIndex >= 1 &&
     monthIndex <= 12
-  ) {
-    const { data } = await getPhotosForCalendarMonth(monthIndex);
-    for (const p of data) {
+      ? monthIndex
+      : null;
+  const [collectionRes, seriesRes, ruleRes, calendarRes, homeRes] =
+    await Promise.all([
+      collectionId
+        ? getPhotosForCollection(collectionId)
+        : Promise.resolve({ data: [] as Photo[], error: null }),
+      seriesId
+        ? getSeriesById(seriesId)
+        : Promise.resolve({ data: null, error: null }),
+      ruleId
+        ? getPhotosForRule(ruleId)
+        : Promise.resolve({ data: [] as Photo[], error: null }),
+      validMonth
+        ? getPhotosForCalendarMonth(validMonth)
+        : Promise.resolve({ data: [] as Photo[], error: null }),
+      getHomePhotos(),
+    ]);
+  const seriesPhotos: Photo[] = seriesRes.data?.series_photos
+    ? (
+        seriesRes.data.series_photos as unknown as {
+          position: number;
+          photos: Photo | null;
+        }[]
+      )
+        .map((sp) => sp.photos)
+        .filter((p): p is Photo => Boolean(p))
+    : [];
+  const relatedMap = new Map<string, Photo>();
+  const pools: Photo[][] = [
+    collectionRes.data,
+    seriesPhotos,
+    ruleRes.data,
+    calendarRes.data,
+    homeRes.data,
+  ];
+  for (const pool of pools) {
+    for (const p of pool) {
       if (p.id !== photoId && !relatedMap.has(p.id)) {
         relatedMap.set(p.id, p);
-        if (relatedMap.size >= 3) break;
-      }
-    }
-  }
-  if (relatedMap.size < 3) {
-    const { data } = await getHomePhotos();
-    for (const p of data) {
-      if (p.id !== photoId && !relatedMap.has(p.id)) {
-        relatedMap.set(p.id, p as unknown as Photo);
-        if (relatedMap.size >= 3) break;
+        if (relatedMap.size >= 3) return Array.from(relatedMap.values());
       }
     }
   }
@@ -346,6 +347,7 @@ export async function getCollectionById(id: string) {
     .select("title, description")
     .eq("id", id)
     .single();
+  throwIfUnexpectedDbError(error, `getCollectionById(${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getRuleCollectionById(id: string) {
@@ -357,6 +359,7 @@ export async function getRuleCollectionById(id: string) {
     .select("title, description")
     .eq("id", id)
     .single();
+  throwIfUnexpectedDbError(error, `getRuleCollectionById(${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getCalendarMonthById(monthIndex: number) {
@@ -368,6 +371,7 @@ export async function getCalendarMonthById(monthIndex: number) {
     .select("title, description")
     .eq("id", monthIndex)
     .single();
+  throwIfUnexpectedDbError(error, `getCalendarMonthById(${monthIndex})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
 export async function getCuratedCollections() {
@@ -377,9 +381,10 @@ export async function getCuratedCollections() {
   const { data, error } = await supabase
     .from("collections")
     .select(
-      "id, title, description, cover_photo_id, created_at, photos!photo_collections(id, cloudinary_url)",
+      "id, title, description, cover_photo_id, created_at, photos!photo_collections(id, cloudinary_url, created_at)",
     )
     .order("created_at", { ascending: false });
+  throwIfUnexpectedDbError(error, "getCuratedCollections");
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getRuleCollectionsList() {
@@ -389,9 +394,10 @@ export async function getRuleCollectionsList() {
   const { data, error } = await supabase
     .from("rule_collections")
     .select(
-      "id, title, description, cover_photo_id, created_at, photos!photo_rule_collections(id, cloudinary_url)",
+      "id, title, description, cover_photo_id, created_at, photos!photo_rule_collections(id, cloudinary_url, created_at)",
     )
     .order("created_at", { ascending: false });
+  throwIfUnexpectedDbError(error, "getRuleCollectionsList");
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getCalendarCollectionsList() {
@@ -401,7 +407,7 @@ export async function getCalendarCollectionsList() {
   const { data, error } = await supabase
     .from("calendar_collections")
     .select(
-      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url)",
+      "id, title, description, cover_photo_id, photos!photo_calendar_collections(id, cloudinary_url, created_at)",
     )
     .order("id", { ascending: true })
     .order("taken_at", {
@@ -410,6 +416,7 @@ export async function getCalendarCollectionsList() {
       nullsFirst: false,
     })
     .order("created_at", { referencedTable: "photos", ascending: false });
+  throwIfUnexpectedDbError(error, "getCalendarCollectionsList");
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesList() {
@@ -419,10 +426,11 @@ export async function getSeriesList() {
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height))",
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, created_at))",
     )
     .order("created_at", { ascending: false })
     .order("position", { referencedTable: "series_photos", ascending: true });
+  throwIfUnexpectedDbError(error, "getSeriesList");
   return { data: data ?? [], error: error?.message ?? null };
 }
 export async function getSeriesById(id: string) {
@@ -432,10 +440,11 @@ export async function getSeriesById(id: string) {
   const { data, error } = await supabase
     .from("series")
     .select(
-      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
+      "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at, downloads, shares))",
     )
     .eq("id", id)
     .order("position", { referencedTable: "series_photos", ascending: true })
     .single();
+  throwIfUnexpectedDbError(error, `getSeriesById(${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }

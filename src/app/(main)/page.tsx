@@ -5,7 +5,7 @@ import HomeHero from "@/components/home/HomeHero";
 import HomeRecentPhotos from "@/components/home/HomeRecentPhotos";
 import JsonLd from "@/components/seo/JsonLd";
 import { getHomeEditorialData } from "@/lib/db/queries";
-import { websiteJsonLd } from "@/lib/seo/jsonLd";
+import { personJsonLd, websiteJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Momented",
@@ -25,7 +25,7 @@ export default async function Home() {
   } = await getHomeEditorialData();
   return (
     <>
-      <JsonLd data={[websiteJsonLd()]} />
+      <JsonLd data={[websiteJsonLd(), personJsonLd()]} />
       <div className="flex flex-col gap-24 sm:gap-32 md:gap-40 pb-12">
         <HomeHero heroPhoto={heroPhoto} />
         <HomeFeaturedSeries featuredSeries={featuredSeries} />

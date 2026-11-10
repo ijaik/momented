@@ -56,11 +56,12 @@ export default async function CalendarCollectionsPage() {
       <CollectionsTabs activeTab="calendar" />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {displayCollections.map((col) => (
+          {displayCollections.map((col, index) => (
             <CoverCard
               key={col.id}
               item={col}
               href={`/collections/calendar/${col.id}`}
+              preload={index < 2}
             />
           ))}
         </div>

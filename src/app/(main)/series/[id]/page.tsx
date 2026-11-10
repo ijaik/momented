@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import JsonLd from "@/components/seo/JsonLd";
@@ -94,12 +96,53 @@ async function SeriesDetailContent({
         meta={`${sortedPhotos.length} ${sortedPhotos.length === 1 ? "photograph" : "photographs"} • ${displayDate}`}
       >
         {sortedPhotos.length > 0 ? (
-          <SeriesCarousel
-            seriesTitle={series.title}
-            seriesDescription={series.description}
-            photos={sortedPhotos}
-            createdAt={displayDate}
-          />
+          <>
+            <SeriesCarousel
+              seriesTitle={series.title}
+              seriesDescription={series.description}
+              photos={sortedPhotos}
+              createdAt={displayDate}
+            />
+            <div className="mt-16 border-t border-line/70 pt-12">
+              <h2 className="font-serif text-2xl tracking-tight text-ink sm:text-3xl">
+                Frames in this Series
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Individual photographs captured in this sequence.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                {sortedPhotos.map((photo, idx) => (
+                  <Link
+                    key={photo.id}
+                    href={`/photo/${photo.id}`}
+                    aria-label={`View photograph: ${photo.title || `Frame ${idx + 1}`}`}
+                    className="group block overflow-hidden rounded-xl border border-line/60 bg-soft shadow-2xs transition-all hover:border-line hover:shadow-sm"
+                  >
+                    <div className="relative aspect-square">
+                      <Image
+                        src={photo.cloudinary_url}
+                        alt={
+                          photo.title || `${series.title} — Frame ${idx + 1}`
+                        }
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 180px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-2.5">
+                      <p className="truncate text-xs font-medium text-ink">
+                        {photo.title ||
+                          `Frame ${String(idx + 1).padStart(2, "0")}`}
+                      </p>
+                      <p className="text-[10px] font-mono text-muted">
+                        0{idx + 1}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </>
         ) : (
           <EmptyState description="No photographs added to this series yet." />
         )}

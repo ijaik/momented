@@ -161,7 +161,6 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     thumbnailUrl: getSocialShareImageUrl(photo.cloudinary_url),
     encodingFormat: "image/jpeg",
     url: `${siteConfig.url}/photo/${photo.id}`,
-    image: getSocialShareImageUrl(photo.cloudinary_url),
     representativeOfPage: true,
     inLanguage: "en-US",
     genre: "Photography",
@@ -202,7 +201,9 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
             {
               "@type": "PropertyValue",
               name: "Camera",
-              value: photo.camera_model,
+              value: photo.camera_make
+                ? `${photo.camera_make} ${photo.camera_model}`
+                : photo.camera_model,
             },
             ...(photo.focal_length
               ? [
@@ -285,13 +286,18 @@ export function homePageGalleryJsonLd(
     description?: string | null;
     cloudinary_url: string;
   }[],
+  options: {
+    name?: string;
+    description?: string;
+    url?: string;
+  } = {},
 ): JsonLdObject {
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${siteConfig.name} — A photography journal`,
-    description: siteConfig.description,
-    url: `${siteConfig.url}/`,
+    name: options.name || `${siteConfig.name} — A photography journal`,
+    description: options.description || siteConfig.description,
+    url: options.url || `${siteConfig.url}/`,
     inLanguage: "en-US",
     isPartOf: {
       "@type": "WebSite",

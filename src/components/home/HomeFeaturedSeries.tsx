@@ -75,9 +75,11 @@ export default function HomeFeaturedSeries({
               </p>
               <div className="grid grid-cols-4 gap-2.5">
                 {featuredSeries.photos.slice(0, 4).map((p, idx) => (
-                  <div
+                  <Link
                     key={p.id}
-                    className="relative aspect-square overflow-hidden rounded-xl border border-line/60 bg-soft shadow-2xs"
+                    href={`/photo/${p.id}`}
+                    aria-label={`View photograph: ${p.title || `Slide ${idx + 1}`}`}
+                    className="group/thumb relative aspect-square overflow-hidden rounded-xl border border-line/60 bg-soft shadow-2xs transition-transform duration-200 hover:scale-105"
                   >
                     <Image
                       src={p.cloudinary_url}
@@ -89,7 +91,7 @@ export default function HomeFeaturedSeries({
                     <span className="absolute bottom-1 right-1 rounded-sm bg-black/65 px-1 py-0.5 text-[9px] font-mono text-white/90">
                       0{idx + 1}
                     </span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

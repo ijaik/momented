@@ -73,6 +73,7 @@ async function SingleRuleContent({
             photos,
           ),
           breadcrumbJsonLd([
+            { name: "Collections", url: `${siteConfig.url}/collections` },
             {
               name: "Rule Collections",
               url: `${siteConfig.url}/collections/rules`,

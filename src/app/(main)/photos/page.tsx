@@ -25,7 +25,12 @@ export default async function PhotosPage() {
     <>
       <JsonLd
         data={[
-          homePageGalleryJsonLd(photoList),
+          homePageGalleryJsonLd(photoList, {
+            name: `Photographs — ${siteConfig.name}`,
+            description:
+              "Light, shadow, & the moments in between — one photograph at a time.",
+            url: `${siteConfig.url}/photos`,
+          }),
           breadcrumbJsonLd([
             { name: "Photographs", url: `${siteConfig.url}/photos` },
           ]),

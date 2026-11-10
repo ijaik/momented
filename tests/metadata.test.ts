@@ -22,4 +22,11 @@ describe("buildPageMetadata", () => {
     expect(meta.title).toBe("About");
     expect(meta.openGraph?.title).toBe(`About | ${siteConfig.name}`);
   });
+  it("normalizes canonical url for root path without trailing slash", () => {
+    const meta = buildPageMetadata({
+      title: "Momented",
+      path: "/",
+    });
+    expect(meta.alternates?.canonical).toBe(siteConfig.url);
+  });
 });

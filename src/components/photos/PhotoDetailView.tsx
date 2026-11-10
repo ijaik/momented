@@ -82,9 +82,14 @@ export default function PhotoDetailView({
             <h1 className="font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl md:text-[2.5rem]">
               {title}
             </h1>
-            {photo.description && (
+            {photo.description ? (
               <p className="mt-3.5 max-w-xl whitespace-pre-wrap text-base leading-relaxed text-muted">
                 {photo.description}
+              </p>
+            ) : (
+              <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-muted">
+                A public domain photograph documenting light and atmosphere,
+                dedicated under Creative Commons CC0 1.0 Universal.
               </p>
             )}
             <p className="mt-3.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-muted">
@@ -118,8 +123,8 @@ export default function PhotoDetailView({
               </div>
             ) : (
               <div className="border-t border-line/60 py-4">
-                <p className="text-sm sm:text-base font-medium text-muted">
-                  I lost it 😭
+                <p className="text-sm font-medium text-muted">
+                  EXIF camera metadata was not recorded for this photograph.
                 </p>
               </div>
             )}

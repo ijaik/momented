@@ -36,12 +36,28 @@ export async function generateMetadata({
       robots: { index: false, follow: false },
     };
   const title = photo.title || "Untitled Momented";
-  const cameraText = photo.camera_model
-    ? ` Shot on ${photo.camera_model}.`
-    : "";
+  const displayDate = formatDisplayDate(photo.created_at, photo.taken_at);
+  const exifParts = [
+    photo.camera_model ? `shot on ${photo.camera_model}` : null,
+    photo.focal_length || null,
+    photo.aperture || null,
+    photo.shutter_speed || null,
+    photo.iso ? `ISO ${photo.iso}` : null,
+  ].filter(Boolean);
+  const contextParts = [
+    ...(photo.collections?.map((c) => c.title) ?? []),
+    ...(photo.rules?.map((r) => r.title) ?? []),
+    ...(photo.series?.map((s) => s.title) ?? []),
+  ];
+  const exifSummary = exifParts.length > 0 ? ` (${exifParts.join(", ")})` : "";
+  const contextSummary =
+    contextParts.length > 0 ? ` Featured in ${contextParts.join(", ")}.` : "";
   const description = photo.description
-    ? `${title} — ${photo.description}.${cameraText}`.replace(/\.\./g, ".")
-    : `View "${title}" on ${siteConfig.name}.${cameraText}`;
+    ? `${title} — ${photo.description}.${exifSummary ? ` Captured${exifSummary}.` : ""}${contextSummary}`.replace(
+        /\.\./g,
+        ".",
+      )
+    : `"${title}" — a public domain (CC0) photograph by ${photo.artist || siteConfig.author.name}${displayDate !== "Unknown date" ? ` (${displayDate})` : ""}${exifSummary}.${contextSummary}`;
   return buildPageMetadata({
     title,
     description,
@@ -116,7 +132,7 @@ async function PhotoDetailContent({
           breadcrumbJsonLd([
             {
               name: "Photographs",
-              url: `${siteConfig.url}/`,
+              url: `${siteConfig.url}/photos`,
             },
             ...(standardCollections[0]
               ? [

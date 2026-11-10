@@ -49,14 +49,5 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   return response;
 }
 export const config = {
-  matcher: [
-    {
-      source:
-        "/((?!_next/static|_next/image|favicon.ico|icons|screenshots|sitemap.xml|robots.txt|manifest.webmanifest).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
-    },
-  ],
+  matcher: ["/admin", "/admin/:path*"],
 };

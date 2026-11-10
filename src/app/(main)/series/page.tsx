@@ -70,11 +70,12 @@ export default async function SeriesPage() {
       />
       {count > 0 ? (
         <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {seriesList.map((series) => (
+          {seriesList.map((series, index) => (
             <CoverCard
               key={series.id}
               item={series}
               href={`/series/${series.id}`}
+              preload={index < 2}
               meta={formatDisplayDate(series.created_at)}
               countLabel={{ singular: "photograph", plural: "photographs" }}
             />

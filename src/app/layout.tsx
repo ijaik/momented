@@ -27,9 +27,6 @@ const jetbrains = JetBrains_Mono({
 });
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
-  alternates: {
-    canonical: siteConfig.url,
-  },
   verification: {
     google: "GMp5Gc1BgPdvcJHZzWt8tXY79MP_U0BLy4pu-0-QNgA",
     other: {

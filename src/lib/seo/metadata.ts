@@ -22,7 +22,8 @@ export function buildPageMetadata({
   keywords,
   noIndex = false,
 }: BuildPageMetadataOptions): Metadata {
-  const url = `${siteConfig.url}${path}`;
+  const cleanSiteUrl = siteConfig.url.replace(/\/+$/, "");
+  const url = path === "/" ? cleanSiteUrl : `${cleanSiteUrl}${path}`;
   const fullTitle = title.includes(siteConfig.name)
     ? title
     : `${title} | ${siteConfig.name}`;

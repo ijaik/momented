@@ -99,7 +99,8 @@ describe("JSON-LD & Schema Helpers", () => {
       cloudinary_public_id: "sample",
       width: 1200,
       height: 800,
-      camera_model: "Sony A7 IV",
+      camera_make: "Sony",
+      camera_model: "A7 IV",
       taken_at: "2026-10-15T08:00:00Z",
       created_at: "2026-10-15T10:00:00Z",
     };
@@ -107,9 +108,16 @@ describe("JSON-LD & Schema Helpers", () => {
     expect(photoLd["@type"]).toBe("ImageObject");
     expect(photoLd.name).toBe("Morning Sun");
     expect(photoLd.contentUrl).toBe(mockPhoto.cloudinary_url);
+    expect(photoLd.image).toBeUndefined();
     expect(photoLd.license).toBe(
       "https://creativecommons.org/publicdomain/zero/1.0/",
     );
+    const exif = photoLd.exifData as {
+      "@type": string;
+      name: string;
+      value: string;
+    }[];
+    expect(exif[0].value).toBe("Sony A7 IV");
     const pageLd = photoPageJsonLd(mockPhoto);
     expect(pageLd["@type"]).toBe("ItemPage");
     expect(pageLd.url).toBe(`${siteConfig.url}/photo/test-photo-123`);
@@ -140,5 +148,11 @@ describe("JSON-LD & Schema Helpers", () => {
     expect(mainEntity.itemListElement[0].url).toBe(
       `${siteConfig.url}/photo/p1`,
     );
+    const customData = homePageGalleryJsonLd(mockPhotos, {
+      name: `Photographs — ${siteConfig.name}`,
+      url: `${siteConfig.url}/photos`,
+    });
+    expect(customData.name).toBe(`Photographs — ${siteConfig.name}`);
+    expect(customData.url).toBe(`${siteConfig.url}/photos`);
   });
 });

@@ -102,6 +102,7 @@ async function CalendarMonthContent({
             monthPhotos,
           ),
           breadcrumbJsonLd([
+            { name: "Collections", url: `${siteConfig.url}/collections` },
             {
               name: "Calendar Collections",
               url: `${siteConfig.url}/collections/calendar`,
