@@ -44,8 +44,6 @@
     color-scheme: light;
   }
   html {
-    scroll-behavior: smooth;
-    scrollbar-gutter: stable;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -102,7 +100,6 @@
     animation-duration: 0.01ms;
     animation-iteration-count: 1;
     transition-duration: 0.01ms;
-    scroll-behavior: auto;
   }
 }
 @keyframes dialog-backdrop-in {

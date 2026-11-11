@@ -44,120 +44,124 @@ export default function Navbar() {
     };
   }, [isOpen]);
   return (
-    <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-out motion-reduce:transition-none ${
-        isOpen
-          ? "border-b border-line bg-paper shadow-xs"
-          : isScrolled
-            ? "border-b border-line/70 bg-paper/90 backdrop-blur-md shadow-[0_1px_0_0_var(--color-line)]"
-            : isHeroTransparent
-              ? "bg-linear-to-b from-black/60 via-black/20 to-transparent"
-              : "bg-transparent"
-      }`}
-    >
-      <nav
-        aria-label="Main"
-        className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360"
+    <>
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-out motion-reduce:transition-none ${
+          isOpen
+            ? "border-b border-line bg-paper shadow-xs"
+            : isScrolled
+              ? "border-b border-line/70 bg-paper/90 backdrop-blur-md shadow-[0_1px_0_0_var(--color-line)]"
+              : isHeroTransparent
+                ? "bg-linear-to-b from-black/60 via-black/20 to-transparent"
+                : "bg-transparent"
+        }`}
       >
-        <Link
-          href="/"
-          onClick={() => setOpenedAt(null)}
-          className="group flex items-center gap-2.5 cursor-pointer transition-opacity duration-200 ease-out hover:opacity-80 active:scale-95"
+        <nav
+          aria-label="Main"
+          className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360"
         >
-          <span
-            className={`relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-2xs transition-transform duration-200 ease-out group-hover:scale-105 ${
+          <Link
+            href="/"
+            onClick={() => setOpenedAt(null)}
+            className="group flex items-center gap-2.5 cursor-pointer transition-opacity duration-200 ease-out hover:opacity-80 active:scale-95"
+          >
+            <span
+              className={`relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-2xs transition-transform duration-200 ease-out group-hover:scale-105 ${
+                isHeroTransparent
+                  ? "border-white/25 bg-white/10 backdrop-blur-sm"
+                  : "border-line bg-surface"
+              }`}
+            >
+              <Image
+                src="/icons/favicon.svg"
+                alt="Momented logo"
+                aria-hidden="true"
+                width={32}
+                height={32}
+                loading="eager"
+                unoptimized
+                className="h-full w-full object-contain"
+              />
+            </span>
+            <span
+              className={`font-serif text-[1.375rem] leading-none tracking-tight transition-colors duration-200 ${
+                isHeroTransparent ? "text-white" : "text-ink"
+              }`}
+            >
+              Momented
+            </span>
+          </Link>
+          <ul className="hidden items-center gap-7 md:flex">
+            {links.map(({ name, href }) => {
+              const active = isActivePath(pathname, href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`group relative cursor-pointer py-1 text-[0.6875rem] font-semibold uppercase tracking-widest transition-colors duration-150 ${
+                      isHeroTransparent
+                        ? active
+                          ? "text-white"
+                          : "text-white/70 hover:text-white"
+                        : active
+                          ? "text-ink"
+                          : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {name}
+                    <span
+                      aria-hidden="true"
+                      className={`absolute -bottom-1 left-0 h-px rounded-full transition-all duration-200 motion-reduce:transition-none ${
+                        isHeroTransparent ? "bg-white/80" : "bg-signal"
+                      } ${active ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-40"}`}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className={`-mr-2 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-all duration-200 ease-out active:scale-95 md:hidden ${
               isHeroTransparent
-                ? "border-white/25 bg-white/10 backdrop-blur-sm"
-                : "border-line bg-surface"
+                ? "text-white hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/50"
+                : "text-ink hover:bg-soft"
             }`}
+            onClick={() =>
+              setOpenedAt((prev) => (prev === pathname ? null : pathname))
+            }
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
+            aria-label={
+              isOpen ? "Close navigation menu" : "Open navigation menu"
+            }
           >
-            <Image
-              src="/icons/favicon.svg"
-              alt="Momented logo"
+            <span
+              className="relative flex h-5 w-5 items-center justify-center"
               aria-hidden="true"
-              width={32}
-              height={32}
-              loading="eager"
-              unoptimized
-              className="h-full w-full object-contain"
-            />
-          </span>
-          <span
-            className={`font-serif text-[1.375rem] leading-none tracking-tight transition-colors duration-200 ${
-              isHeroTransparent ? "text-white" : "text-ink"
-            }`}
-          >
-            Momented
-          </span>
-        </Link>
-        <ul className="hidden items-center gap-7 md:flex">
-          {links.map(({ name, href }) => {
-            const active = isActivePath(pathname, href);
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={`group relative cursor-pointer py-1 text-[0.6875rem] font-semibold uppercase tracking-widest transition-colors duration-150 ${
-                    isHeroTransparent
-                      ? active
-                        ? "text-white"
-                        : "text-white/70 hover:text-white"
-                      : active
-                        ? "text-ink"
-                        : "text-muted hover:text-ink"
-                  }`}
-                >
-                  {name}
-                  <span
-                    aria-hidden="true"
-                    className={`absolute -bottom-1 left-0 h-px rounded-full transition-all duration-200 motion-reduce:transition-none ${
-                      isHeroTransparent ? "bg-white/80" : "bg-signal"
-                    } ${active ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-40"}`}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-        <button
-          ref={menuButtonRef}
-          type="button"
-          className={`-mr-2 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-all duration-200 ease-out active:scale-95 md:hidden ${
-            isHeroTransparent
-              ? "text-white hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/50"
-              : "text-ink hover:bg-soft"
-          }`}
-          onClick={() =>
-            setOpenedAt((prev) => (prev === pathname ? null : pathname))
-          }
-          aria-expanded={isOpen}
-          aria-controls="mobile-menu"
-          aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
-        >
-          <span
-            className="relative flex h-5 w-5 items-center justify-center"
-            aria-hidden="true"
-          >
-            <Menu
-              size={20}
-              className={`absolute transition-all duration-200 ease-out motion-reduce:transition-none ${
-                isOpen
-                  ? "scale-75 opacity-0 rotate-90"
-                  : "scale-100 opacity-100 rotate-0"
-              }`}
-            />
-            <X
-              size={20}
-              className={`absolute transition-all duration-200 ease-out motion-reduce:transition-none ${
-                isOpen
-                  ? "scale-100 opacity-100 rotate-0"
-                  : "scale-75 opacity-0 -rotate-90"
-              }`}
-            />
-          </span>
-        </button>
-      </nav>
+            >
+              <Menu
+                size={20}
+                className={`absolute transition-all duration-200 ease-out motion-reduce:transition-none ${
+                  isOpen
+                    ? "scale-75 opacity-0 rotate-90"
+                    : "scale-100 opacity-100 rotate-0"
+                }`}
+              />
+              <X
+                size={20}
+                className={`absolute transition-all duration-200 ease-out motion-reduce:transition-none ${
+                  isOpen
+                    ? "scale-100 opacity-100 rotate-0"
+                    : "scale-75 opacity-0 -rotate-90"
+                }`}
+              />
+            </span>
+          </button>
+        </nav>
+      </header>
       <div
         id="mobile-menu"
         inert={!isOpen}
@@ -217,6 +221,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
