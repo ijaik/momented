@@ -15,7 +15,7 @@ export default function HomeFeaturedSeries({
     <section
       id="series"
       aria-labelledby="series-heading"
-      className="reveal border-t border-line/70 pt-16 sm:pt-24"
+      className="border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
         id="series-heading"

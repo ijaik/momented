@@ -39,7 +39,7 @@ export default function AboutPage() {
           </p>
         </header>
         <div className="flex flex-col gap-16 md:gap-20">
-          <section className="reveal grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
+          <section className="grid grid-cols-1 gap-x-12 gap-y-8 sm:grid-cols-2">
             <div className="rounded-2xl border border-line/60 bg-surface/70 backdrop-blur-xs p-7 sm:p-8 shadow-[0_2px_14px_rgba(0,0,0,0.03)]">
               <div className="mb-3.5 flex items-center gap-2 text-ink">
                 <Camera size={17} className="text-signal/90" />
@@ -63,7 +63,7 @@ export default function AboutPage() {
               </p>
             </div>
           </section>
-          <section className="reveal border-t border-line/70 pt-12">
+          <section className="border-t border-line/70 pt-12">
             <SectionLabel>Explore</SectionLabel>
             <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
               <Link
@@ -140,7 +140,7 @@ export default function AboutPage() {
               </Link>
             </div>
           </section>
-          <section className="reveal border-t border-line/70 pt-12">
+          <section className="border-t border-line/70 pt-12">
             <SectionLabel>The License & Rights</SectionLabel>
             <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
               <div className="rounded-2xl border border-line/60 bg-surface/70 p-7 md:col-span-2 shadow-[0_2px_14px_rgba(0,0,0,0.03)]">

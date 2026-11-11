@@ -15,7 +15,7 @@ export default function RelatedPhotos({
   return (
     <section
       aria-label="Related photographs"
-      className="reveal mt-20 border-t border-line/70 pt-12"
+      className="mt-20 border-t border-line/70 pt-12"
     >
       <div className="mb-8 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
         <div>

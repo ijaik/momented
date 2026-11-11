@@ -47,7 +47,7 @@ export default function HomeCuratedLenses({
     <section
       id="perspectives"
       aria-labelledby="perspectives-heading"
-      className="reveal border-t border-line/70 pt-16 sm:pt-24"
+      className="border-t border-line/70 pt-16 sm:pt-24"
     >
       <SectionHeader
         id="perspectives-heading"
