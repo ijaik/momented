@@ -23,7 +23,7 @@ export default function Navbar() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const isHeroTransparent = pathname === "/" && !isScrolled && !isOpen;
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleScroll = () => setIsScrolled(window.scrollY > 25);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
