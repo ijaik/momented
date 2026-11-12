@@ -11,11 +11,15 @@ import {
 import { deletePhotoAction, editPhotoAction } from "@/actions/photos";
 import { savePhotoToDbAction } from "@/actions/upload";
 import Button from "@/components/ui/Button";
+import {
+  confirmAction,
+  notifyError,
+  notifySuccess,
+} from "@/components/ui/notifications";
 import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
 import {
   FieldLabel,
   FormInput,
-  FormSelect,
   FormTextarea,
   SubmitButton,
 } from "./AdminForms";
@@ -60,17 +64,22 @@ export default function PhotoManager({
   const [isUploadPending, startUploadTransition] = useTransition();
   const [isSavePending, startSaveTransition] = useTransition();
   const [isDeletePending, startDeleteTransition] = useTransition();
-  function handleDeletePhoto(id: string | number, publicId?: string) {
-    if (
-      !confirm("Are you sure you want to permanently delete this photograph?")
-    )
-      return;
+  async function handleDeletePhoto(id: string | number, publicId?: string) {
+    const confirmed = await confirmAction({
+      title: "Delete Photograph",
+      message:
+        "Are you sure you want to permanently delete this photograph? This will remove the image file and all its curatorial associations.",
+      confirmLabel: "Delete",
+      isDestructive: true,
+    });
+    if (!confirmed) return;
     setDeletingPhotoId(id);
     startDeleteTransition(async () => {
       try {
         await deletePhotoAction(id, publicId);
+        notifySuccess("Photograph permanently deleted.");
       } catch {
-        alert("Failed to delete photograph.");
+        notifyError("Failed to delete photograph.");
       } finally {
         setDeletingPhotoId(null);
       }
@@ -110,10 +119,12 @@ export default function PhotoManager({
           image_metadata: uploadData.image_metadata,
         });
         setStatus("Uploaded successfully.");
+        notifySuccess("Photograph uploaded successfully.");
         form.reset();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         setStatus(`Upload failed: ${message}`);
+        notifyError(`Upload failed: ${message}`);
       } finally {
         if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
         statusTimeoutRef.current = setTimeout(() => setStatus(""), 4000);
@@ -133,8 +144,9 @@ export default function PhotoManager({
           formData.getAll("rule_ids").map(String),
         );
         setEditingPhotoId(null);
+        notifySuccess("Changes saved successfully.");
       } catch {
-        alert("Failed to save changes.");
+        notifyError("Failed to save changes.");
       }
     });
   }
@@ -172,36 +184,42 @@ export default function PhotoManager({
             />
           </div>
           <div>
-            <FieldLabel htmlFor="photo-collections">Collections</FieldLabel>
-            <FormSelect
-              id="photo-collections"
-              name="collection_ids"
-              multiple
-              size={3}
-              className="h-auto min-h-20"
-            >
+            <FieldLabel as="span">Collections</FieldLabel>
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {collections.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
+                <label
+                  key={c.id}
+                  className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    name="collection_ids"
+                    value={c.id}
+                    className="sr-only"
+                  />
+                  <span>{c.title}</span>
+                </label>
               ))}
-            </FormSelect>
+            </div>
           </div>
           <div>
-            <FieldLabel htmlFor="photo-rules">Rules</FieldLabel>
-            <FormSelect
-              id="photo-rules"
-              name="rule_ids"
-              multiple
-              size={3}
-              className="h-auto min-h-20"
-            >
+            <FieldLabel as="span">Rules</FieldLabel>
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {rules?.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.title}
-                </option>
+                <label
+                  key={r.id}
+                  className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    name="rule_ids"
+                    value={r.id}
+                    className="sr-only"
+                  />
+                  <span>{r.title}</span>
+                </label>
               ))}
-            </FormSelect>
+            </div>
           </div>
           <div>
             <FieldLabel htmlFor="photo-caption">Caption</FieldLabel>
@@ -288,46 +306,54 @@ export default function PhotoManager({
                   </div>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <FieldLabel htmlFor={`edit-photo-cols-${photo.id}`}>
-                        Collections
-                      </FieldLabel>
-                      <FormSelect
-                        id={`edit-photo-cols-${photo.id}`}
-                        name="collection_ids"
-                        multiple
-                        size={4}
-                        defaultValue={
-                          photo.collections?.map((c) => String(c.id)) || []
-                        }
-                        className="h-auto min-h-28"
-                      >
-                        {collections.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.title}
-                          </option>
-                        ))}
-                      </FormSelect>
+                      <FieldLabel as="span">Collections</FieldLabel>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {collections.map((c) => {
+                          const isChecked = photo.collections?.some(
+                            (pc) => String(pc.id) === String(c.id),
+                          );
+                          return (
+                            <label
+                              key={c.id}
+                              className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                name="collection_ids"
+                                value={c.id}
+                                defaultChecked={isChecked}
+                                className="sr-only"
+                              />
+                              <span>{c.title}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                     <div>
-                      <FieldLabel htmlFor={`edit-photo-rules-${photo.id}`}>
-                        Rules
-                      </FieldLabel>
-                      <FormSelect
-                        id={`edit-photo-rules-${photo.id}`}
-                        name="rule_ids"
-                        multiple
-                        size={4}
-                        defaultValue={
-                          photo.rules?.map((r) => String(r.id)) || []
-                        }
-                        className="h-auto min-h-28"
-                      >
-                        {rules?.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.title}
-                          </option>
-                        ))}
-                      </FormSelect>
+                      <FieldLabel as="span">Rules</FieldLabel>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {rules?.map((r) => {
+                          const isChecked = photo.rules?.some(
+                            (pr) => String(pr.id) === String(r.id),
+                          );
+                          return (
+                            <label
+                              key={r.id}
+                              className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                name="rule_ids"
+                                value={r.id}
+                                defaultChecked={isChecked}
+                                className="sr-only"
+                              />
+                              <span>{r.title}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

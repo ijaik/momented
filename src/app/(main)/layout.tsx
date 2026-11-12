@@ -5,7 +5,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
-      <main className="grow mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-20 xl:max-w-7xl xl:py-24 2xl:max-w-360 2xl:py-28">
+      <main className="grow mx-auto w-full max-w-360 px-5 py-16 sm:px-8 lg:px-12 md:py-20 xl:py-24 2xl:py-28">
         {children}
       </main>
       <Footer />

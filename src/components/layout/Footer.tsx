@@ -5,21 +5,22 @@ import { siteConfig } from "@/config/site";
 export default function Footer() {
   return (
     <footer className="border-t border-line/70 mt-auto bg-surface/30 backdrop-blur-2xs">
-      <div className="mx-auto w-full max-w-6xl px-5 pt-14 pb-12 sm:px-8 sm:pt-16 sm:pb-14 xl:max-w-7xl 2xl:max-w-360">
+      <div className="mx-auto w-full max-w-360 px-5 pt-14 pb-12 sm:px-8 lg:px-12 sm:pt-16 sm:pb-14">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-6 flex flex-col justify-between">
             <div>
               <Link
                 href="/"
-                className="group inline-flex items-center gap-2.5 transition-opacity hover:opacity-85 active:scale-95"
+                className="group inline-flex items-center gap-2.5 transition-opacity hover:opacity-85"
               >
-                <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line/80 bg-surface shadow-2xs transition-transform duration-200 group-hover:scale-105">
+                <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 group-hover:scale-102">
                   <Image
                     src="/icons/favicon.svg"
                     alt="Momented logo"
                     width={28}
                     height={28}
                     unoptimized
+                    className="h-full w-full object-contain dark:invert"
                   />
                 </span>
                 <span className="font-serif text-2xl tracking-tight text-ink">
@@ -124,7 +125,7 @@ export default function Footer() {
             <span>Momented with</span>
             <Heart
               size={11}
-              className="text-signal/90 fill-signal/80 shrink-0 inline"
+              className="text-ink/80 fill-ink/80 shrink-0 inline"
               aria-label="love"
             />
             <span>by Jai</span>

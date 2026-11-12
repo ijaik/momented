@@ -14,7 +14,7 @@ export default function HomeRecentPhotos({
   return (
     <section
       aria-labelledby="recent-heading"
-      className="border-t border-line/70 pt-16 sm:pt-24"
+      className="border-t border-line/70 pt-12.5 sm:pt-18.75 md:pt-25"
     >
       <SectionHeader
         id="recent-heading"

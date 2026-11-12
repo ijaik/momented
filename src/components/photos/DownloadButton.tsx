@@ -13,7 +13,7 @@ export interface DownloadButtonProps {
   photoId: string | number;
   cloudinaryUrl: string;
   downloadCount?: number;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "primary";
   className?: string;
   fileName?: string;
 }
@@ -95,9 +95,9 @@ export default function DownloadButton({
         title={isSuccess ? "Saved" : "Download"}
         className={
           className ||
-          `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-100 active:scale-95 ${
+          `inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-100 active:scale-98 ${
             isSuccess
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+              ? "border-ink bg-soft text-ink"
               : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft disabled:opacity-70"
           }`
         }
@@ -106,19 +106,59 @@ export default function DownloadButton({
           <Loader2
             size={13}
             aria-hidden="true"
-            className="shrink-0 animate-spin text-signal"
+            className="shrink-0 animate-spin text-ink"
           />
         ) : isSuccess ? (
           <Check
             size={13}
             aria-hidden="true"
-            className="shrink-0 text-emerald-500 animate-in zoom-in-75 duration-200"
+            className="shrink-0 text-ink animate-in zoom-in-75 duration-200"
           />
         ) : (
           <Download size={13} aria-hidden="true" className="shrink-0" />
         )}
         <span className="hidden sm:inline">
           {isDownloading ? "Downloading…" : isSuccess ? "Saved" : "Download"}
+        </span>
+      </button>
+    );
+  if (variant === "primary")
+    return (
+      <button
+        type="button"
+        onClick={handleDownload}
+        disabled={isDownloading}
+        aria-live="polite"
+        className={
+          className ||
+          "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full bg-solid px-5 py-2 text-xs font-semibold uppercase tracking-wider text-on-solid shadow-xs transition-all duration-100 hover:opacity-90 active:scale-98 disabled:opacity-70 cursor-pointer"
+        }
+      >
+        <span className="inline-flex min-w-0 items-center gap-2.5 whitespace-nowrap">
+          {isDownloading ? (
+            <Loader2
+              size={15}
+              aria-hidden="true"
+              className="shrink-0 animate-spin text-on-solid"
+            />
+          ) : isSuccess ? (
+            <Check
+              size={15}
+              aria-hidden="true"
+              className="shrink-0 text-on-solid animate-in zoom-in-75 duration-200"
+            />
+          ) : (
+            <Download size={15} aria-hidden="true" className="shrink-0" />
+          )}
+          <span>
+            {isDownloading ? "Preparing" : isSuccess ? "Saved" : "High-Res"}
+          </span>
+        </span>
+        <span
+          aria-hidden="true"
+          className="shrink-0 text-[12px] font-mono tabular-nums text-on-solid/70 font-medium"
+        >
+          {optimisticCount}
         </span>
       </button>
     );
@@ -130,10 +170,10 @@ export default function DownloadButton({
       aria-live="polite"
       className={
         className ||
-        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border px-5 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-100 active:scale-95 ${
+        `inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border px-5 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-100 active:scale-98 cursor-pointer ${
           isSuccess
-            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-            : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft hover:border-ink/20 disabled:opacity-70"
+            ? "border-ink bg-soft text-ink font-semibold"
+            : "border-line bg-surface text-ink hover:bg-soft hover:border-ink/20 disabled:opacity-70"
         }`
       }
     >
@@ -142,13 +182,13 @@ export default function DownloadButton({
           <Loader2
             size={15}
             aria-hidden="true"
-            className="shrink-0 animate-spin text-signal"
+            className="shrink-0 animate-spin text-ink"
           />
         ) : isSuccess ? (
           <Check
             size={15}
             aria-hidden="true"
-            className="shrink-0 text-emerald-500 animate-in zoom-in-75 duration-200"
+            className="shrink-0 text-ink animate-in zoom-in-75 duration-200"
           />
         ) : (
           <Download size={15} aria-hidden="true" className="shrink-0" />
@@ -159,9 +199,7 @@ export default function DownloadButton({
       </span>
       <span
         aria-hidden="true"
-        className={`shrink-0 text-[12px] font-mono tabular-nums transition-colors ${
-          isSuccess ? "text-emerald-500 font-medium" : "text-faint"
-        }`}
+        className="shrink-0 text-[12px] font-mono tabular-nums text-faint"
       >
         {optimisticCount}
       </span>

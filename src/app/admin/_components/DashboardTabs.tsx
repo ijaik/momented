@@ -61,7 +61,7 @@ export default function DashboardTabs({
     document.getElementById(`tab-${next}`)?.focus({ preventScroll: true });
   };
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 md:py-16 2xl:max-w-360">
+    <main className="mx-auto w-full max-w-360 px-5 py-12 sm:px-8 lg:px-12 md:py-16">
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-4 border-b border-line/70 pb-6">
         <div>
           <div className="flex items-center gap-2.5">
@@ -101,7 +101,7 @@ export default function DashboardTabs({
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => activate(tab)}
                 onKeyDown={(e) => onTabKeyDown(e, tab)}
-                className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-150 ease-out active:scale-95 whitespace-nowrap cursor-pointer ${
+                className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-colors duration-150 ease-out whitespace-nowrap cursor-pointer ${
                   isActive
                     ? "bg-surface text-ink shadow-xs font-semibold"
                     : "text-muted hover:text-ink hover:bg-surface/50"

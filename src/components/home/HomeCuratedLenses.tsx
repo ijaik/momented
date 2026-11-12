@@ -1,4 +1,4 @@
-import { ArrowRight, Compass } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import CoverCard from "@/components/ui/CoverCard";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -47,12 +47,11 @@ export default function HomeCuratedLenses({
     <section
       id="perspectives"
       aria-labelledby="perspectives-heading"
-      className="border-t border-line/70 pt-16 sm:pt-24"
+      className="border-t border-line/70 pt-12.5 sm:pt-18.75 md:pt-25"
     >
       <SectionHeader
         id="perspectives-heading"
         label="02 / Perspectives"
-        icon={Compass}
         title="Three ways to explore"
         description="Photographs organized by atmosphere, photographic rules, and months."
       />
@@ -64,7 +63,7 @@ export default function HomeCuratedLenses({
                 <span className="editorial-label text-muted">{label}</span>
                 <Link
                   href={href}
-                  className="group/link inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted hover:text-ink transition-colors active:scale-95"
+                  className="group/link inline-flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted hover:text-ink transition-colors"
                 >
                   <span>{linkLabel}</span>
                   <ArrowRight
@@ -81,7 +80,7 @@ export default function HomeCuratedLenses({
                   aspectRatio="4/3"
                 />
               ) : (
-                <div className="rounded-2xl border border-line bg-soft/50 p-8 text-center text-xs text-muted">
+                <div className="rounded-xs border border-line bg-soft/50 p-8 text-center text-xs text-muted">
                   {empty}
                 </div>
               )}

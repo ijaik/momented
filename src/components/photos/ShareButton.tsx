@@ -56,7 +56,7 @@ export default function ShareButton({
           title="Share"
           className={
             className ||
-            "inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-surface/80 backdrop-blur-xs px-3 py-1.5 text-xs font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
+            "inline-flex items-center gap-1.5 rounded-full border border-line/80 bg-surface/80 backdrop-blur-xs px-3 py-1.5 text-xs font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-98 cursor-pointer"
           }
         >
           <Share2 size={14} aria-hidden="true" className="shrink-0" />
@@ -71,12 +71,16 @@ export default function ShareButton({
           aria-expanded={isOpen}
           className={
             className ||
-            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border border-line/80 bg-surface/80 backdrop-blur-xs px-5 py-2 text-xs font-medium uppercase tracking-wider text-ink transition-all duration-100 hover:bg-soft hover:border-ink/20 active:scale-95"
+            "inline-flex h-11 w-full items-center justify-between gap-2.5 rounded-full border border-line bg-surface px-4 py-2 text-xs font-medium uppercase tracking-wider text-ink transition-all duration-100 hover:bg-soft hover:border-ink/20 active:scale-98 cursor-pointer"
           }
         >
           <span className="inline-flex min-w-0 items-center gap-2 whitespace-nowrap">
-            <Share2 size={16} aria-hidden="true" className="shrink-0" />
-            Share
+            <Share2
+              size={15}
+              aria-hidden="true"
+              className="shrink-0 text-muted"
+            />
+            <span>Share</span>
           </span>
           <span
             aria-hidden="true"

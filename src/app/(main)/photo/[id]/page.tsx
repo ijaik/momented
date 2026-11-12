@@ -6,7 +6,12 @@ import JsonLd from "@/components/seo/JsonLd";
 import type { ReferenceLink } from "@/components/ui/ReferenceRow";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
-import { getAllIds, getPhotoById, getRelatedPhotos } from "@/lib/db/queries";
+import {
+  getAdjacentPhotos,
+  getAllIds,
+  getPhotoById,
+  getRelatedPhotos,
+} from "@/lib/db/queries";
 import {
   breadcrumbJsonLd,
   photographJsonLd,
@@ -90,13 +95,16 @@ async function PhotoDetailContent({
       : typedPhoto.taken_at || typedPhoto.created_at
         ? getPhotoDate(typedPhoto).month
         : null;
-  const relatedPhotos = await getRelatedPhotos({
-    photoId: typedPhoto.id,
-    collectionId: standardCollections[0]?.id,
-    ruleId: ruleCollections[0]?.id,
-    seriesId: seriesList[0]?.id,
-    monthIndex,
-  });
+  const [relatedPhotos, adjacent] = await Promise.all([
+    getRelatedPhotos({
+      photoId: typedPhoto.id,
+      collectionId: standardCollections[0]?.id,
+      ruleId: ruleCollections[0]?.id,
+      seriesId: seriesList[0]?.id,
+      monthIndex,
+    }),
+    getAdjacentPhotos(typedPhoto.id, typedPhoto.created_at ?? null),
+  ]);
   const references: ReferenceLink[] = [
     ...standardCollections.map((c) => ({
       id: c.id,
@@ -154,11 +162,17 @@ async function PhotoDetailContent({
         displayDate={displayDate}
         references={references}
         relatedPhotos={relatedPhotos}
+        prevPhoto={adjacent.prev}
+        nextPhoto={adjacent.next}
       />
     </>
   );
 }
-export default function PhotoDetail({ params }: PageProps<{ id: string }>) {
+export default function PhotoDetail({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   return (
     <Suspense fallback={<Skeleton variant="photo" />}>
       <PhotoDetailContent params={params} />

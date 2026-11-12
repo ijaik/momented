@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ToastProvider from "@/components/ui/ToastProvider";
 import {
   getAdminCalendarCollections,
   getAdminCollections,
@@ -21,12 +22,15 @@ export default async function AdminDashboard() {
     getAdminSeries(),
   ]);
   return (
-    <DashboardTabs
-      photos={photos}
-      collections={collections}
-      rules={rules}
-      calendars={calendars}
-      series={series}
-    />
+    <>
+      <ToastProvider />
+      <DashboardTabs
+        photos={photos}
+        collections={collections}
+        rules={rules}
+        calendars={calendars}
+        series={series}
+      />
+    </>
   );
 }

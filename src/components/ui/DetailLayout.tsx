@@ -25,7 +25,7 @@ export default function DetailLayout({
           <div className="mb-5">
             <Link
               href={backLink.href}
-              className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+              className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink"
             >
               <ArrowLeft
                 size={13}
@@ -38,8 +38,8 @@ export default function DetailLayout({
         )}
         {badge && (
           <div className="mb-4 flex items-center gap-3">
-            <span className="h-px w-6 bg-signal/70" aria-hidden="true" />
-            <span className="editorial-label text-signal/90 font-medium">
+            <span className="h-px w-6 bg-ink/70" aria-hidden="true" />
+            <span className="editorial-label text-ink font-medium">
               {badge}
             </span>
           </div>

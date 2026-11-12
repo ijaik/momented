@@ -20,6 +20,11 @@ import {
   savePhotoToDbAction,
 } from "@/actions/upload";
 import Button from "@/components/ui/Button";
+import {
+  confirmAction,
+  notifyError,
+  notifySuccess,
+} from "@/components/ui/notifications";
 import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
 import {
   FieldLabel,
@@ -182,19 +187,23 @@ export default function SeriesManager({
       try {
         if (editingSeries) {
           await editSeriesAction(editingSeries.id, formData);
+          notifySuccess("Series updated.");
         } else {
           await createSeriesAction(formData);
+          notifySuccess("Series created.");
         }
         closeForm();
       } catch (err) {
-        alert(err instanceof Error ? err.message : "Failed to save series.");
+        notifyError(
+          err instanceof Error ? err.message : "Failed to save series.",
+        );
       }
     });
   }
   async function handleBatchUploadSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (queuedFiles.length === 0) {
-      alert("Please select at least one photo to upload.");
+      notifyError("Please select at least one photo to upload.");
       return;
     }
     const form = e.currentTarget;
@@ -206,7 +215,7 @@ export default function SeriesManager({
         form.elements.namedItem("description") as HTMLTextAreaElement
       )?.value?.trim() || null;
     if (!title) {
-      alert("Series title is required.");
+      notifyError("Series title is required.");
       return;
     }
     startTransition(async () => {
@@ -261,6 +270,7 @@ export default function SeriesManager({
         for (const p of uploadedPhotos)
           seriesFormData.append("photo_ids", p.id);
         await createSeriesAction(seriesFormData);
+        notifySuccess("Series and frames created successfully.");
         closeForm();
       } catch (err) {
         if (uploadedPhotos.length > 0) {
@@ -269,25 +279,31 @@ export default function SeriesManager({
             uploadedPhotos.map((p) => deletePhotoAction(p.id, p.publicId)),
           );
         }
-        alert(err instanceof Error ? err.message : "Failed to create series.");
+        notifyError(
+          err instanceof Error ? err.message : "Failed to create series.",
+        );
       } finally {
         setUploadStatus("");
       }
     });
   }
   async function handleDelete(id: string) {
-    if (
-      !confirm(
+    const confirmed = await confirmAction({
+      title: "Delete Series",
+      message:
         "Are you sure you want to delete this series? The individual photographs will remain safe and will NOT be deleted.",
-      )
-    ) {
-      return;
-    }
+      confirmLabel: "Delete",
+      isDestructive: true,
+    });
+    if (!confirmed) return;
     startTransition(async () => {
       try {
         await deleteSeriesAction(id);
+        notifySuccess("Series deleted.");
       } catch (err) {
-        alert(err instanceof Error ? err.message : "Failed to delete series.");
+        notifyError(
+          err instanceof Error ? err.message : "Failed to delete series.",
+        );
       }
     });
   }
@@ -347,7 +363,7 @@ export default function SeriesManager({
                 <button
                   type="button"
                   onClick={() => setCreationMode("library")}
-                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-95 ${
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 ${
                     creationMode === "library"
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
@@ -358,7 +374,7 @@ export default function SeriesManager({
                 <button
                   type="button"
                   onClick={() => setCreationMode("upload")}
-                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-95 ${
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 ${
                     creationMode === "upload"
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
@@ -394,9 +410,7 @@ export default function SeriesManager({
                 />
               </div>
               <div>
-                <FieldLabel htmlFor="series-file-input">
-                  Select Photographs in Order *
-                </FieldLabel>
+                <FieldLabel as="span">Select Photographs in Order *</FieldLabel>
                 <div className="mt-1 flex items-center justify-center rounded-2xl border-2 border-dashed border-line/80 bg-soft/20 px-6 py-8 text-center transition-colors hover:border-ink/30">
                   <div className="flex flex-col items-center">
                     <Upload
@@ -493,7 +507,7 @@ export default function SeriesManager({
                 onRemovePhoto={removePhotoFromQueue}
               />
               <div>
-                <FieldLabel htmlFor="library-picker">
+                <FieldLabel as="span">
                   Select Photographs From Library
                 </FieldLabel>
                 <div className="max-h-72 overflow-y-auto rounded-2xl border border-line/70 bg-paper/60 p-3 backdrop-blur-xs">
@@ -509,7 +523,7 @@ export default function SeriesManager({
                           key={`lib-${photo.id}`}
                           type="button"
                           onClick={() => togglePhotoSelection(String(photo.id))}
-                          className={`flex flex-col rounded-xl border p-2 text-left transition-all duration-150 active:scale-95 ${
+                          className={`flex flex-col rounded-xl border p-2 text-left transition-all duration-150 active:scale-98 ${
                             isSelected
                               ? "border-signal/70 bg-soft shadow-xs"
                               : "border-line bg-surface hover:border-ink/20"

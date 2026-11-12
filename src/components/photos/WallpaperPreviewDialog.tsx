@@ -5,6 +5,7 @@ import {
   Eye,
   EyeOff,
   Flashlight,
+  Folder,
   Lock,
   Monitor,
   Smartphone,
@@ -13,8 +14,9 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
+import { useDialogFocusTrap } from "@/lib/hooks/useDialogFocusTrap";
 import type { Photo } from "@/types";
 export interface WallpaperPreviewDialogProps {
   photo: Photo;
@@ -33,25 +35,7 @@ export default function WallpaperPreviewDialog({
   const [showUiOverlay, setShowUiOverlay] = useState(true);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const close = useCallback(() => {
-    onClose();
-  }, [onClose]);
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
-    closeBtnRef.current?.focus({ preventScroll: true });
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [isOpen, close]);
+  useDialogFocusTrap(dialogRef, isOpen, onClose, closeBtnRef);
   if (!isOpen) return null;
   const title = photo.title || "Untitled Momented";
   const alt = `Wallpaper preview for ${title}`;
@@ -61,7 +45,7 @@ export default function WallpaperPreviewDialog({
       role="dialog"
       aria-modal="true"
       aria-label={`Preview "${title}" as wallpaper`}
-      className="fixed inset-0 z-100 flex flex-col justify-between overflow-hidden bg-black/80 backdrop-blur-xl p-4 sm:p-6 animate-[dialog-backdrop-in_200ms_cubic-bezier(0.16,1,0.3,1)] select-none"
+      className="fixed inset-0 z-100 flex flex-col justify-between overflow-hidden bg-black/85 backdrop-blur-xl p-4 sm:p-6 animate-[dialog-backdrop-in_200ms_cubic-bezier(0.16,1,0.3,1)] select-none"
     >
       <header className="relative z-30 mx-auto flex w-full max-w-5xl items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="min-w-0">
@@ -106,7 +90,7 @@ export default function WallpaperPreviewDialog({
               showUiOverlay ? "Hide system UI mock" : "Show system UI mock"
             }
             title={showUiOverlay ? "Hide UI" : "Show UI"}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-2.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-2.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white active:scale-98 cursor-pointer"
           >
             {showUiOverlay ? (
               <EyeOff size={13} aria-hidden="true" />
@@ -124,22 +108,22 @@ export default function WallpaperPreviewDialog({
               downloadCount={photo.downloads || 0}
               fileName={fileName}
               variant="compact"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md hover:bg-white/25 active:scale-95"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md hover:bg-white/25 active:scale-98 cursor-pointer"
             />
           </div>
           <button
             ref={closeBtnRef}
             type="button"
-            onClick={close}
+            onClick={onClose}
             aria-label="Close wallpaper preview (Esc)"
             title="Close (Esc)"
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white active:scale-95"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white/80 backdrop-blur-md transition-all hover:bg-white/20 hover:text-white active:scale-98 cursor-pointer"
           >
             <X size={16} aria-hidden="true" />
           </button>
         </div>
       </header>
-      <div className="relative my-auto flex h-[calc(100vh-160px)] w-full items-center justify-center overflow-hidden p-2 sm:p-4">
+      <div className="relative my-auto flex h-[calc(100dvh-150px)] w-full items-center justify-center overflow-hidden p-2 sm:p-4">
         {deviceMode === "mobile" ? (
           <div className="relative flex flex-col items-center justify-center transition-transform duration-300 ease-out animate-[dialog-panel-in_220ms_cubic-bezier(0.16,1,0.3,1)]">
             <div
@@ -229,17 +213,17 @@ export default function WallpaperPreviewDialog({
                 </div>
               )}
               {showUiOverlay && (
-                <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25 px-3 py-1.5 shadow-lg">
-                  <div className="h-7 w-7 rounded-lg bg-linear-to-tr from-blue-600 to-cyan-400 shadow-xs flex items-center justify-center text-white text-[9px] font-semibold">
-                    Finder
+                <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/15 px-3 py-1.5 shadow-lg">
+                  <div className="h-7 w-7 rounded-lg bg-white/15 border border-white/20 text-white/90 shadow-xs flex items-center justify-center">
+                    <Folder size={13} aria-hidden="true" />
                   </div>
-                  <div className="h-7 w-7 rounded-lg bg-linear-to-tr from-amber-500 to-rose-500 shadow-xs flex items-center justify-center text-white">
+                  <div className="h-7 w-7 rounded-lg bg-white/15 border border-white/20 text-white/90 shadow-xs flex items-center justify-center">
                     <Sparkles size={13} aria-hidden="true" />
                   </div>
-                  <div className="h-7 w-7 rounded-lg bg-linear-to-tr from-emerald-500 to-teal-400 shadow-xs flex items-center justify-center text-white">
+                  <div className="h-7 w-7 rounded-lg bg-white/15 border border-white/20 text-white/90 shadow-xs flex items-center justify-center">
                     <Camera size={13} aria-hidden="true" />
                   </div>
-                  <div className="h-7 w-7 rounded-lg bg-linear-to-tr from-violet-600 to-indigo-400 shadow-xs flex items-center justify-center text-white">
+                  <div className="h-7 w-7 rounded-lg bg-white/15 border border-white/20 text-white/90 shadow-xs flex items-center justify-center">
                     <Monitor size={13} aria-hidden="true" />
                   </div>
                 </div>

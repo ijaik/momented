@@ -98,76 +98,73 @@ export default function SeriesCarousel({
     } else if (e.key === "ArrowRight") {
       e.preventDefault();
       goToSlide(activeIndex + 1);
-    } else if (e.code === "Space" && !isMaximized) {
-      e.preventDefault();
-      goToSlide(activeIndex < totalSlides - 1 ? activeIndex + 1 : 0);
     }
   });
   useEffect(() => {
-    window.addEventListener("keydown", onWindowKeyDown);
-    return () => window.removeEventListener("keydown", onWindowKeyDown);
+    const handler = (e: globalThis.KeyboardEvent) => onWindowKeyDown(e);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, []);
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (totalSlides <= 1) return;
-    const container = isMaximized
-      ? maxContainerRef.current
-      : containerRef.current;
-    dragContainerWidthRef.current = container?.clientWidth || 600;
+  useEffect(() => {
+    const updateWidth = () => {
+      const el = isMaximized ? maxContainerRef.current : containerRef.current;
+      if (el) dragContainerWidthRef.current = el.clientWidth || 600;
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, [isMaximized]);
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     const touch = e.touches[0];
     touchStartX.current = touch.clientX;
     touchStartY.current = touch.clientY;
     touchStartTime.current = Date.now();
     isHorizontalSwipe.current = null;
-    currentDragOffset.current = 0;
     setIsDragging(true);
+    setDragOffset(0);
+    currentDragOffset.current = 0;
   };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (totalSlides <= 1 || e.touches.length === 0) return;
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStartX.current;
     const deltaY = touch.clientY - touchStartY.current;
-    if (isHorizontalSwipe.current === null) {
-      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 6) {
-        isHorizontalSwipe.current = false;
-        setIsDragging(false);
-        setDragOffset(0);
-        return;
-      }
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 6) {
-        isHorizontalSwipe.current = true;
-      }
-    }
+    if (isHorizontalSwipe.current === null)
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)
+        isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
     if (!isHorizontalSwipe.current) return;
-    let dampenedOffset = deltaX;
-    const containerWidth = dragContainerWidthRef.current;
-    if (activeIndex === 0 && deltaX > 0)
-      dampenedOffset = rubberband(deltaX, containerWidth);
-    else if (activeIndex === totalSlides - 1 && deltaX < 0)
-      dampenedOffset = rubberband(deltaX, containerWidth);
-    currentDragOffset.current = dampenedOffset;
-    setDragOffset(dampenedOffset);
+    const width = dragContainerWidthRef.current;
+    let effectiveOffset = deltaX;
+    if (
+      (activeIndex === 0 && deltaX > 0) ||
+      (activeIndex === totalSlides - 1 && deltaX < 0)
+    )
+      effectiveOffset = rubberband(deltaX, width);
+    setDragOffset(effectiveOffset);
+    currentDragOffset.current = effectiveOffset;
   };
   const handleTouchEnd = () => {
-    if (totalSlides <= 1 || !isDragging) return;
+    if (!isDragging) return;
     setIsDragging(false);
+    if (!isHorizontalSwipe.current) {
+      setDragOffset(0);
+      currentDragOffset.current = 0;
+      return;
+    }
     const deltaX = currentDragOffset.current;
-    const elapsed = Math.max(1, Date.now() - touchStartTime.current);
-    const nextIndex = calculateNextSlideIndex(
+    const elapsed = Date.now() - touchStartTime.current;
+    const nextIdx = calculateNextSlideIndex(
       deltaX,
       elapsed,
       activeIndex,
       totalSlides,
     );
-    if (nextIndex !== activeIndex) setActiveIndex(nextIndex);
-    setDragOffset(0);
-    currentDragOffset.current = 0;
-    isHorizontalSwipe.current = null;
+    goToSlide(nextIdx);
   };
   const handleTouchCancel = () => {
     setIsDragging(false);
     setDragOffset(0);
     currentDragOffset.current = 0;
-    isHorizontalSwipe.current = null;
   };
   const handleMouseMove = useEffectEvent((e: MouseEvent) => {
     if (!isMouseDown.current || totalSlides <= 1) return;
@@ -193,9 +190,11 @@ export default function SeriesCarousel({
       activeIndex,
       totalSlides,
     );
-    if (nextIndex !== activeIndex) setActiveIndex(nextIndex);
-    setDragOffset(0);
-    currentDragOffset.current = 0;
+    if (nextIndex !== activeIndex) goToSlide(nextIndex);
+    else {
+      setDragOffset(0);
+      currentDragOffset.current = 0;
+    }
   });
   useEffect(() => {
     const container = isMaximized
@@ -211,13 +210,15 @@ export default function SeriesCarousel({
       dragContainerWidthRef.current = container.clientWidth || 600;
       setIsDragging(true);
     };
+    const onMouseMove = (e: MouseEvent) => handleMouseMove(e);
+    const onMouseUp = () => handleMouseUp();
     container.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
     return () => {
       container.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
   }, [totalSlides, isMaximized]);
   const currentPhoto = photos[activeIndex] || photos[0];
@@ -228,7 +229,7 @@ export default function SeriesCarousel({
       : 4 / 3;
   const currentAspectNum = Number(currentAspect.toFixed(4));
   const maxPixelWidth = Math.round(680 * currentAspect);
-  const containerMaxWidth = `min(100%, calc(78vh * ${currentAspectNum}), ${maxPixelWidth}px)`;
+  const mobileMaxPixelWidth = Math.round(380 * currentAspectNum);
   const activeDisplayDate = formatDisplayDate(
     currentPhoto.created_at,
     currentPhoto.taken_at,
@@ -240,15 +241,18 @@ export default function SeriesCarousel({
   return (
     <section
       aria-label={`${seriesTitle} photo carousel`}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-6"
     >
+      {/* Series Carousel Stage */}
       <div
-        className="relative mx-auto w-full overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_2px_14px_rgba(0,0,0,0.03)] touch-pan-y select-none transition-[max-width,aspect-ratio] duration-300 ease-out"
-        style={{
-          aspectRatio: `${currentAspect}`,
-          maxHeight: "min(78vh, 680px)",
-          maxWidth: containerMaxWidth,
-        }}
+        className="relative mx-auto w-full overflow-hidden rounded-xs transition-[max-width,aspect-ratio] duration-300 ease-out select-none touch-pan-y max-h-[min(48svh,380px)] sm:max-h-[min(76vh,680px)] max-w-(--w-mobile) sm:max-w-(--w-desktop)"
+        style={
+          {
+            aspectRatio: `${currentAspect}`,
+            "--w-mobile": `min(100%, calc(48svh * ${currentAspectNum}), ${mobileMaxPixelWidth}px)`,
+            "--w-desktop": `min(100%, calc(76vh * ${currentAspectNum}), ${maxPixelWidth}px)`,
+          } as React.CSSProperties
+        }
       >
         <div
           ref={containerRef}
@@ -281,7 +285,7 @@ export default function SeriesCarousel({
                     fill
                     preload={index === 0}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1080px"
-                    className="object-cover pointer-events-none select-none"
+                    className="object-contain pointer-events-none select-none"
                     draggable={false}
                   />
                 </div>
@@ -290,6 +294,7 @@ export default function SeriesCarousel({
           })}
         </div>
       </div>
+      {/* Slide Navigation & Indicator Strip */}
       {totalSlides > 1 && (
         <div className="flex w-full items-center justify-between gap-4 px-1">
           <div className="flex items-center gap-3">
@@ -299,7 +304,7 @@ export default function SeriesCarousel({
             </span>
             <nav
               aria-label="Slide indicators"
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-0.5"
             >
               {photos.map((photo, idx) => (
                 <button
@@ -308,12 +313,16 @@ export default function SeriesCarousel({
                   onClick={() => goToSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
                   aria-current={idx === activeIndex ? "true" : undefined}
-                  className={`h-0.75 rounded-full transition-all duration-300 ${
-                    idx === activeIndex
-                      ? "w-6 bg-signal"
-                      : "w-1.5 bg-line hover:bg-muted"
-                  }`}
-                />
+                  className="group flex items-center py-3 px-1 cursor-pointer"
+                >
+                  <span
+                    className={`h-0.5 rounded-full transition-all duration-300 ${
+                      idx === activeIndex
+                        ? "w-6 bg-ink"
+                        : "w-1.5 bg-line group-hover:bg-muted"
+                    }`}
+                  />
+                </button>
               ))}
             </nav>
           </div>
@@ -323,7 +332,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex - 1)}
               disabled={activeIndex === 0}
               aria-label="Previous photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-2xs transition-colors hover:bg-soft active:scale-98 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
             >
               <ChevronLeft size={18} aria-hidden="true" />
             </button>
@@ -332,16 +341,17 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex + 1)}
               disabled={activeIndex === totalSlides - 1}
               aria-label="Next photograph"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line/70 bg-surface/80 backdrop-blur-xs text-ink shadow-xs transition-all duration-100 hover:bg-soft active:scale-95 disabled:pointer-events-none disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-line bg-surface text-ink shadow-2xs transition-colors hover:bg-soft active:scale-98 disabled:pointer-events-none disabled:opacity-30 cursor-pointer"
             >
               <ChevronRight size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
       )}
-      <div className="flex w-full flex-col gap-4 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Frame Information & Actions Toolbar */}
+      <div className="flex w-full flex-col gap-4 border-t border-line/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-serif text-xl tracking-tight text-ink sm:text-2xl">
+          <h2 className="font-serif text-xl tracking-tight text-ink sm:text-2xl font-normal">
             {currentPhoto.title || `${seriesTitle} — Frame ${activeIndex + 1}`}
           </h2>
           {(currentPhoto.description || seriesDescription) && (
@@ -349,7 +359,7 @@ export default function SeriesCarousel({
               {currentPhoto.description || seriesDescription}
             </p>
           )}
-          <p className="mt-1 text-xs text-muted">
+          <p className="mt-1 text-xs text-muted font-mono">
             {activeDisplayDate}
             {currentPhoto.camera_model &&
               ` · Shot on ${currentPhoto.camera_model}`}
@@ -361,33 +371,33 @@ export default function SeriesCarousel({
             type="button"
             onClick={() => setShowExifDrawer((prev) => !prev)}
             aria-expanded={showExifDrawer}
-            className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-medium transition-all duration-100 active:scale-95 ${
+            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider transition-all active:scale-98 cursor-pointer ${
               showExifDrawer
-                ? "border-signal/50 bg-signal/10 text-signal"
-                : "border-line/80 bg-surface/80 backdrop-blur-xs text-ink hover:bg-soft"
+                ? "border-ink bg-soft text-ink font-semibold"
+                : "border-line bg-surface text-ink hover:bg-soft"
             }`}
           >
-            <Info size={16} aria-hidden="true" />
+            <Info size={14} aria-hidden="true" />
             <span>{showExifDrawer ? "Hide details" : "Frame details"}</span>
           </button>
           <WallpaperPreviewButton
             photo={currentPhoto}
             fileName={slideDownloadFileName}
-            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
             variant="compact"
           />
           <DownloadButton
             photoId={currentPhoto.id}
             cloudinaryUrl={currentPhoto.cloudinary_url}
             fileName={slideDownloadFileName}
-            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 disabled:opacity-60 cursor-pointer"
             variant="compact"
           />
           <ShareButton
             title={`${seriesTitle} — Frame ${activeIndex + 1}`}
             photoId={currentPhoto.id}
             imageUrl={currentPhoto.cloudinary_url}
-            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
             variant="compact"
           />
           <button
@@ -395,32 +405,34 @@ export default function SeriesCarousel({
             onClick={toggleMaximize}
             aria-label="Maximize series"
             title="Maximize (F)"
-            className="inline-flex items-center gap-2 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-3.5 py-2 text-sm font-medium text-ink transition-all duration-100 hover:bg-soft active:scale-95"
+            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
           >
-            <Maximize2 size={16} aria-hidden="true" />
+            <Maximize2 size={14} aria-hidden="true" />
             <span className="hidden sm:inline">Maximize</span>
           </button>
         </div>
       </div>
+      {/* Slide Technical Specifications Drawer */}
       {showExifDrawer && (
         <aside
           aria-label="Camera specifications for active frame"
-          className="w-full rounded-2xl border border-line/60 bg-surface/85 p-5 shadow-xs backdrop-blur-md transition-all animate-[dialog-panel-in_200ms_cubic-bezier(0.16,1,0.3,1)]"
+          className="w-full rounded-xs border border-line bg-surface p-5 shadow-xs transition-all animate-[dialog-panel-in_200ms_cubic-bezier(0.16,1,0.3,1)]"
         >
-          <h3 className="editorial-label text-muted border-b border-line/60 pb-2.5 font-medium">
+          <h3 className="editorial-label text-muted border-b border-line pb-2.5 font-medium">
             Frame {activeIndex + 1} Details
           </h3>
           {hasPhotoExif(currentPhoto) ? (
             <ExifSpecGrid photo={currentPhoto} compact />
           ) : (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-medium text-muted">
+              <p className="text-xs font-medium text-muted">
                 EXIF camera metadata was not recorded for this frame.
               </p>
             </div>
           )}
         </aside>
       )}
+      {/* Fullscreen Modal View */}
       <FullscreenDialog
         isOpen={isMaximized}
         onClose={exitMaximize}
@@ -469,7 +481,7 @@ export default function SeriesCarousel({
                 </span>
                 <nav
                   aria-label="Slide indicators"
-                  className="flex items-center gap-1.5"
+                  className="flex items-center gap-0.5"
                 >
                   {photos.map((photo, idx) => (
                     <button
@@ -478,12 +490,16 @@ export default function SeriesCarousel({
                       onClick={() => goToSlide(idx)}
                       aria-label={`Go to slide ${idx + 1}`}
                       aria-current={idx === activeIndex ? "true" : undefined}
-                      className={`h-0.75 rounded-full transition-all duration-300 ${
-                        idx === activeIndex
-                          ? "w-6 bg-signal"
-                          : "w-1.5 bg-line hover:bg-muted"
-                      }`}
-                    />
+                      className="group flex items-center py-2 px-1 cursor-pointer"
+                    >
+                      <span
+                        className={`h-0.5 rounded-full transition-all duration-300 ${
+                          idx === activeIndex
+                            ? "w-6 bg-ink"
+                            : "w-1.5 bg-line group-hover:bg-muted"
+                        }`}
+                      />
+                    </button>
                   ))}
                 </nav>
               </div>
@@ -498,7 +514,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex - 1)}
               disabled={activeIndex === 0}
               aria-label="Previous photograph"
-              className="absolute left-3 sm:left-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+              className="absolute left-3 sm:left-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20 cursor-pointer"
             >
               <ChevronLeft size={22} aria-hidden="true" />
             </button>
@@ -507,7 +523,7 @@ export default function SeriesCarousel({
               onClick={() => goToSlide(activeIndex + 1)}
               disabled={activeIndex === totalSlides - 1}
               aria-label="Next photograph"
-              className="absolute right-3 sm:right-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20"
+              className="absolute right-3 sm:right-6 z-20 hidden lg:inline-flex h-11 w-11 items-center justify-center rounded-full border border-line bg-surface/90 text-ink shadow-md backdrop-blur-xs transition-colors hover:bg-soft disabled:pointer-events-none disabled:opacity-20 cursor-pointer"
             >
               <ChevronRight size={22} aria-hidden="true" />
             </button>

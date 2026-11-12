@@ -26,7 +26,7 @@ export default async function Home() {
   return (
     <>
       <JsonLd data={[websiteJsonLd(), personJsonLd()]} />
-      <div className="flex flex-col gap-24 sm:gap-32 md:gap-40 pb-12">
+      <div className="flex flex-col gap-12.5 sm:gap-18.75 md:gap-25 pb-12.5">
         <HomeHero heroPhoto={heroPhoto} />
         <HomeFeaturedSeries featuredSeries={featuredSeries} />
         <HomeCuratedLenses

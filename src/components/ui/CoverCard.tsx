@@ -50,9 +50,7 @@ export default function CoverCard({
   const isCompact = size === "compact";
   return (
     <Link href={href} className="focus-media group block">
-      <div
-        className={`relative ${aspectClass} overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_2px_14px_rgba(0,0,0,0.03)] transition-all duration-500 ease-out group-hover:border-line group-hover:shadow-[0_16px_36px_rgba(0,0,0,0.07)] group-active:scale-95`}
-      >
+      <div className={`relative ${aspectClass} photo-frame overflow-hidden`}>
         {coverImage ? (
           <>
             <Image
@@ -67,7 +65,7 @@ export default function CoverCard({
               fill
               preload={preload}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              className="object-cover transition-transform duration-700 ease-editorial group-hover:scale-102"
             />
             {photoCount > 0 && (
               <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/60 px-2.5 py-1 text-[11px] font-mono tracking-wider text-white/95 backdrop-blur-md shadow-xs">
@@ -93,8 +91,8 @@ export default function CoverCard({
       >
         <h2
           className={`flex items-center gap-1.5 font-serif ${
-            isCompact ? "text-base sm:text-lg" : "text-xl sm:text-2xl"
-          } leading-tight tracking-tight text-ink transition-colors group-hover:text-signal/90`}
+            isCompact ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
+          } leading-tight tracking-tight text-ink transition-colors group-hover:text-ink/80`}
         >
           {item.title}
           <ArrowUpRight

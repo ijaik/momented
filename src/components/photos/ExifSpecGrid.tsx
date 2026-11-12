@@ -30,74 +30,56 @@ export default function ExifSpecGrid({
     {
       label: "Focal",
       value: photo.focal_length || "—",
-      icon: <CircleDot size={compact ? 11 : 13} aria-hidden="true" />,
+      icon: <CircleDot size={compact ? 11 : 12} aria-hidden="true" />,
     },
     {
       label: "Aperture",
       value: photo.aperture || "—",
-      icon: <Aperture size={compact ? 11 : 13} aria-hidden="true" />,
+      icon: <Aperture size={compact ? 11 : 12} aria-hidden="true" />,
     },
     {
       label: "Shutter",
       value: photo.shutter_speed || "—",
-      icon: <Clock size={compact ? 11 : 13} aria-hidden="true" />,
+      icon: <Clock size={compact ? 11 : 12} aria-hidden="true" />,
     },
     {
       label: "ISO",
       value: photo.iso ? `ISO ${photo.iso}` : "—",
-      icon: <Film size={compact ? 11 : 13} aria-hidden="true" />,
+      icon: <Film size={compact ? 11 : 12} aria-hidden="true" />,
     },
   ];
   return (
-    <div className={compact ? "mt-3.5 space-y-3" : ""}>
+    <div className={compact ? "mt-3 space-y-2.5" : "space-y-3"}>
       {photo.camera_model && (
-        <div
-          className={`flex items-center border-b border-line/60 ${
-            compact ? "gap-2.5 pb-2.5" : "mb-4 gap-3 pb-3"
-          }`}
-        >
-          <span
-            className={`flex shrink-0 items-center justify-center border border-line/60 bg-soft/80 text-ink ${
-              compact ? "h-7 w-7 rounded-lg" : "h-9 w-9 rounded-xl"
-            }`}
-          >
-            <Camera size={compact ? 14 : 17} aria-hidden="true" />
-          </span>
+        <div className="flex items-center gap-2.5 pb-2.5 border-b border-line">
+          <Camera
+            size={14}
+            className="text-muted shrink-0"
+            aria-hidden="true"
+          />
           <div className="min-w-0">
-            <span className="block editorial-label text-muted text-[10px]">
-              Camera
+            <span className="block font-mono text-[10px] uppercase tracking-wider text-muted">
+              Camera Body
             </span>
-            <p
-              className={`truncate font-mono font-medium text-ink ${
-                compact ? "text-xs" : "text-sm sm:text-base"
-              }`}
-            >
+            <p className="truncate font-mono text-xs sm:text-sm font-medium text-ink">
               {photo.camera_model}
             </p>
           </div>
         </div>
       )}
-      <dl
-        className={`grid grid-cols-2 sm:grid-cols-4 ${
-          compact ? "gap-2 text-xs" : "gap-3"
-        }`}
-      >
+      <dl className="grid grid-cols-2 sm:grid-cols-4 border border-line divide-x divide-y sm:divide-y-0 divide-line bg-surface">
         {specs.map((spec) => (
           <div
             key={spec.label}
-            className="rounded-xl border border-line/60 bg-soft/40 p-2.5 backdrop-blur-xs"
+            className={`${compact ? "p-2" : "p-2.5 sm:p-3"} flex flex-col justify-between`}
           >
-            <dt
-              className={`flex items-center editorial-label text-[10px] text-muted ${
-                compact ? "gap-1" : "gap-1.5"
-              }`}
-            >
-              {spec.icon}
+            <dt className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted">
+              <span className="text-muted/70">{spec.icon}</span>
               <span>{spec.label}</span>
             </dt>
             <dd
               className={`font-mono font-medium tabular-nums text-ink ${
-                compact ? "mt-0.5 text-xs" : "mt-1 text-sm"
+                compact ? "mt-1 text-xs" : "mt-1.5 text-xs sm:text-sm"
               }`}
             >
               {spec.value}

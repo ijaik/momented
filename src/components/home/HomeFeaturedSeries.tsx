@@ -1,4 +1,4 @@
-import { ArrowRight, Film, Layers } from "lucide-react";
+import { ArrowRight, Layers } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -15,12 +15,11 @@ export default function HomeFeaturedSeries({
     <section
       id="series"
       aria-labelledby="series-heading"
-      className="border-t border-line/70 pt-16 sm:pt-24"
+      className="border-t border-line/70 pt-12.5 sm:pt-18.75 md:pt-25"
     >
       <SectionHeader
         id="series-heading"
         label="01 / Series"
-        icon={Film}
         title="Photographs in sequence"
         description="Sequence of photographs exploring changes in light and scenes."
         action={{
@@ -32,7 +31,7 @@ export default function HomeFeaturedSeries({
         <div className="lg:col-span-7">
           <Link
             href={`/series/${featuredSeries.id}`}
-            className="focus-media group block relative aspect-16/10 overflow-hidden rounded-2xl border border-line/70 bg-soft shadow-[0_2px_14px_rgba(0,0,0,0.03)] transition-all duration-500 ease-out hover:border-line hover:shadow-[0_16px_36px_rgba(0,0,0,0.08)] active:scale-95"
+            className="focus-media group block relative aspect-16/10 photo-frame overflow-hidden"
             aria-label={`Open series: ${featuredSeries.title}`}
           >
             {featuredSeries.photos[0] ? (
@@ -41,7 +40,7 @@ export default function HomeFeaturedSeries({
                 alt={featuredSeries.photos[0].title || featuredSeries.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 750px"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                className="object-cover transition-transform duration-700 ease-editorial group-hover:scale-102"
               />
             ) : (
               <div className="flex h-full items-center justify-center text-sm text-muted">
@@ -56,7 +55,7 @@ export default function HomeFeaturedSeries({
         </div>
         <div className="flex flex-col justify-between gap-6 lg:col-span-5">
           <div>
-            <span className="editorial-label text-signal/90 font-medium">
+            <span className="editorial-label text-muted font-medium">
               Featured Series
             </span>
             <h3 className="mt-2 font-serif text-3xl sm:text-4xl tracking-tight text-ink leading-tight">
@@ -70,7 +69,7 @@ export default function HomeFeaturedSeries({
           </div>
           {featuredSeries.photos.length > 1 && (
             <div>
-              <p className="mb-3 text-[11px] font-mono uppercase tracking-wider text-muted">
+              <p className="mb-2.5 text-[11px] font-mono uppercase tracking-wider text-muted">
                 Progression
               </p>
               <div className="grid grid-cols-4 gap-2.5">
@@ -79,16 +78,18 @@ export default function HomeFeaturedSeries({
                     key={p.id}
                     href={`/photo/${p.id}`}
                     aria-label={`View photograph: ${p.title || `Slide ${idx + 1}`}`}
-                    className="group/thumb relative aspect-square overflow-hidden rounded-xl border border-line/60 bg-soft shadow-2xs transition-transform duration-200 hover:scale-105"
+                    className="group/thumb block"
                   >
-                    <Image
-                      src={p.cloudinary_url}
-                      alt={p.title || `Slide ${idx + 1}`}
-                      fill
-                      sizes="120px"
-                      className="object-cover"
-                    />
-                    <span className="absolute bottom-1 right-1 rounded-sm bg-black/65 px-1 py-0.5 text-[9px] font-mono text-white/90">
+                    <div className="relative aspect-square photo-frame overflow-hidden">
+                      <Image
+                        src={p.cloudinary_url}
+                        alt={p.title || `Slide ${idx + 1}`}
+                        fill
+                        sizes="120px"
+                        className="object-cover transition-transform duration-500 ease-editorial group-hover/thumb:scale-[1.03]"
+                      />
+                    </div>
+                    <span className="block mt-1.5 text-center font-mono text-[10px] text-muted">
                       0{idx + 1}
                     </span>
                   </Link>
@@ -99,7 +100,7 @@ export default function HomeFeaturedSeries({
           <div>
             <Link
               href={`/series/${featuredSeries.id}`}
-              className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-2.5 text-xs font-medium uppercase tracking-wider text-paper transition-all hover:opacity-90 active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-2 rounded-full bg-solid text-on-solid px-6 py-2.5 text-xs font-medium uppercase tracking-wider transition-all hover:opacity-90 active:scale-98 shadow-xs"
             >
               <span>View Series</span>
               <ArrowRight size={13} aria-hidden="true" />

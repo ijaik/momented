@@ -78,6 +78,21 @@ export default function CalendarMonthView({
       window.dispatchEvent(new Event("popstate"));
     }
   };
+  const onTabKeyDown = (
+    e: React.KeyboardEvent<HTMLButtonElement>,
+    currentKey: string,
+  ) => {
+    const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (dir === 0) return;
+    e.preventDefault();
+    const currentIndex = tabs.findIndex((t) => t.key === currentKey);
+    if (currentIndex === -1) return;
+    const nextTab = tabs[(currentIndex + dir + tabs.length) % tabs.length];
+    handleTabChange(nextTab.key);
+    document
+      .getElementById(`${tabListId}-tab-${nextTab.key}`)
+      ?.focus({ preventScroll: true });
+  };
   const selectedYearGroup = structuredYears.find(
     (g) => String(g.year) === activeTab,
   );
@@ -99,8 +114,10 @@ export default function CalendarMonthView({
                 id={`${tabListId}-tab-${tab.key}`}
                 aria-selected={isActive}
                 aria-controls={`${tabListId}-panel-${tab.key}`}
+                tabIndex={isActive ? 0 : -1}
                 onClick={() => handleTabChange(tab.key)}
-                className={`relative whitespace-nowrap pb-3.5 text-xs sm:text-sm font-medium uppercase tracking-wider transition-all duration-100 cursor-pointer active:scale-95 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
+                onKeyDown={(e) => onTabKeyDown(e, tab.key)}
+                className={`relative whitespace-nowrap pb-3.5 text-xs sm:text-sm font-medium uppercase tracking-wider transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink ${
                   isActive
                     ? "text-ink font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
                     : "text-muted hover:text-ink"

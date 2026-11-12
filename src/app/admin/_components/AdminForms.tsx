@@ -7,10 +7,17 @@ import type {
 } from "react";
 
 interface FieldLabelProps {
-  htmlFor: string;
+  htmlFor?: string;
   children: ReactNode;
+  as?: "label" | "span";
 }
-export function FieldLabel({ htmlFor, children }: FieldLabelProps) {
+export function FieldLabel({ htmlFor, children, as }: FieldLabelProps) {
+  if (as === "span" || !htmlFor)
+    return (
+      <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted">
+        {children}
+      </span>
+    );
   return (
     <label
       htmlFor={htmlFor}
@@ -111,7 +118,7 @@ export function SubmitButton({
       {...props}
       type="submit"
       disabled={isLoading || props.disabled}
-      className={`inline-flex items-center justify-center font-semibold bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-95 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-98 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
     >
       {isLoading ? loadingText : text}
     </button>

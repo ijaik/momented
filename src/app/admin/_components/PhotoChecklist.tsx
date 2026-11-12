@@ -109,7 +109,7 @@ export default function PhotoChecklist({
                       <button
                         type="button"
                         onClick={() => setCoverId(p.id)}
-                        className="mt-1 flex cursor-pointer items-center gap-1.5 text-left active:scale-95 duration-100 transition-transform"
+                        className="mt-1 flex cursor-pointer items-center gap-1.5 text-left active:scale-98 duration-100 transition-transform"
                       >
                         <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-muted" />
                         <span className="text-[11px] text-muted">

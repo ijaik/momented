@@ -58,29 +58,29 @@ export default function Navbar() {
       >
         <nav
           aria-label="Main"
-          className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8 xl:max-w-7xl 2xl:max-w-360"
+          className="mx-auto flex h-16 max-w-360 items-center justify-between px-5 sm:px-8 lg:px-12"
         >
           <Link
             href="/"
             onClick={() => setOpenedAt(null)}
-            className="group flex items-center gap-2.5 cursor-pointer transition-opacity duration-200 ease-out hover:opacity-80 active:scale-95"
+            className="group flex items-center gap-2.5 cursor-pointer transition-opacity duration-200 ease-out hover:opacity-80"
           >
             <span
-              className={`relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-2xs transition-transform duration-200 ease-out group-hover:scale-105 ${
+              className={`relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 ease-out group-hover:scale-102 ${
                 isHeroTransparent
-                  ? "border-white/25 bg-white/10 backdrop-blur-sm"
-                  : "border-line bg-surface"
+                  ? "bg-white/10 backdrop-blur-xs ring-1 ring-white/20"
+                  : ""
               }`}
             >
               <Image
                 src="/icons/favicon.svg"
                 alt="Momented logo"
                 aria-hidden="true"
-                width={32}
-                height={32}
+                width={28}
+                height={28}
                 loading="eager"
                 unoptimized
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain dark:invert"
               />
             </span>
             <span
@@ -99,7 +99,7 @@ export default function Navbar() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative cursor-pointer py-1 text-[0.6875rem] font-semibold uppercase tracking-widest transition-colors duration-150 ${
+                    className={`group relative cursor-pointer py-1 text-[0.6875rem] font-medium uppercase tracking-widest transition-colors duration-150 ${
                       isHeroTransparent
                         ? active
                           ? "text-white"
@@ -113,7 +113,7 @@ export default function Navbar() {
                     <span
                       aria-hidden="true"
                       className={`absolute -bottom-1 left-0 h-px rounded-full transition-all duration-200 motion-reduce:transition-none ${
-                        isHeroTransparent ? "bg-white/80" : "bg-signal"
+                        isHeroTransparent ? "bg-white/90" : "bg-ink"
                       } ${active ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-40"}`}
                     />
                   </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
           <button
             ref={menuButtonRef}
             type="button"
-            className={`-mr-2 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-all duration-200 ease-out active:scale-95 md:hidden ${
+            className={`-mr-2 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-all duration-200 ease-out md:hidden ${
               isHeroTransparent
                 ? "text-white hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/50"
                 : "text-ink hover:bg-soft"
@@ -171,7 +171,7 @@ export default function Navbar() {
             : "pointer-events-none invisible -translate-y-3 opacity-0"
         }`}
       >
-        <div className="mx-auto flex h-full max-w-6xl flex-col justify-between px-6 py-8 sm:px-8">
+        <div className="mx-auto flex h-full max-w-360 flex-col justify-between px-6 py-8 sm:px-8 lg:px-12">
           <nav aria-label="Mobile navigation">
             <ul className="flex flex-col">
               {links.map(({ name, href }, i) => {
@@ -185,7 +185,7 @@ export default function Navbar() {
                       style={{
                         transitionDelay: isOpen ? `${i * 40}ms` : "0ms",
                       }}
-                      className={`group flex cursor-pointer items-center justify-between border-b border-line/50 py-4 text-lg font-medium transition-all duration-200 motion-reduce:transition-delay-0 motion-reduce:transition-none active:scale-95 ${
+                      className={`group flex cursor-pointer items-center justify-between border-b border-line/50 py-4 text-base font-medium transition-all duration-200 motion-reduce:transition-delay-0 motion-reduce:transition-none ${
                         active ? "text-ink" : "text-muted hover:text-ink"
                       }`}
                     >
@@ -193,7 +193,7 @@ export default function Navbar() {
                       {active ? (
                         <span
                           aria-hidden="true"
-                          className="h-2 w-2 rounded-full bg-signal"
+                          className="h-1.5 w-1.5 rounded-full bg-ink"
                         />
                       ) : (
                         <ArrowRight
@@ -214,7 +214,7 @@ export default function Navbar() {
               href="https://creativecommons.org/publicdomain/zero/1.0/"
               target="_blank"
               rel="noreferrer"
-              className="cursor-pointer text-signal/80 transition-colors hover:text-signal"
+              className="cursor-pointer text-muted transition-colors hover:text-ink"
             >
               CC0 1.0
             </a>

@@ -215,7 +215,7 @@ export default function ShareDialog({
             type="button"
             onClick={close}
             aria-label="Close share dialog"
-            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-95"
+            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-98"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -227,7 +227,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={handleNativeShare}
                 disabled={isSharing}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-95 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-98 disabled:opacity-60 cursor-pointer"
               >
                 <Share2 size={16} aria-hidden="true" />
                 {isSharing ? "Preparing…" : "Send the photograph"}
@@ -258,7 +258,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={copyLink}
                 aria-live="polite"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-95"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
               >
                 {copied ? (
                   <>

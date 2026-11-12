@@ -60,7 +60,7 @@ export default function SeriesUploadQueue({
                   disabled={idx === 0}
                   aria-label="Move slide up"
                   title="Move slide up"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-95 disabled:opacity-30"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30"
                 >
                   <ArrowUp size={14} aria-hidden="true" />
                 </button>
@@ -70,7 +70,7 @@ export default function SeriesUploadQueue({
                   disabled={idx === queuedFiles.length - 1}
                   aria-label="Move slide down"
                   title="Move slide down"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-95 disabled:opacity-30"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30"
                 >
                   <ArrowDown size={14} aria-hidden="true" />
                 </button>
@@ -79,7 +79,7 @@ export default function SeriesUploadQueue({
                   onClick={() => onRemove(idx)}
                   aria-label="Remove slide from queue"
                   title="Remove slide from queue"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-95"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-98"
                 >
                   <Trash2 size={14} aria-hidden="true" />
                 </button>

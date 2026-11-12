@@ -64,15 +64,6 @@ export function useFullscreenMaximize() {
       window.removeEventListener("keydown", onWindowKeyDown);
     };
   }, []);
-  useEffect(() => {
-    if (isMaximized) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isMaximized]);
   return {
     isMaximized,
     toggleMaximize,

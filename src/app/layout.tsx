@@ -15,6 +15,7 @@ const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
 });
 const schibsted = Schibsted_Grotesk({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
   display: "swap",
   variable: "--font-schibsted",
@@ -102,11 +103,11 @@ export const viewport: Viewport = {
   themeColor: [
     {
       media: "(prefers-color-scheme: light)",
-      color: "#faf9f6",
+      color: "#FAFAFA",
     },
     {
       media: "(prefers-color-scheme: dark)",
-      color: "#171614",
+      color: "#0A0A0A",
     },
   ],
   colorScheme: "light dark",
@@ -119,7 +120,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       className={`${instrumentSerif.variable} ${schibsted.variable} ${jetbrains.variable}`}
     >
-      <body className="flex min-h-screen flex-col overflow-x-hidden font-sans">
+      <body className="flex min-h-screen flex-col overflow-x-clip font-sans">
         {children}
       </body>
     </html>

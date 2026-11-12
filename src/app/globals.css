@@ -9,33 +9,38 @@
   --font-mono:
     var(--font-jetbrains), ui-monospace, "SF Mono", "Cascadia Code", Menlo,
     Consolas, monospace;
-  --color-paper: #faf9f6;
+  /* Light Mode — Baryta Gallery Paper & Carbon Ink */
+  --color-paper: #fafafa;
   --color-surface: #ffffff;
-  --color-ink: #201e1a;
-  --color-muted: #5c5750;
-  --color-faint: #949089;
-  --color-line: #e7e3db;
-  --color-soft: #f0ede7;
-  --color-solid: #201e1a;
-  --color-on-solid: #faf9f6;
-  --color-signal: #6f5300;
-  --color-danger: #a3271f;
-  --color-danger-soft: #f7e6e2;
+  --color-soft: #f2f2f2;
+  --color-line: #e5e5e5;
+  --color-faint: #8e8e8e;
+  --color-muted: #525252;
+  --color-ink: #111111;
+  --color-solid: #111111;
+  --color-on-solid: #fafafa;
+  --color-signal: #111111;
+  --color-danger: #991b1b;
+  --color-danger-soft: #fef2f2;
+  /* Standardized Motion Curves */
+  --ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-subtle: cubic-bezier(0.25, 1, 0.5, 1);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-paper: #171614;
-    --color-surface: #1e1c19;
-    --color-ink: #ebe7e1;
-    --color-muted: #a29c93;
-    --color-faint: #6d675f;
-    --color-line: #2b2925;
-    --color-soft: #262320;
-    --color-solid: #ebe7e1;
-    --color-on-solid: #171614;
-    --color-signal: #d9a441;
-    --color-danger: #e5a29b;
-    --color-danger-soft: #382521;
+    /* Dark Mode — Darkroom Matte Carbon & Luminous Silver */
+    --color-paper: #0a0a0a;
+    --color-surface: #121212;
+    --color-soft: #1a1a1a;
+    --color-line: #262626;
+    --color-faint: #666666;
+    --color-muted: #a3a3a3;
+    --color-ink: #f5f5f5;
+    --color-solid: #f5f5f5;
+    --color-on-solid: #0a0a0a;
+    --color-signal: #f5f5f5;
+    --color-danger: #f87171;
+    --color-danger-soft: #2a1215;
     color-scheme: dark;
   }
 }
@@ -82,15 +87,34 @@
   .editorial-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
+    line-height: 1.3;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
     color: var(--color-muted);
   }
   .journal-caption {
     font-family: var(--font-mono);
     font-size: 0.75rem;
+    line-height: 1.4;
     letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
     color: var(--color-muted);
+  }
+  /* Optical print frame: crisp 2px radius + inner hairline ring for dark/light separation */
+  .photo-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+    background-color: var(--color-soft);
+  }
+  .photo-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
 }
 @media (prefers-reduced-motion: reduce) {

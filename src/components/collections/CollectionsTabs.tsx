@@ -39,7 +39,7 @@ export default function CollectionsTabs({
               key={t.key}
               href={t.href}
               aria-current={isActive ? "page" : undefined}
-              className={`relative pb-3.5 text-xs sm:text-sm font-medium uppercase tracking-wider transition-all duration-150 ease-out active:scale-95 whitespace-nowrap ${
+              className={`relative pb-3.5 text-xs sm:text-sm font-medium uppercase tracking-wider transition-colors duration-150 whitespace-nowrap ${
                 isActive
                   ? "text-ink font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-ink"
                   : "text-muted hover:text-ink"

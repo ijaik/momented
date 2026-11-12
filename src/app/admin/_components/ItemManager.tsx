@@ -7,6 +7,11 @@ import {
 } from "react";
 import Button from "@/components/ui/Button";
 import {
+  confirmAction,
+  notifyError,
+  notifySuccess,
+} from "@/components/ui/notifications";
+import {
   FieldLabel,
   FormInput,
   FormTextarea,
@@ -65,19 +70,22 @@ export default function ItemManager<
   const [editingId, setEditingId] = useState<TId | null>(null);
   const [deletingId, setDeletingId] = useState<TId | null>(null);
   const [isPending, startTransition] = useTransition();
-  function handleDelete(id: TId) {
+  async function handleDelete(id: TId) {
     if (!deleteAction) return;
-    if (
-      !confirm(`Are you sure you want to delete this ${title.toLowerCase()}?`)
-    ) {
-      return;
-    }
+    const confirmed = await confirmAction({
+      title: `Delete ${title}`,
+      message: `Are you sure you want to permanently delete this ${title.toLowerCase()}?`,
+      confirmLabel: "Delete",
+      isDestructive: true,
+    });
+    if (!confirmed) return;
     setDeletingId(id);
     startTransition(async () => {
       try {
         await deleteAction(id);
+        notifySuccess(`${title} deleted.`);
       } catch {
-        alert(`Failed to delete ${title.toLowerCase()}.`);
+        notifyError(`Failed to delete ${title.toLowerCase()}.`);
       } finally {
         setDeletingId(null);
       }
@@ -93,9 +101,10 @@ export default function ItemManager<
         if (result.success) {
           form.reset();
           setIsCreating(false);
+          notifySuccess(`${title} created.`);
         }
       } catch {
-        alert(`Failed to create ${title.toLowerCase()}.`);
+        notifyError(`Failed to create ${title.toLowerCase()}.`);
       }
     });
   }
@@ -106,8 +115,9 @@ export default function ItemManager<
       try {
         await editAction(id, new FormData(form));
         setEditingId(null);
+        notifySuccess(`${title} updated.`);
       } catch {
-        alert(`Failed to update ${title.toLowerCase()}.`);
+        notifyError(`Failed to update ${title.toLowerCase()}.`);
       }
     });
   }

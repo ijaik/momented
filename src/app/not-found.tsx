@@ -22,7 +22,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-medium uppercase tracking-wider text-paper shadow-xs transition-all duration-150 ease-out hover:opacity-90 active:scale-95"
+        className="mt-8 inline-flex items-center justify-center rounded-full bg-ink px-6 py-3 text-xs font-medium uppercase tracking-wider text-paper shadow-xs transition-all duration-150 ease-out hover:opacity-90 active:scale-98"
       >
         Return to journal
       </Link>

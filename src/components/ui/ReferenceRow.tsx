@@ -10,9 +10,9 @@ export default function ReferenceRow({ link }: { link: ReferenceLink }) {
     <li>
       <Link
         href={link.href}
-        className="group flex items-baseline justify-between gap-6 py-3.5 transition-transform duration-100 ease-out active:scale-95"
+        className="group flex items-baseline justify-between gap-6 py-3 transition-opacity duration-150 hover:opacity-80"
       >
-        <span className="font-serif text-[15px] sm:text-base text-ink underline decoration-line/80 decoration-[1.5px] underline-offset-4 transition-colors group-hover:decoration-ink">
+        <span className="font-sans text-sm sm:text-base font-medium text-ink underline decoration-line/80 decoration-[1.5px] underline-offset-4 transition-colors group-hover:decoration-ink">
           {link.title}
         </span>
         <span className="shrink-0 editorial-label text-muted/80">

@@ -1,11 +1,10 @@
-import { ArrowRight, type LucideIcon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 interface SectionHeaderProps {
   id?: string;
   label?: string;
-  icon?: LucideIcon;
   title: string;
   description?: ReactNode;
   action?: {
@@ -17,7 +16,6 @@ interface SectionHeaderProps {
 export default function SectionHeader({
   id,
   label,
-  icon: Icon,
   title,
   description,
   action,
@@ -29,22 +27,11 @@ export default function SectionHeader({
     >
       <div>
         {label && (
-          <div className="mb-3 flex items-center gap-2.5">
-            {Icon && (
-              <Icon
-                size={14}
-                className="text-signal/90 shrink-0"
-                aria-hidden="true"
-              />
-            )}
-            <span className="editorial-label text-signal/90 font-medium">
-              {label}
-            </span>
-          </div>
+          <span className="editorial-label text-ink font-medium">{label}</span>
         )}
         <h2
           id={id}
-          className="font-serif text-3xl tracking-tight text-ink sm:text-4xl md:text-[2.75rem] leading-[1.08]"
+          className="font-serif text-3xl tracking-tight text-ink sm:text-4xl md:text-[2.75rem] leading-[1.08] font-normal"
         >
           {title}
         </h2>
@@ -57,7 +44,7 @@ export default function SectionHeader({
       {action && (
         <Link
           href={action.href}
-          className="group inline-flex shrink-0 items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink active:scale-95"
+          className="group inline-flex shrink-0 items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink"
         >
           <span>{action.label}</span>
           <ArrowRight

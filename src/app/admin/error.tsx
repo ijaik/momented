@@ -34,7 +34,7 @@ export default function AdminError({
       <button
         type="button"
         onClick={() => reset()}
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-all hover:opacity-90 active:scale-95"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-solid px-5 py-2.5 text-sm font-medium text-on-solid transition-all hover:opacity-90 active:scale-98"
       >
         <RefreshCw size={15} aria-hidden="true" />
         Try again

@@ -223,6 +223,37 @@ export async function getPhotoById(id: string) {
   throwIfUnexpectedDbError(error, `getPhotoById(${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
+export async function getAdjacentPhotos(
+  photoId: string,
+  createdAt: string | null | undefined,
+): Promise<{
+  prev: { id: string; title: string | null } | null;
+  next: { id: string; title: string | null } | null;
+}> {
+  "use cache";
+  cacheTag(`photo-${photoId}-adjacent`, "photos");
+  cacheLife("weeks");
+  if (!createdAt) return { prev: null, next: null };
+  const prevPromise = supabase
+    .from("photos")
+    .select("id, title")
+    .gt("created_at", createdAt)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  const nextPromise = supabase
+    .from("photos")
+    .select("id, title")
+    .lt("created_at", createdAt)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const [prevRes, nextRes] = await Promise.all([prevPromise, nextPromise]);
+  return {
+    prev: prevRes.data ?? null,
+    next: nextRes.data ?? null,
+  };
+}
 async function getPhotosForEntity(
   junction: PhotoJunction,
   entityId: string | number,
