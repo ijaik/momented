@@ -75,6 +75,10 @@
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
+  :fullscreen,
+  ::backdrop {
+    background-color: var(--color-paper);
+  }
 }
 .focus-media:focus-visible {
   outline: 2px solid #fff;
@@ -115,6 +119,20 @@
     pointer-events: none;
     box-shadow: inset 0 0 0 1px
       color-mix(in srgb, var(--color-ink) 8%, transparent);
+  }
+  .safe-fullscreen-inset {
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+  }
+  @media (min-width: 640px) {
+    .safe-fullscreen-inset {
+      padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+      padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
+      padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+    }
   }
 }
 @media (prefers-reduced-motion: reduce) {

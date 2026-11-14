@@ -8,6 +8,7 @@ import {
   signAdminToken,
 } from "@/lib/auth/auth";
 import {
+  clearGlobalLoginFailures,
   clearLoginFailures,
   getGlobalLoginLockout,
   getLoginLockout,
@@ -65,7 +66,10 @@ export async function loginAction(
           : "Incorrect password",
     };
   }
-  await clearLoginFailures(lockoutKey);
+  await Promise.all([
+    clearLoginFailures(lockoutKey),
+    clearGlobalLoginFailures(),
+  ]);
   const token = await signAdminToken();
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {

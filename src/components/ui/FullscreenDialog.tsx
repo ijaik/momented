@@ -33,7 +33,7 @@ export default function FullscreenDialog({
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex flex-col justify-between bg-paper/97 backdrop-blur-2xl p-4 sm:p-6 select-none animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
+      className="fixed inset-0 z-50 flex flex-col justify-between bg-paper/97 backdrop-blur-2xl safe-fullscreen-inset select-none animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
     >
       <header className="flex w-full items-center justify-between gap-4 border-b border-line/60 pb-3.5">
         <div className="min-w-0">
@@ -57,7 +57,7 @@ export default function FullscreenDialog({
           </button>
         </div>
       </header>
-      <div className="relative my-auto flex h-[calc(100dvh-150px)] w-full items-center justify-center overflow-hidden touch-pan-y select-none">
+      <div className="relative my-auto flex flex-1 min-h-0 w-full items-center justify-center overflow-hidden touch-pan-y select-none">
         {children}
       </div>
       {footer && (

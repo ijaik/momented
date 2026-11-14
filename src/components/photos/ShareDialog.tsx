@@ -1,13 +1,8 @@
 "use client";
 import { Check, Copy, Share2, X } from "lucide-react";
-import {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
+import { useDialogFocusTrap } from "@/lib/hooks/useDialogFocusTrap";
 import { copyText, imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
   title?: string;
@@ -17,6 +12,16 @@ export interface ShareDialogProps {
   onClose: () => void;
   onTrackShare?: () => void | Promise<void>;
 }
+type FeedbackState =
+  | { status: "idle" }
+  | { status: "sharing" }
+  | { status: "copied" }
+  | { status: "error"; message: string };
+type FileCacheState =
+  | { status: "idle" }
+  | { status: "loading"; url: string; promise: Promise<File | null> }
+  | { status: "ready"; url: string; file: File }
+  | { status: "failed"; url: string };
 export default function ShareDialog({
   title = "",
   photoId,
@@ -25,15 +30,11 @@ export default function ShareDialog({
   onClose,
   onTrackShare,
 }: ShareDialogProps) {
-  const [copied, setCopied] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackState>({ status: "idle" });
   const panelRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const focusablesRef = useRef<HTMLElement[] | null>(null);
-  const shareFileRef = useRef<File | null | undefined>(undefined);
-  const sharePromiseRef = useRef<Promise<File | null> | null>(null);
+  const fileCacheRef = useRef<FileCacheState>({ status: "idle" });
   const hasTrackedRef = useRef(false);
   const shareUrl = (() => {
     if (typeof window === "undefined") return url || "";
@@ -45,43 +46,14 @@ export default function ShareDialog({
   const supportsNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
   const close = () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    setFeedback({ status: "idle" });
     onClose();
-    setCopied(false);
-    setError(null);
   };
+  useDialogFocusTrap(panelRef, true, close, closeBtnRef);
   useEffect(() => {
-    if (!panelRef.current) return;
-    const newFocusables = Array.from(
-      panelRef.current.querySelectorAll<HTMLElement>(
-        'button:not([tabindex="-1"]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      ),
-    );
-    focusablesRef.current = newFocusables;
-  }, []);
-  const onKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      close();
-      return;
-    }
-    if (e.key === "Tab" && focusablesRef.current?.length) {
-      const focusables = focusablesRef.current;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-  });
-  useEffect(() => {
-    document.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
-    closeBtnRef.current?.focus({ preventScroll: true });
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     };
@@ -101,16 +73,27 @@ export default function ShareDialog({
   }, [photoId, onTrackShare]);
   const getShareFile = useCallback(async (): Promise<File | null> => {
     if (!imageUrl) return null;
-    if (shareFileRef.current !== undefined) return shareFileRef.current;
-    if (sharePromiseRef.current) {
-      return sharePromiseRef.current;
-    }
-    sharePromiseRef.current = (async () => {
-      const file = await imageUrlToFile(imageUrl);
-      if (file) shareFileRef.current = file;
-      return shareFileRef.current ?? null;
+    const current = fileCacheRef.current;
+    if (current.status === "ready" && current.url === imageUrl)
+      return current.file;
+    if (current.status === "loading" && current.url === imageUrl)
+      return current.promise;
+    const promise = (async () => {
+      try {
+        const file = await imageUrlToFile(imageUrl);
+        if (file) {
+          fileCacheRef.current = { status: "ready", url: imageUrl, file };
+          return file;
+        }
+        fileCacheRef.current = { status: "failed", url: imageUrl };
+        return null;
+      } catch {
+        fileCacheRef.current = { status: "failed", url: imageUrl };
+        return null;
+      }
     })();
-    return sharePromiseRef.current;
+    fileCacheRef.current = { status: "loading", url: imageUrl, promise };
+    return promise;
   }, [imageUrl]);
   useEffect(() => {
     if (imageUrl && supportsNativeShare) {
@@ -122,16 +105,22 @@ export default function ShareDialog({
   async function copyLink() {
     try {
       await copyText(shareUrl);
-      setCopied(true);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+      setFeedback({ status: "copied" });
+      copyTimerRef.current = setTimeout(() => {
+        setFeedback((prev) =>
+          prev.status === "copied" ? { status: "idle" } : prev,
+        );
+      }, 2000);
     } catch {
-      setError("Couldn't copy the link — please try again.");
+      setFeedback({
+        status: "error",
+        message: "Couldn't copy the link — please try again.",
+      });
     }
   }
   async function handleNativeShare() {
-    setIsSharing(true);
-    setError(null);
+    setFeedback({ status: "sharing" });
     let shared = false;
     try {
       const file = await getShareFile();
@@ -165,21 +154,34 @@ export default function ShareDialog({
               "name" in fallbackError &&
               (fallbackError as { name: string }).name !== "AbortError"
             ) {
-              setError("Couldn't share right now — copy the link instead.");
+              setFeedback({
+                status: "error",
+                message: "Couldn't share right now — copy the link instead.",
+              });
+              return;
             }
           }
         }
       }
     } catch {
-      setError("Couldn't prepare the photo — copy the link instead.");
+      setFeedback({
+        status: "error",
+        message: "Couldn't prepare the photo — copy the link instead.",
+      });
+      return;
     } finally {
-      setIsSharing(false);
       if (shared) {
         await trackShare();
         close();
-      }
+      } else
+        setFeedback((prev) =>
+          prev.status === "sharing" ? { status: "idle" } : prev,
+        );
     }
   }
+  const isSharing = feedback.status === "sharing";
+  const copied = feedback.status === "copied";
+  const error = feedback.status === "error" ? feedback.message : null;
   return (
     <div
       className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6"
@@ -215,7 +217,7 @@ export default function ShareDialog({
             type="button"
             onClick={close}
             aria-label="Close share dialog"
-            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-98"
+            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-98 cursor-pointer"
           >
             <X size={18} aria-hidden="true" />
           </button>

@@ -46,6 +46,15 @@ interface ItemManagerProps<
   deleteAction?: (id: TId) => Promise<{ success: boolean }>;
   renderContent: (item: T) => ReactNode;
 }
+type EditorMode<TId> =
+  | { type: "idle" }
+  | { type: "creating" }
+  | { type: "editing"; id: TId };
+type PendingOp<TId> =
+  | { type: "none" }
+  | { type: "creating" }
+  | { type: "editing"; id: TId }
+  | { type: "deleting"; id: TId };
 export default function ItemManager<
   TId extends string | number = string,
   T extends BaseItem<TId> = BaseItem<TId>,
@@ -66,10 +75,11 @@ export default function ItemManager<
   deleteAction,
   renderContent,
 }: ItemManagerProps<TId, T>) {
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingId, setEditingId] = useState<TId | null>(null);
-  const [deletingId, setDeletingId] = useState<TId | null>(null);
+  const [mode, setMode] = useState<EditorMode<TId>>({ type: "idle" });
+  const [pendingOp, setPendingOp] = useState<PendingOp<TId>>({ type: "none" });
   const [isPending, startTransition] = useTransition();
+  const isCreating = mode.type === "creating";
+  const editingId = mode.type === "editing" ? mode.id : null;
   async function handleDelete(id: TId) {
     if (!deleteAction) return;
     const confirmed = await confirmAction({
@@ -79,7 +89,7 @@ export default function ItemManager<
       isDestructive: true,
     });
     if (!confirmed) return;
-    setDeletingId(id);
+    setPendingOp({ type: "deleting", id });
     startTransition(async () => {
       try {
         await deleteAction(id);
@@ -87,7 +97,7 @@ export default function ItemManager<
       } catch {
         notifyError(`Failed to delete ${title.toLowerCase()}.`);
       } finally {
-        setDeletingId(null);
+        setPendingOp({ type: "none" });
       }
     });
   }
@@ -95,29 +105,35 @@ export default function ItemManager<
     event.preventDefault();
     if (!createAction) return;
     const form = event.currentTarget;
+    setPendingOp({ type: "creating" });
     startTransition(async () => {
       try {
         const result = await createAction(new FormData(form));
         if (result.success) {
           form.reset();
-          setIsCreating(false);
+          setMode({ type: "idle" });
           notifySuccess(`${title} created.`);
         }
       } catch {
         notifyError(`Failed to create ${title.toLowerCase()}.`);
+      } finally {
+        setPendingOp({ type: "none" });
       }
     });
   }
   function handleEdit(event: SubmitEvent<HTMLFormElement>, id: TId) {
     event.preventDefault();
     const form = event.currentTarget;
+    setPendingOp({ type: "editing", id });
     startTransition(async () => {
       try {
         await editAction(id, new FormData(form));
-        setEditingId(null);
+        setMode({ type: "idle" });
         notifySuccess(`${title} updated.`);
       } catch {
         notifyError(`Failed to update ${title.toLowerCase()}.`);
+      } finally {
+        setPendingOp({ type: "none" });
       }
     });
   }
@@ -138,7 +154,13 @@ export default function ItemManager<
             type="button"
             size="sm"
             variant={isCreating ? "secondary" : "primary"}
-            onClick={() => setIsCreating(!isCreating)}
+            onClick={() =>
+              setMode((prev) =>
+                prev.type === "creating"
+                  ? { type: "idle" }
+                  : { type: "creating" },
+              )
+            }
           >
             {isCreating ? "Cancel" : newItemLabel}
           </Button>
@@ -171,7 +193,7 @@ export default function ItemManager<
           <PhotoChecklist key="new" photos={allPhotos} />
           <div className="flex items-center gap-3">
             <SubmitButton
-              isLoading={isPending}
+              isLoading={isPending && pendingOp.type === "creating"}
               loadingText="Saving…"
               text="Create"
             />
@@ -179,7 +201,7 @@ export default function ItemManager<
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => setIsCreating(false)}
+              onClick={() => setMode({ type: "idle" })}
             >
               Cancel
             </Button>
@@ -228,7 +250,11 @@ export default function ItemManager<
                 />
                 <div className="flex items-center gap-3">
                   <SubmitButton
-                    isLoading={isPending}
+                    isLoading={
+                      isPending &&
+                      pendingOp.type === "editing" &&
+                      pendingOp.id === item.id
+                    }
                     loadingText="Saving…"
                     text="Save changes"
                   />
@@ -236,7 +262,7 @@ export default function ItemManager<
                     type="button"
                     variant="secondary"
                     size="sm"
-                    onClick={() => setEditingId(null)}
+                    onClick={() => setMode({ type: "idle" })}
                   >
                     Cancel
                   </Button>
@@ -253,7 +279,7 @@ export default function ItemManager<
                       type="button"
                       variant="secondary"
                       size="sm"
-                      onClick={() => setEditingId(item.id)}
+                      onClick={() => setMode({ type: "editing", id: item.id })}
                     >
                       {editButtonLabel}
                     </Button>
@@ -262,10 +288,13 @@ export default function ItemManager<
                         type="button"
                         variant="danger"
                         size="sm"
-                        disabled={deletingId === item.id || isPending}
+                        disabled={isPending}
                         onClick={() => handleDelete(item.id)}
                       >
-                        {deletingId === item.id ? "Deleting…" : "Delete"}
+                        {pendingOp.type === "deleting" &&
+                        pendingOp.id === item.id
+                          ? "Deleting…"
+                          : "Delete"}
                       </Button>
                     )}
                   </div>

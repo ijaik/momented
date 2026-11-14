@@ -5,8 +5,8 @@ import {
   type ChangeEvent,
   type SubmitEvent,
   useEffect,
+  useReducer,
   useRef,
-  useState,
   useTransition,
 } from "react";
 import { deletePhotoAction } from "@/actions/photos";
@@ -49,117 +49,237 @@ function revokePreviews(items: QueuedSlideFile[]) {
   for (const item of items)
     if (item.preview.startsWith("blob:")) URL.revokeObjectURL(item.preview);
 }
+type UploadPhase =
+  | { status: "idle" }
+  | { status: "signing"; total: number }
+  | { status: "uploading"; current: number; total: number; detail: string }
+  | { status: "assembling" }
+  | { status: "rolling-back" };
+type SeriesEditorState =
+  | { mode: "closed" }
+  | {
+      mode: "create-library";
+      orderedPhotoIds: string[];
+      coverPhotoId: string | null;
+    }
+  | {
+      mode: "create-upload";
+      queuedFiles: QueuedSlideFile[];
+      uploadPhase: UploadPhase;
+    }
+  | {
+      mode: "edit";
+      series: SeriesAdminItem;
+      orderedPhotoIds: string[];
+      coverPhotoId: string | null;
+    };
+type SeriesEditorAction =
+  | { type: "OPEN_CREATE_LIBRARY" }
+  | { type: "OPEN_CREATE_UPLOAD" }
+  | { type: "OPEN_EDIT"; series: SeriesAdminItem }
+  | { type: "CLOSE" }
+  | { type: "TOGGLE_LIBRARY_PHOTO"; photoId: string }
+  | { type: "REMOVE_LIBRARY_PHOTO"; photoId: string }
+  | { type: "MOVE_LIBRARY_PHOTO"; index: number; direction: -1 | 1 }
+  | { type: "SET_COVER_PHOTO"; photoId: string }
+  | { type: "ADD_QUEUED_FILES"; items: QueuedSlideFile[] }
+  | { type: "MOVE_QUEUED_FILE"; index: number; direction: -1 | 1 }
+  | { type: "REMOVE_QUEUED_FILE"; index: number }
+  | { type: "CLEAR_QUEUED_FILES" }
+  | {
+      type: "UPDATE_QUEUED_META";
+      index: number;
+      title?: string;
+      description?: string;
+    }
+  | { type: "SET_UPLOAD_PHASE"; phase: UploadPhase };
+function normalizeCover(
+  orderedIds: string[],
+  currentCover: string | null,
+): string | null {
+  if (orderedIds.length === 0) return null;
+  if (currentCover && orderedIds.includes(currentCover)) return currentCover;
+  return orderedIds[0];
+}
+function seriesEditorReducer(
+  state: SeriesEditorState,
+  action: SeriesEditorAction,
+): SeriesEditorState {
+  switch (action.type) {
+    case "OPEN_CREATE_LIBRARY":
+      return {
+        mode: "create-library",
+        orderedPhotoIds: [],
+        coverPhotoId: null,
+      };
+    case "OPEN_CREATE_UPLOAD":
+      return {
+        mode: "create-upload",
+        queuedFiles: [],
+        uploadPhase: { status: "idle" },
+      };
+    case "OPEN_EDIT": {
+      const orderedPhotoIds = action.series.photos.map((p) => String(p.id));
+      return {
+        mode: "edit",
+        series: action.series,
+        orderedPhotoIds,
+        coverPhotoId: normalizeCover(
+          orderedPhotoIds,
+          action.series.cover_photo_id ?? null,
+        ),
+      };
+    }
+    case "CLOSE":
+      return { mode: "closed" };
+    case "TOGGLE_LIBRARY_PHOTO": {
+      if (state.mode !== "create-library" && state.mode !== "edit")
+        return state;
+      const exists = state.orderedPhotoIds.includes(action.photoId);
+      const nextIds = exists
+        ? state.orderedPhotoIds.filter((id) => id !== action.photoId)
+        : [...state.orderedPhotoIds, action.photoId];
+      return {
+        ...state,
+        orderedPhotoIds: nextIds,
+        coverPhotoId: normalizeCover(nextIds, state.coverPhotoId),
+      };
+    }
+    case "REMOVE_LIBRARY_PHOTO": {
+      if (state.mode !== "create-library" && state.mode !== "edit")
+        return state;
+      const nextIds = state.orderedPhotoIds.filter(
+        (id) => id !== action.photoId,
+      );
+      return {
+        ...state,
+        orderedPhotoIds: nextIds,
+        coverPhotoId: normalizeCover(nextIds, state.coverPhotoId),
+      };
+    }
+    case "MOVE_LIBRARY_PHOTO": {
+      if (state.mode !== "create-library" && state.mode !== "edit")
+        return state;
+      const target = action.index + action.direction;
+      if (target < 0 || target >= state.orderedPhotoIds.length) return state;
+      const copy = [...state.orderedPhotoIds];
+      const temp = copy[action.index];
+      copy[action.index] = copy[target];
+      copy[target] = temp;
+      return { ...state, orderedPhotoIds: copy };
+    }
+    case "SET_COVER_PHOTO": {
+      if (state.mode !== "create-library" && state.mode !== "edit")
+        return state;
+      if (!state.orderedPhotoIds.includes(action.photoId)) return state;
+      return { ...state, coverPhotoId: action.photoId };
+    }
+    case "ADD_QUEUED_FILES": {
+      if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
+        return state;
+      return { ...state, queuedFiles: [...state.queuedFiles, ...action.items] };
+    }
+    case "MOVE_QUEUED_FILE": {
+      if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
+        return state;
+      const target = action.index + action.direction;
+      if (target < 0 || target >= state.queuedFiles.length) return state;
+      const copy = [...state.queuedFiles];
+      const temp = copy[action.index];
+      copy[action.index] = copy[target];
+      copy[target] = temp;
+      return { ...state, queuedFiles: copy };
+    }
+    case "REMOVE_QUEUED_FILE": {
+      if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
+        return state;
+      return {
+        ...state,
+        queuedFiles: state.queuedFiles.filter((_, i) => i !== action.index),
+      };
+    }
+    case "CLEAR_QUEUED_FILES": {
+      if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
+        return state;
+      return { ...state, queuedFiles: [] };
+    }
+    case "UPDATE_QUEUED_META": {
+      if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
+        return state;
+      const copy = [...state.queuedFiles];
+      copy[action.index] = {
+        ...copy[action.index],
+        ...(action.title !== undefined ? { title: action.title } : {}),
+        ...(action.description !== undefined
+          ? { description: action.description }
+          : {}),
+      };
+      return { ...state, queuedFiles: copy };
+    }
+    case "SET_UPLOAD_PHASE": {
+      if (state.mode !== "create-upload") return state;
+      return { ...state, uploadPhase: action.phase };
+    }
+  }
+}
+function getUploadStatusText(phase: UploadPhase): string {
+  switch (phase.status) {
+    case "idle":
+      return "";
+    case "signing":
+      return `Preparing ${phase.total} slides for upload…`;
+    case "uploading":
+      return `Slide ${phase.current}/${phase.total}: ${phase.detail}`;
+    case "assembling":
+      return "Assembling photo series…";
+    case "rolling-back":
+      return "Rolling back incomplete uploads…";
+  }
+}
 export default function SeriesManager({
   series,
   allPhotos,
 }: SeriesManagerProps) {
-  const [isCreating, setIsCreating] = useState(false);
-  const [editingSeries, setEditingSeries] = useState<SeriesAdminItem | null>(
-    null,
-  );
-  const [creationMode, setCreationMode] = useState<"library" | "upload">(
-    "library",
-  );
-  const [orderedPhotoIds, setOrderedPhotoIds] = useState<string[]>([]);
-  const [coverPhotoId, setCoverPhotoId] = useState<string | null>(null);
-  const [queuedFiles, setQueuedFiles] = useState<QueuedSlideFile[]>([]);
+  const [editorState, dispatch] = useReducer(seriesEditorReducer, {
+    mode: "closed",
+  });
   const queuedFilesRef = useRef<QueuedSlideFile[]>([]);
-  const [uploadStatus, setUploadStatus] = useState<string>("");
-  const [isPending, startTransition] = useTransition();
+  const [isFormPending, startFormTransition] = useTransition();
+  const [isDeletePending, startDeleteTransition] = useTransition();
   useEffect(() => {
-    queuedFilesRef.current = queuedFiles;
-  }, [queuedFiles]);
+    if (editorState.mode === "create-upload")
+      queuedFilesRef.current = editorState.queuedFiles;
+    else queuedFilesRef.current = [];
+  }, [editorState]);
   useEffect(() => {
     return () => {
       revokePreviews(queuedFilesRef.current);
     };
   }, []);
   const clearQueuedFiles = () => {
-    revokePreviews(queuedFiles);
-    setQueuedFiles([]);
-  };
-  const openCreateForm = (mode: "library" | "upload" = "library") => {
-    setEditingSeries(null);
-    setCreationMode(mode);
-    setOrderedPhotoIds([]);
-    setCoverPhotoId(null);
-    clearQueuedFiles();
-    setUploadStatus("");
-    setIsCreating(true);
-  };
-  const openEditForm = (item: SeriesAdminItem) => {
-    setIsCreating(false);
-    setEditingSeries(item);
-    setOrderedPhotoIds(item.photos.map((p) => String(p.id)));
-    setCoverPhotoId(item.cover_photo_id || item.photos[0]?.id || null);
-    clearQueuedFiles();
-    setUploadStatus("");
-  };
-  const closeForm = () => {
-    setIsCreating(false);
-    setEditingSeries(null);
-    setOrderedPhotoIds([]);
-    setCoverPhotoId(null);
-    clearQueuedFiles();
-    setUploadStatus("");
-  };
-  const movePhoto = (index: number, direction: -1 | 1) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= orderedPhotoIds.length) return;
-    setOrderedPhotoIds((prev) => {
-      const copy = [...prev];
-      const temp = copy[index];
-      copy[index] = copy[targetIndex];
-      copy[targetIndex] = temp;
-      return copy;
-    });
-  };
-  const removePhotoFromQueue = (id: string) => {
-    setOrderedPhotoIds((prev) => prev.filter((pId) => pId !== id));
-    if (coverPhotoId === id) {
-      setCoverPhotoId(orderedPhotoIds.find((pId) => pId !== id) || null);
-    }
-  };
-  const togglePhotoSelection = (id: string) => {
-    if (orderedPhotoIds.includes(id)) {
-      removePhotoFromQueue(id);
-    } else {
-      setOrderedPhotoIds((prev) => [...prev, id]);
-      if (!coverPhotoId) setCoverPhotoId(id);
-    }
-  };
-  const moveQueuedFile = (index: number, direction: -1 | 1) => {
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= queuedFiles.length) return;
-    setQueuedFiles((prev) => {
-      const copy = [...prev];
-      const temp = copy[index];
-      copy[index] = copy[targetIndex];
-      copy[targetIndex] = temp;
-      return copy;
-    });
+    if (editorState.mode !== "create-upload") return;
+    revokePreviews(editorState.queuedFiles);
+    dispatch({ type: "CLEAR_QUEUED_FILES" });
   };
   const removeQueuedFile = (index: number) => {
-    setQueuedFiles((prev) => {
-      const removed = prev[index];
-      if (removed?.preview.startsWith("blob:"))
-        URL.revokeObjectURL(removed.preview);
-      return prev.filter((_, i) => i !== index);
-    });
+    if (editorState.mode !== "create-upload") return;
+    const removed = editorState.queuedFiles[index];
+    if (removed?.preview.startsWith("blob:"))
+      URL.revokeObjectURL(removed.preview);
+    dispatch({ type: "REMOVE_QUEUED_FILE", index });
   };
-  const updateQueuedSlideTitle = (index: number, title: string) => {
-    setQueuedFiles((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], title };
-      return copy;
-    });
+  const switchToLibraryMode = () => {
+    if (editorState.mode === "create-upload")
+      revokePreviews(editorState.queuedFiles);
+    dispatch({ type: "OPEN_CREATE_LIBRARY" });
   };
-  const updateQueuedSlideDescription = (index: number, description: string) => {
-    setQueuedFiles((prev) => {
-      const copy = [...prev];
-      copy[index] = { ...copy[index], description };
-      return copy;
-    });
+  const switchToUploadMode = () => {
+    dispatch({ type: "OPEN_CREATE_UPLOAD" });
+  };
+  const closeForm = () => {
+    if (editorState.mode === "create-upload")
+      revokePreviews(editorState.queuedFiles);
+    dispatch({ type: "CLOSE" });
   };
   const handleFilesSelected = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -170,23 +290,23 @@ export default function SeriesManager({
       title: "",
       description: "",
     }));
-    setQueuedFiles((prev) => [...prev, ...newItems]);
+    dispatch({ type: "ADD_QUEUED_FILES", items: newItems });
   };
   async function handleLibrarySubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (editorState.mode !== "create-library" && editorState.mode !== "edit")
+      return;
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.delete("photo_ids");
-    for (const pid of orderedPhotoIds) {
+    for (const pid of editorState.orderedPhotoIds)
       formData.append("photo_ids", pid);
-    }
-    if (coverPhotoId) {
-      formData.set("cover_photo_id", coverPhotoId);
-    }
-    startTransition(async () => {
+    if (editorState.coverPhotoId)
+      formData.set("cover_photo_id", editorState.coverPhotoId);
+    startFormTransition(async () => {
       try {
-        if (editingSeries) {
-          await editSeriesAction(editingSeries.id, formData);
+        if (editorState.mode === "edit") {
+          await editSeriesAction(editorState.series.id, formData);
           notifySuccess("Series updated.");
         } else {
           await createSeriesAction(formData);
@@ -202,6 +322,8 @@ export default function SeriesManager({
   }
   async function handleBatchUploadSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (editorState.mode !== "create-upload") return;
+    const queuedFiles = editorState.queuedFiles;
     if (queuedFiles.length === 0) {
       notifyError("Please select at least one photo to upload.");
       return;
@@ -218,12 +340,15 @@ export default function SeriesManager({
       notifyError("Series title is required.");
       return;
     }
-    startTransition(async () => {
+    startFormTransition(async () => {
       const uploadedPhotos: { id: string; publicId: string; index: number }[] =
         [];
       try {
         const total = queuedFiles.length;
-        setUploadStatus(`Preparing ${total} slides for upload…`);
+        dispatch({
+          type: "SET_UPLOAD_PHASE",
+          phase: { status: "signing", total },
+        });
         const signData = await getCloudinarySignatureAction();
         const CONCURRENCY = 3;
         for (let start = 0; start < total; start += CONCURRENCY) {
@@ -234,9 +359,25 @@ export default function SeriesManager({
               const uploadData = await uploadPhotoToCloudinary(item.file, {
                 signatureData: signData,
                 onStatusChange: (s) =>
-                  setUploadStatus(`Slide ${i + 1}/${total}: ${s}`),
+                  dispatch({
+                    type: "SET_UPLOAD_PHASE",
+                    phase: {
+                      status: "uploading",
+                      current: i + 1,
+                      total,
+                      detail: s,
+                    },
+                  }),
               });
-              setUploadStatus(`Saving slide ${i + 1} of ${total} to database…`);
+              dispatch({
+                type: "SET_UPLOAD_PHASE",
+                phase: {
+                  status: "uploading",
+                  current: i + 1,
+                  total,
+                  detail: "Saving to database…",
+                },
+              });
               const slideTitle =
                 item.title.trim() || `${title} — Frame ${i + 1}`;
               const slideDescription =
@@ -261,7 +402,10 @@ export default function SeriesManager({
           );
         }
         uploadedPhotos.sort((a, b) => a.index - b.index);
-        setUploadStatus("Assembling photo series…");
+        dispatch({
+          type: "SET_UPLOAD_PHASE",
+          phase: { status: "assembling" },
+        });
         const seriesFormData = new FormData();
         seriesFormData.append("title", title);
         if (description) seriesFormData.append("description", description);
@@ -274,7 +418,10 @@ export default function SeriesManager({
         closeForm();
       } catch (err) {
         if (uploadedPhotos.length > 0) {
-          setUploadStatus("Rolling back incomplete uploads…");
+          dispatch({
+            type: "SET_UPLOAD_PHASE",
+            phase: { status: "rolling-back" },
+          });
           await Promise.allSettled(
             uploadedPhotos.map((p) => deletePhotoAction(p.id, p.publicId)),
           );
@@ -283,7 +430,10 @@ export default function SeriesManager({
           err instanceof Error ? err.message : "Failed to create series.",
         );
       } finally {
-        setUploadStatus("");
+        dispatch({
+          type: "SET_UPLOAD_PHASE",
+          phase: { status: "idle" },
+        });
       }
     });
   }
@@ -296,7 +446,7 @@ export default function SeriesManager({
       isDestructive: true,
     });
     if (!confirmed) return;
-    startTransition(async () => {
+    startDeleteTransition(async () => {
       try {
         await deleteSeriesAction(id);
         notifySuccess("Series deleted.");
@@ -307,7 +457,24 @@ export default function SeriesManager({
       }
     });
   }
-  const isFormOpen = isCreating || Boolean(editingSeries);
+  const isFormOpen = editorState.mode !== "closed";
+  const editingSeries = editorState.mode === "edit" ? editorState.series : null;
+  const isUploadMode = editorState.mode === "create-upload";
+  const queuedFiles =
+    editorState.mode === "create-upload" ? editorState.queuedFiles : [];
+  const uploadPhase =
+    editorState.mode === "create-upload"
+      ? editorState.uploadPhase
+      : { status: "idle" as const };
+  const uploadStatusText = getUploadStatusText(uploadPhase);
+  const orderedPhotoIds =
+    editorState.mode === "create-library" || editorState.mode === "edit"
+      ? editorState.orderedPhotoIds
+      : [];
+  const coverPhotoId =
+    editorState.mode === "create-library" || editorState.mode === "edit"
+      ? editorState.coverPhotoId
+      : null;
   return (
     <div className="flex flex-col gap-10">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-6">
@@ -322,7 +489,7 @@ export default function SeriesManager({
             <Button
               variant="primary"
               size="sm"
-              onClick={() => openCreateForm("upload")}
+              onClick={switchToUploadMode}
               className="inline-flex items-center gap-1.5"
             >
               <Upload size={14} aria-hidden="true" />
@@ -331,7 +498,7 @@ export default function SeriesManager({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => openCreateForm("library")}
+              onClick={switchToLibraryMode}
               className="inline-flex items-center gap-1.5"
             >
               <Plus size={14} aria-hidden="true" />
@@ -353,7 +520,7 @@ export default function SeriesManager({
               <p className="mt-0.5 text-xs text-muted">
                 {editingSeries
                   ? "Adjust title, description, and rearrange slides"
-                  : creationMode === "upload"
+                  : isUploadMode
                     ? "Upload multiple photographs in exact slide order"
                     : "Select and order existing photographs from your library"}
               </p>
@@ -362,9 +529,9 @@ export default function SeriesManager({
               <div className="inline-flex rounded-full border border-line/70 bg-soft/60 p-1 text-xs backdrop-blur-xs">
                 <button
                   type="button"
-                  onClick={() => setCreationMode("library")}
-                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 ${
-                    creationMode === "library"
+                  onClick={switchToLibraryMode}
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 cursor-pointer ${
+                    editorState.mode === "create-library"
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
                   }`}
@@ -373,9 +540,9 @@ export default function SeriesManager({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCreationMode("upload")}
-                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 ${
-                    creationMode === "upload"
+                  onClick={switchToUploadMode}
+                  className={`rounded-full px-3.5 py-1 font-medium transition-all duration-150 active:scale-98 cursor-pointer ${
+                    isUploadMode
                       ? "bg-surface text-ink shadow-xs"
                       : "text-muted hover:text-ink"
                   }`}
@@ -385,7 +552,7 @@ export default function SeriesManager({
               </div>
             )}
           </div>
-          {isCreating && creationMode === "upload" ? (
+          {isUploadMode ? (
             <form onSubmit={handleBatchUploadSubmit} className="space-y-6">
               <div>
                 <FieldLabel htmlFor="series-upload-title">
@@ -430,6 +597,7 @@ export default function SeriesManager({
                       type="file"
                       multiple
                       accept="image/*"
+                      disabled={uploadPhase.status !== "idle"}
                       onChange={handleFilesSelected}
                       className="sr-only"
                     />
@@ -442,18 +610,29 @@ export default function SeriesManager({
               </div>
               <SeriesUploadQueue
                 queuedFiles={queuedFiles}
+                disabled={uploadPhase.status !== "idle"}
                 onClear={clearQueuedFiles}
-                onMove={moveQueuedFile}
+                onMove={(index, direction) =>
+                  dispatch({ type: "MOVE_QUEUED_FILE", index, direction })
+                }
                 onRemove={removeQueuedFile}
-                onUpdateTitle={updateQueuedSlideTitle}
-                onUpdateDescription={updateQueuedSlideDescription}
+                onUpdateTitle={(index, title) =>
+                  dispatch({ type: "UPDATE_QUEUED_META", index, title })
+                }
+                onUpdateDescription={(index, description) =>
+                  dispatch({
+                    type: "UPDATE_QUEUED_META",
+                    index,
+                    description,
+                  })
+                }
               />
-              {uploadStatus && (
+              {uploadStatusText && (
                 <div
                   aria-live="polite"
                   className="rounded-md border border-line bg-soft px-4 py-2 text-xs font-mono text-muted"
                 >
-                  {uploadStatus}
+                  {uploadStatusText}
                 </div>
               )}
               <div className="flex items-center justify-end gap-3 border-t border-line pt-4">
@@ -462,12 +641,12 @@ export default function SeriesManager({
                   variant="secondary"
                   size="sm"
                   onClick={closeForm}
-                  disabled={isPending}
+                  disabled={isFormPending}
                 >
                   Cancel
                 </Button>
                 <SubmitButton
-                  isLoading={isPending}
+                  isLoading={isFormPending}
                   loadingText="Processing batch upload…"
                   text={`Upload & Create Series (${queuedFiles.length} slides)`}
                   disabled={queuedFiles.length === 0}
@@ -502,9 +681,19 @@ export default function SeriesManager({
                 orderedPhotoIds={orderedPhotoIds}
                 allPhotos={allPhotos}
                 coverPhotoId={coverPhotoId}
-                onMovePhoto={movePhoto}
-                onSetCoverPhoto={setCoverPhotoId}
-                onRemovePhoto={removePhotoFromQueue}
+                onMovePhoto={(index, direction) =>
+                  dispatch({
+                    type: "MOVE_LIBRARY_PHOTO",
+                    index,
+                    direction,
+                  })
+                }
+                onSetCoverPhoto={(photoId) =>
+                  dispatch({ type: "SET_COVER_PHOTO", photoId })
+                }
+                onRemovePhoto={(photoId) =>
+                  dispatch({ type: "REMOVE_LIBRARY_PHOTO", photoId })
+                }
               />
               <div>
                 <FieldLabel as="span">
@@ -522,8 +711,13 @@ export default function SeriesManager({
                         <button
                           key={`lib-${photo.id}`}
                           type="button"
-                          onClick={() => togglePhotoSelection(String(photo.id))}
-                          className={`flex flex-col rounded-xl border p-2 text-left transition-all duration-150 active:scale-98 ${
+                          onClick={() =>
+                            dispatch({
+                              type: "TOGGLE_LIBRARY_PHOTO",
+                              photoId: String(photo.id),
+                            })
+                          }
+                          className={`flex flex-col rounded-xl border p-2 text-left transition-all duration-150 active:scale-98 cursor-pointer ${
                             isSelected
                               ? "border-signal/70 bg-soft shadow-xs"
                               : "border-line bg-surface hover:border-ink/20"
@@ -558,12 +752,12 @@ export default function SeriesManager({
                   variant="secondary"
                   size="sm"
                   onClick={closeForm}
-                  disabled={isPending}
+                  disabled={isFormPending}
                 >
                   Cancel
                 </Button>
                 <SubmitButton
-                  isLoading={isPending}
+                  isLoading={isFormPending}
                   loadingText="Saving series…"
                   text={
                     editingSeries
@@ -579,8 +773,8 @@ export default function SeriesManager({
       )}
       <SeriesCardList
         series={series}
-        isPending={isPending}
-        onEdit={openEditForm}
+        isPending={isDeletePending || isFormPending}
+        onEdit={(item) => dispatch({ type: "OPEN_EDIT", series: item })}
         onDelete={handleDelete}
       />
     </div>

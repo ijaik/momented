@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useReducer } from "react";
 export interface ChecklistPhoto {
   id: string | number;
   cloudinary_url: string;
@@ -11,39 +11,66 @@ interface PhotoChecklistProps {
   linkedPhotos?: ChecklistPhoto[];
   initialCoverId?: string | number | null;
 }
+interface ChecklistState {
+  selectedIds: (string | number)[];
+  coverId: string | number | null;
+}
+type ChecklistAction =
+  | { type: "TOGGLE"; photoId: string | number; checked: boolean }
+  | { type: "SET_COVER"; photoId: string | number };
+function createInitialChecklistState(
+  linkedPhotos: ChecklistPhoto[],
+  initialCoverId: string | number | null,
+): ChecklistState {
+  const selectedIds = linkedPhotos.map((p) => p.id);
+  const coverId =
+    initialCoverId !== null && selectedIds.includes(initialCoverId)
+      ? initialCoverId
+      : (selectedIds[0] ?? null);
+  return { selectedIds, coverId };
+}
+function checklistReducer(
+  state: ChecklistState,
+  action: ChecklistAction,
+): ChecklistState {
+  switch (action.type) {
+    case "TOGGLE": {
+      const nextSelected = action.checked
+        ? state.selectedIds.includes(action.photoId)
+          ? state.selectedIds
+          : [...state.selectedIds, action.photoId]
+        : state.selectedIds.filter((id) => id !== action.photoId);
+      const nextCover =
+        nextSelected.length === 0
+          ? null
+          : state.coverId !== null && nextSelected.includes(state.coverId)
+            ? state.coverId
+            : (nextSelected[0] ?? null);
+
+      return { selectedIds: nextSelected, coverId: nextCover };
+    }
+    case "SET_COVER": {
+      if (!state.selectedIds.includes(action.photoId)) return state;
+      return { ...state, coverId: action.photoId };
+    }
+  }
+}
 const NO_LINKED_PHOTOS: ChecklistPhoto[] = [];
 export default function PhotoChecklist({
   photos,
   linkedPhotos = NO_LINKED_PHOTOS,
   initialCoverId = null,
 }: PhotoChecklistProps) {
-  const [selectedIds, setSelectedIds] = useState<(string | number)[]>(() =>
-    linkedPhotos.map((p) => p.id),
+  const [state, dispatch] = useReducer(checklistReducer, undefined, () =>
+    createInitialChecklistState(linkedPhotos, initialCoverId),
   );
-  const [coverId, setCoverId] = useState<string | number | null>(
-    initialCoverId || linkedPhotos[0]?.id || null,
-  );
-  const handleCheckboxChange = (
-    photoId: string | number,
-    isChecked: boolean,
-  ) => {
-    if (isChecked) {
-      setSelectedIds((prev) => [...prev, photoId]);
-      if (!coverId) setCoverId(photoId);
-    } else {
-      setSelectedIds((prev) => prev.filter((id) => id !== photoId));
-      if (coverId === photoId) {
-        setCoverId(selectedIds.find((id) => id !== photoId) || null);
-      }
-    }
-  };
   return (
     <div className="flex flex-col gap-3">
       <input
         id="cover_photo_id"
         type="hidden"
         name="cover_photo_id"
-        value={coverId !== null ? String(coverId) : ""}
+        value={state.coverId !== null ? String(state.coverId) : ""}
       />
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-ink">
@@ -52,8 +79,8 @@ export default function PhotoChecklist({
         <div className="max-h-80 overflow-y-auto rounded-2xl border border-line/80 bg-paper/60 p-3 backdrop-blur-xs">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {photos.map((p) => {
-              const isChecked = selectedIds.includes(p.id);
-              const isCover = coverId === p.id;
+              const isChecked = state.selectedIds.includes(p.id);
+              const isCover = state.coverId === p.id;
               return (
                 <div
                   key={p.id}
@@ -90,7 +117,11 @@ export default function PhotoChecklist({
                         value={p.id}
                         checked={isChecked}
                         onChange={(e) =>
-                          handleCheckboxChange(p.id, e.target.checked)
+                          dispatch({
+                            type: "TOGGLE",
+                            photoId: p.id,
+                            checked: e.target.checked,
+                          })
                         }
                         className="absolute left-2 top-2 z-10 h-4 w-4 cursor-pointer accent-solid"
                       />
@@ -108,7 +139,9 @@ export default function PhotoChecklist({
                     {isChecked && !isCover && (
                       <button
                         type="button"
-                        onClick={() => setCoverId(p.id)}
+                        onClick={() =>
+                          dispatch({ type: "SET_COVER", photoId: p.id })
+                        }
                         className="mt-1 flex cursor-pointer items-center gap-1.5 text-left active:scale-98 duration-100 transition-transform"
                       >
                         <span className="inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-muted" />

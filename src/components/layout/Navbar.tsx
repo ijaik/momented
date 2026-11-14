@@ -15,13 +15,25 @@ const isActivePath = (pathname: string, href: string) =>
   href === "/"
     ? pathname === "/"
     : pathname === href || pathname.startsWith(`${href}/`);
+type HeaderVisualState =
+  | "menu-open"
+  | "scrolled"
+  | "hero-transparent"
+  | "default-transparent";
 export default function Navbar() {
   const pathname = usePathname();
   const [openedAt, setOpenedAt] = useState<string | null>(null);
   const isOpen = openedAt === pathname;
   const [isScrolled, setIsScrolled] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const isHeroTransparent = pathname === "/" && !isScrolled && !isOpen;
+  const headerState: HeaderVisualState = isOpen
+    ? "menu-open"
+    : isScrolled
+      ? "scrolled"
+      : pathname === "/"
+        ? "hero-transparent"
+        : "default-transparent";
+  const isHeroTransparent = headerState === "hero-transparent";
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 25);
     handleScroll();
@@ -36,9 +48,15 @@ export default function Navbar() {
         menuButtonRef.current?.focus();
       }
     };
+    const mql = window.matchMedia("(min-width: 768px)");
+    const onBreakpointChange = (e: MediaQueryListEvent) => {
+      if (e.matches) setOpenedAt(null);
+    };
+    mql.addEventListener("change", onBreakpointChange);
     document.addEventListener("keydown", closeOnEscape);
     document.body.style.overflow = "hidden";
     return () => {
+      mql.removeEventListener("change", onBreakpointChange);
       document.removeEventListener("keydown", closeOnEscape);
       document.body.style.overflow = "";
     };
@@ -47,11 +65,11 @@ export default function Navbar() {
     <>
       <header
         className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ease-out motion-reduce:transition-none ${
-          isOpen
+          headerState === "menu-open"
             ? "border-b border-line bg-paper shadow-xs"
-            : isScrolled
+            : headerState === "scrolled"
               ? "border-b border-line/70 bg-paper/90 backdrop-blur-md shadow-[0_1px_0_0_var(--color-line)]"
-              : isHeroTransparent
+              : headerState === "hero-transparent"
                 ? "bg-linear-to-b from-black/60 via-black/20 to-transparent"
                 : "bg-transparent"
         }`}
@@ -67,20 +85,18 @@ export default function Navbar() {
           >
             <span
               className={`relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 ease-out group-hover:scale-102 ${
-                isHeroTransparent
-                  ? "bg-white/10 backdrop-blur-xs ring-1 ring-white/20"
-                  : ""
+                isHeroTransparent ? "bg-white dark:bg-black" : ""
               }`}
             >
               <Image
-                src="/icons/favicon.svg"
+                src="/icons/icon.svg"
                 alt="Momented logo"
                 aria-hidden="true"
                 width={28}
                 height={28}
                 loading="eager"
                 unoptimized
-                className="h-full w-full object-contain dark:invert"
+                className="h-full w-full object-contain"
               />
             </span>
             <span

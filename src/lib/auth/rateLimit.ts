@@ -81,10 +81,10 @@ function getGlobalLoginLimiter(r: Redis): Ratelimit {
 }
 const MAX_MEM_CACHE_SIZE = 1_000;
 const memStatStore = new Map<string, { count: number; resetAt: number }>();
-const memLoginFailures = new Map<
-  string,
-  { failures: number; resetAt: number; lockedUntil?: number }
->();
+type LoginFailureEntry =
+  | { status: "counting"; failures: number; resetAt: number }
+  | { status: "locked"; resetAt: number };
+const memLoginFailures = new Map<string, LoginFailureEntry>();
 function pruneExpiredMapEntries<T extends { resetAt: number }>(
   map: Map<string, T>,
   now: number,
@@ -102,6 +102,52 @@ function pruneExpiredMapEntries<T extends { resetAt: number }>(
       map.delete(k);
     }
   }
+}
+function getInMemoryLockoutSeconds(key: string): number {
+  const now = Date.now();
+  const entry = memLoginFailures.get(key);
+  if (!entry) return 0;
+  if (now > entry.resetAt) {
+    memLoginFailures.delete(key);
+    return 0;
+  }
+  if (entry.status === "locked")
+    return Math.max(0, Math.ceil((entry.resetAt - now) / 1000));
+  return 0;
+}
+function recordInMemoryFailure(
+  key: string,
+  maxFailures: number,
+): { lockedOut: boolean; retryAfterSeconds: number } {
+  const now = Date.now();
+  const entry = memLoginFailures.get(key);
+  if (!entry || now > entry.resetAt) {
+    pruneExpiredMapEntries(memLoginFailures, now);
+    memLoginFailures.set(key, {
+      status: "counting",
+      failures: 1,
+      resetAt: now + LOGIN_WINDOW_MS,
+    });
+    return { lockedOut: false, retryAfterSeconds: 0 };
+  }
+  if (entry.status === "locked")
+    return {
+      lockedOut: true,
+      retryAfterSeconds: Math.max(0, Math.ceil((entry.resetAt - now) / 1000)),
+    };
+  const nextFailures = entry.failures + 1;
+  if (nextFailures >= maxFailures) {
+    memLoginFailures.set(key, {
+      status: "locked",
+      resetAt: now + LOGIN_WINDOW_MS,
+    });
+    return {
+      lockedOut: true,
+      retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
+    };
+  }
+  entry.failures = nextFailures;
+  return { lockedOut: false, retryAfterSeconds: 0 };
 }
 export async function checkRateLimit(
   key: string,
@@ -151,13 +197,7 @@ export async function getLoginLockout(key: string): Promise<number> {
       );
     }
   }
-  const now = Date.now();
-  const entry = memLoginFailures.get(key);
-  if (!entry) return 0;
-  if (entry.lockedUntil && now < entry.lockedUntil) {
-    return Math.max(0, Math.ceil((entry.lockedUntil - now) / 1000));
-  }
-  return 0;
+  return getInMemoryLockoutSeconds(key);
 }
 export async function recordLoginFailure(
   key: string,
@@ -174,25 +214,7 @@ export async function recordLoginFailure(
       console.warn("[RateLimit] Upstash limit() error, using fallback:", err);
     }
   }
-  const now = Date.now();
-  const entry = memLoginFailures.get(key);
-  if (!entry || now > entry.resetAt) {
-    pruneExpiredMapEntries(memLoginFailures, now);
-    memLoginFailures.set(key, {
-      failures: 1,
-      resetAt: now + LOGIN_WINDOW_MS,
-    });
-    return { lockedOut: false, retryAfterSeconds: 0 };
-  }
-  entry.failures += 1;
-  if (entry.failures >= LOGIN_MAX_FAILURES) {
-    entry.lockedUntil = now + LOGIN_WINDOW_MS;
-    return {
-      lockedOut: true,
-      retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
-    };
-  }
-  return { lockedOut: false, retryAfterSeconds: 0 };
+  return recordInMemoryFailure(key, LOGIN_MAX_FAILURES);
 }
 export async function getGlobalLoginLockout(): Promise<number> {
   const r = getRedis();
@@ -211,13 +233,7 @@ export async function getGlobalLoginLockout(): Promise<number> {
       );
     }
   }
-  const now = Date.now();
-  const entry = memLoginFailures.get("login:global");
-  if (!entry) return 0;
-  if (entry.lockedUntil && now < entry.lockedUntil) {
-    return Math.max(0, Math.ceil((entry.lockedUntil - now) / 1000));
-  }
-  return 0;
+  return getInMemoryLockoutSeconds("login:global");
 }
 export async function recordGlobalLoginFailure(): Promise<{
   lockedOut: boolean;
@@ -238,26 +254,7 @@ export async function recordGlobalLoginFailure(): Promise<{
       );
     }
   }
-  const now = Date.now();
-  const key = "login:global";
-  const entry = memLoginFailures.get(key);
-  if (!entry || now > entry.resetAt) {
-    pruneExpiredMapEntries(memLoginFailures, now);
-    memLoginFailures.set(key, {
-      failures: 1,
-      resetAt: now + LOGIN_WINDOW_MS,
-    });
-    return { lockedOut: false, retryAfterSeconds: 0 };
-  }
-  entry.failures += 1;
-  if (entry.failures >= GLOBAL_LOGIN_MAX_FAILURES) {
-    entry.lockedUntil = now + LOGIN_WINDOW_MS;
-    return {
-      lockedOut: true,
-      retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
-    };
-  }
-  return { lockedOut: false, retryAfterSeconds: 0 };
+  return recordInMemoryFailure("login:global", GLOBAL_LOGIN_MAX_FAILURES);
 }
 export async function clearLoginFailures(key: string): Promise<void> {
   const r = getRedis();

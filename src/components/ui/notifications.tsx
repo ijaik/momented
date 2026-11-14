@@ -53,76 +53,76 @@ export function confirmAction({
   isDestructive = true,
 }: ConfirmActionOptions): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
-    let settled = false;
-    const handleConfirm = (toastId: string) => {
-      if (settled) return;
-      settled = true;
+    type DialogPhase = "pending" | "confirmed" | "cancelled";
+    let phase: DialogPhase = "pending";
+    const toastId = "momented-confirm-dialog";
+    const settle = (result: boolean) => {
+      if (phase !== "pending") return;
+      phase = result ? "confirmed" : "cancelled";
+      window.removeEventListener("keydown", onKeyDown);
+      clearTimeout(timer);
       toast.dismiss(toastId);
-      resolve(true);
+      resolve(result);
     };
-    const handleCancel = (toastId: string) => {
-      if (settled) return;
-      settled = true;
-      toast.dismiss(toastId);
-      resolve(false);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        settle(false);
+      }
     };
+    window.addEventListener("keydown", onKeyDown);
+    const timer = setTimeout(() => settle(false), 12000);
     toast.custom(
-      (t) => {
-        // If the toast is dismissed or expires without clicking confirm, cancel safely.
-        if (!t.visible && !settled) {
-          settled = true;
-          resolve(false);
-        }
-        return (
-          <div
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="confirm-toast-title"
-            aria-describedby={message ? "confirm-toast-desc" : undefined}
-            className={`pointer-events-auto flex w-full max-w-sm flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-xl text-ink transition-all duration-200 ${
-              t.visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            }`}
-          >
-            <div>
-              <h4
-                id="confirm-toast-title"
-                className="font-sans text-sm font-semibold text-ink"
+      (t) => (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby={`confirm-title-${t.id}`}
+          aria-describedby={message ? `confirm-desc-${t.id}` : undefined}
+          className={`pointer-events-auto flex w-full max-w-sm flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-xl text-ink transition-all duration-200 ${
+            t.visible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
+        >
+          <div>
+            <h4
+              id={`confirm-title-${t.id}`}
+              className="font-sans text-sm font-semibold text-ink"
+            >
+              {title}
+            </h4>
+            {message && (
+              <p
+                id={`confirm-desc-${t.id}`}
+                className="mt-1 font-sans text-xs text-muted leading-relaxed"
               >
-                {title}
-              </h4>
-              {message && (
-                <p
-                  id="confirm-toast-desc"
-                  className="mt-1 font-sans text-xs text-muted leading-relaxed"
-                >
-                  {message}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-line/60">
-              <button
-                type="button"
-                onClick={() => handleCancel(t.id)}
-                className="rounded-full border border-line px-3.5 py-1.5 font-sans text-xs font-medium text-muted hover:bg-soft hover:text-ink transition-colors active:scale-98"
-              >
-                {cancelLabel}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleConfirm(t.id)}
-                className={`rounded-full px-3.5 py-1.5 font-sans text-xs font-medium transition-colors active:scale-98 ${
-                  isDestructive
-                    ? "bg-danger text-white hover:bg-danger/90"
-                    : "bg-solid text-on-solid hover:opacity-90"
-                }`}
-              >
-                {confirmLabel}
-              </button>
-            </div>
+                {message}
+              </p>
+            )}
           </div>
-        );
-      },
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-line/60">
+            <button
+              type="button"
+              onClick={() => settle(false)}
+              className="rounded-full border border-line px-3.5 py-1.5 font-sans text-xs font-medium text-muted hover:bg-soft hover:text-ink transition-colors active:scale-98 cursor-pointer"
+            >
+              {cancelLabel}
+            </button>
+            <button
+              type="button"
+              onClick={() => settle(true)}
+              className={`rounded-full px-3.5 py-1.5 font-sans text-xs font-medium transition-colors active:scale-98 cursor-pointer ${
+                isDestructive
+                  ? "bg-danger text-white hover:bg-danger/90"
+                  : "bg-solid text-on-solid hover:opacity-90"
+              }`}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </div>
+      ),
       {
+        id: toastId,
         duration: 12000,
         position: "top-center",
       },

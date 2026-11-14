@@ -1,6 +1,6 @@
 <div align="center">
   <br />
-  <h1><img src="/public/icons/favicon.svg" height="32" width="32" alt="Momented Logo" /> Momented</h1>
+  <h1><img src="/public/icons/icon.svg" height="32" width="32" alt="Momented Logo" /> Momented</h1>
   <p>
     <b>A photography journal documenting light, shadows, and everyday moments.</b>
   </p>

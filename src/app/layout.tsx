@@ -76,16 +76,17 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml", sizes: "any" },
       { url: "/icons/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/icons/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon.ico", sizes: "48x48", type: "image/x-icon" },
       {
-        url: "/icons/icon-192.png",
+        url: "/icons/android-chrome-192x192.png",
         sizes: "192x192",
         type: "image/png",
       },
       {
-        url: "/icons/icon-512.png",
+        url: "/icons/android-chrome-512x512.png",
         sizes: "512x512",
         type: "image/png",
       },
@@ -113,6 +114,7 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

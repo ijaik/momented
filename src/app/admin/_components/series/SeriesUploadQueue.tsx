@@ -9,6 +9,7 @@ interface SeriesUploadQueueProps {
   onRemove: (index: number) => void;
   onUpdateTitle: (index: number, title: string) => void;
   onUpdateDescription: (index: number, description: string) => void;
+  disabled?: boolean;
 }
 export default function SeriesUploadQueue({
   queuedFiles,
@@ -17,6 +18,7 @@ export default function SeriesUploadQueue({
   onRemove,
   onUpdateTitle,
   onUpdateDescription,
+  disabled = false,
 }: SeriesUploadQueueProps) {
   if (queuedFiles.length === 0) return null;
   return (
@@ -28,7 +30,8 @@ export default function SeriesUploadQueue({
         <button
           type="button"
           onClick={onClear}
-          className="text-xs text-muted hover:text-ink"
+          disabled={disabled}
+          className="text-xs text-muted hover:text-ink disabled:opacity-40 cursor-pointer"
         >
           Clear all
         </button>
@@ -57,29 +60,30 @@ export default function SeriesUploadQueue({
                 <button
                   type="button"
                   onClick={() => onMove(idx, -1)}
-                  disabled={idx === 0}
+                  disabled={disabled || idx === 0}
                   aria-label="Move slide up"
                   title="Move slide up"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30 cursor-pointer"
                 >
                   <ArrowUp size={14} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={() => onMove(idx, 1)}
-                  disabled={idx === queuedFiles.length - 1}
+                  disabled={disabled || idx === queuedFiles.length - 1}
                   aria-label="Move slide down"
                   title="Move slide down"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-ink active:scale-98 disabled:opacity-30 cursor-pointer"
                 >
                   <ArrowDown size={14} aria-hidden="true" />
                 </button>
                 <button
                   type="button"
                   onClick={() => onRemove(idx)}
+                  disabled={disabled}
                   aria-label="Remove slide from queue"
                   title="Remove slide from queue"
-                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-98"
+                  className="rounded-full p-1.5 text-muted transition-all duration-150 hover:bg-surface hover:text-danger active:scale-98 disabled:opacity-30 cursor-pointer"
                 >
                   <Trash2 size={14} aria-hidden="true" />
                 </button>
@@ -100,10 +104,11 @@ export default function SeriesUploadQueue({
                   name={`queued_slide_title_${idx}`}
                   type="text"
                   value={item.title}
+                  disabled={disabled}
                   onChange={(e) => onUpdateTitle(idx, e.target.value)}
                   placeholder={`Slide title (leave empty for auto: Frame ${idx + 1})`}
                   aria-label={`Slide ${idx + 1} title`}
-                  className="w-full rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
+                  className="w-full rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden disabled:opacity-60"
                 />
               </div>
               <div>
@@ -112,10 +117,11 @@ export default function SeriesUploadQueue({
                   name={`queued_slide_desc_${idx}`}
                   rows={2}
                   value={item.description}
+                  disabled={disabled}
                   onChange={(e) => onUpdateDescription(idx, e.target.value)}
                   placeholder="Slide description / caption (optional, defaults to series description)"
                   aria-label={`Slide ${idx + 1} description`}
-                  className="w-full resize-none rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden"
+                  className="w-full resize-none rounded-md border border-line bg-surface px-3 py-1.5 text-xs text-ink placeholder:text-muted/60 focus:border-ink focus:outline-hidden disabled:opacity-60"
                 />
               </div>
             </div>

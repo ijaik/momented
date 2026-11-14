@@ -15,12 +15,12 @@ export default function Footer() {
               >
                 <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 group-hover:scale-102">
                   <Image
-                    src="/icons/favicon.svg"
+                    src="/icons/icon.svg"
                     alt="Momented logo"
                     width={28}
                     height={28}
                     unoptimized
-                    className="h-full w-full object-contain dark:invert"
+                    className="h-full w-full object-contain"
                   />
                 </span>
                 <span className="font-serif text-2xl tracking-tight text-ink">

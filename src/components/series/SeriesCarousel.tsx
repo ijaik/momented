@@ -51,6 +51,24 @@ export function calculateNextSlideIndex(
   }
   return currentIndex;
 }
+type GesturePhase =
+  | { status: "idle" }
+  | {
+      status: "detecting-touch";
+      startX: number;
+      startY: number;
+      startTime: number;
+    }
+  | {
+      status: "locked-vertical";
+    }
+  | {
+      status: "dragging";
+      source: "touch" | "mouse";
+      startX: number;
+      startTime: number;
+      offset: number;
+    };
 export default function SeriesCarousel({
   seriesTitle,
   seriesDescription,
@@ -58,31 +76,35 @@ export default function SeriesCarousel({
   createdAt,
 }: SeriesCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [gesture, setGesture] = useState<GesturePhase>({ status: "idle" });
+  const gestureRef = useRef<GesturePhase>({ status: "idle" });
   const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
   const [showExifDrawer, setShowExifDrawer] = useState(false);
   const totalSlides = photos.length;
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchStartTime = useRef(0);
-  const isHorizontalSwipe = useRef<boolean | null>(null);
-  const currentDragOffset = useRef(0);
-  const isMouseDown = useRef(false);
-  const mouseStartX = useRef(0);
-  const mouseStartTime = useRef(0);
   const dragContainerWidthRef = useRef(600);
   const containerRef = useRef<HTMLDivElement>(null);
   const maxContainerRef = useRef<HTMLDivElement>(null);
+  const updateGesture = useCallback((next: GesturePhase) => {
+    gestureRef.current = next;
+    setGesture(next);
+  }, []);
+  const isDragging = gesture.status === "dragging";
+  const dragOffset = gesture.status === "dragging" ? gesture.offset : 0;
   const goToSlide = useCallback(
     (index: number) => {
       const clamped = Math.max(0, Math.min(index, totalSlides - 1));
       setActiveIndex(clamped);
-      setDragOffset(0);
-      currentDragOffset.current = 0;
+      updateGesture({ status: "idle" });
     },
-    [totalSlides],
+    [totalSlides, updateGesture],
   );
+  const prevMaximizedRef = useRef(isMaximized);
+  useEffect(() => {
+    if (prevMaximizedRef.current !== isMaximized) {
+      prevMaximizedRef.current = isMaximized;
+      updateGesture({ status: "idle" });
+    }
+  }, [isMaximized, updateGesture]);
   const onWindowKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
     if (
@@ -115,75 +137,102 @@ export default function SeriesCarousel({
     return () => window.removeEventListener("resize", updateWidth);
   }, [isMaximized]);
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (totalSlides <= 1) return;
     const touch = e.touches[0];
-    touchStartX.current = touch.clientX;
-    touchStartY.current = touch.clientY;
-    touchStartTime.current = Date.now();
-    isHorizontalSwipe.current = null;
-    setIsDragging(true);
-    setDragOffset(0);
-    currentDragOffset.current = 0;
+    updateGesture({
+      status: "detecting-touch",
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startTime: Date.now(),
+    });
   };
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
+    const current = gestureRef.current;
+    if (current.status !== "detecting-touch" && current.status !== "dragging")
+      return;
     const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartX.current;
-    const deltaY = touch.clientY - touchStartY.current;
-    if (isHorizontalSwipe.current === null)
-      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8)
-        isHorizontalSwipe.current = Math.abs(deltaX) > Math.abs(deltaY);
-    if (!isHorizontalSwipe.current) return;
-    const width = dragContainerWidthRef.current;
-    let effectiveOffset = deltaX;
-    if (
-      (activeIndex === 0 && deltaX > 0) ||
-      (activeIndex === totalSlides - 1 && deltaX < 0)
-    )
-      effectiveOffset = rubberband(deltaX, width);
-    setDragOffset(effectiveOffset);
-    currentDragOffset.current = effectiveOffset;
-  };
-  const handleTouchEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    if (!isHorizontalSwipe.current) {
-      setDragOffset(0);
-      currentDragOffset.current = 0;
+    if (current.status === "detecting-touch") {
+      const deltaX = touch.clientX - current.startX;
+      const deltaY = touch.clientY - current.startY;
+      if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+        if (Math.abs(deltaY) >= Math.abs(deltaX)) {
+          updateGesture({ status: "locked-vertical" });
+          return;
+        }
+        const width = dragContainerWidthRef.current;
+        let effectiveOffset = deltaX;
+        if (
+          (activeIndex === 0 && deltaX > 0) ||
+          (activeIndex === totalSlides - 1 && deltaX < 0)
+        )
+          effectiveOffset = rubberband(deltaX, width);
+        updateGesture({
+          status: "dragging",
+          source: "touch",
+          startX: current.startX,
+          startTime: current.startTime,
+          offset: effectiveOffset,
+        });
+      }
       return;
     }
-    const deltaX = currentDragOffset.current;
-    const elapsed = Date.now() - touchStartTime.current;
-    const nextIdx = calculateNextSlideIndex(
-      deltaX,
-      elapsed,
-      activeIndex,
-      totalSlides,
-    );
-    goToSlide(nextIdx);
+    if (current.status === "dragging" && current.source === "touch") {
+      const deltaX = touch.clientX - current.startX;
+      const width = dragContainerWidthRef.current;
+      let effectiveOffset = deltaX;
+      if (
+        (activeIndex === 0 && deltaX > 0) ||
+        (activeIndex === totalSlides - 1 && deltaX < 0)
+      )
+        effectiveOffset = rubberband(deltaX, width);
+      updateGesture({
+        ...current,
+        offset: effectiveOffset,
+      });
+    }
+  };
+  const handleTouchEnd = () => {
+    const current = gestureRef.current;
+    if (current.status === "dragging" && current.source === "touch") {
+      const deltaX = current.offset;
+      const elapsed = Date.now() - current.startTime;
+      const nextIdx = calculateNextSlideIndex(
+        deltaX,
+        elapsed,
+        activeIndex,
+        totalSlides,
+      );
+      goToSlide(nextIdx);
+    } else updateGesture({ status: "idle" });
   };
   const handleTouchCancel = () => {
-    setIsDragging(false);
-    setDragOffset(0);
-    currentDragOffset.current = 0;
+    updateGesture({ status: "idle" });
   };
   const handleMouseMove = useEffectEvent((e: MouseEvent) => {
-    if (!isMouseDown.current || totalSlides <= 1) return;
-    const deltaX = e.clientX - mouseStartX.current;
+    const current = gestureRef.current;
+    if (
+      current.status !== "dragging" ||
+      current.source !== "mouse" ||
+      totalSlides <= 1
+    )
+      return;
+    const deltaX = e.clientX - current.startX;
     let dampenedOffset = deltaX;
     const containerWidth = dragContainerWidthRef.current;
     if (activeIndex === 0 && deltaX > 0)
       dampenedOffset = rubberband(deltaX, containerWidth);
     else if (activeIndex === totalSlides - 1 && deltaX < 0)
       dampenedOffset = rubberband(deltaX, containerWidth);
-    currentDragOffset.current = dampenedOffset;
-    setDragOffset(dampenedOffset);
+    updateGesture({
+      ...current,
+      offset: dampenedOffset,
+    });
   });
   const handleMouseUp = useEffectEvent(() => {
-    if (!isMouseDown.current) return;
-    isMouseDown.current = false;
-    setIsDragging(false);
-    const deltaX = currentDragOffset.current;
-    const elapsed = Math.max(1, Date.now() - mouseStartTime.current);
+    const current = gestureRef.current;
+    if (current.status !== "dragging" || current.source !== "mouse") return;
+    const deltaX = current.offset;
+    const elapsed = Math.max(1, Date.now() - current.startTime);
     const nextIndex = calculateNextSlideIndex(
       deltaX,
       elapsed,
@@ -191,10 +240,7 @@ export default function SeriesCarousel({
       totalSlides,
     );
     if (nextIndex !== activeIndex) goToSlide(nextIndex);
-    else {
-      setDragOffset(0);
-      currentDragOffset.current = 0;
-    }
+    else updateGesture({ status: "idle" });
   });
   useEffect(() => {
     const container = isMaximized
@@ -203,12 +249,14 @@ export default function SeriesCarousel({
     if (!container || totalSlides <= 1) return;
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0) return;
-      isMouseDown.current = true;
-      mouseStartX.current = e.clientX;
-      mouseStartTime.current = Date.now();
-      currentDragOffset.current = 0;
       dragContainerWidthRef.current = container.clientWidth || 600;
-      setIsDragging(true);
+      updateGesture({
+        status: "dragging",
+        source: "mouse",
+        startX: e.clientX,
+        startTime: Date.now(),
+        offset: 0,
+      });
     };
     const onMouseMove = (e: MouseEvent) => handleMouseMove(e);
     const onMouseUp = () => handleMouseUp();
@@ -220,7 +268,7 @@ export default function SeriesCarousel({
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [totalSlides, isMaximized]);
+  }, [totalSlides, isMaximized, updateGesture]);
   const currentPhoto = photos[activeIndex] || photos[0];
   if (!currentPhoto) return null;
   const currentAspect =

@@ -43,13 +43,26 @@ interface PhotoManagerProps {
   collections: OptionItem[];
   rules: OptionItem[];
 }
+type UploadState =
+  | { phase: "idle" }
+  | { phase: "active"; step: string }
+  | { phase: "success"; message: string }
+  | { phase: "error"; message: string };
 export default function PhotoManager({
   photos,
   collections,
   rules,
 }: PhotoManagerProps) {
-  const [status, setStatus] = useState("");
+  const [uploadState, setUploadState] = useState<UploadState>({
+    phase: "idle",
+  });
   const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearStatusTimer = () => {
+    if (statusTimeoutRef.current) {
+      clearTimeout(statusTimeoutRef.current);
+      statusTimeoutRef.current = null;
+    }
+  };
   useEffect(() => {
     return () => {
       if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
@@ -87,7 +100,8 @@ export default function PhotoManager({
   }
   async function handleUpload(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Preparing upload…");
+    clearStatusTimer();
+    setUploadState({ phase: "active", step: "Preparing upload…" });
     const form = event.currentTarget;
     const formDataNative = new FormData(form);
     startUploadTransition(async () => {
@@ -96,9 +110,9 @@ export default function PhotoManager({
         const file = fileInput?.files?.[0];
         if (!file) throw new Error("Please select a photo to upload.");
         const uploadData = await uploadPhotoToCloudinary(file, {
-          onStatusChange: setStatus,
+          onStatusChange: (step) => setUploadState({ phase: "active", step }),
         });
-        setStatus("Saving photo data…");
+        setUploadState({ phase: "active", step: "Saving photo data…" });
         const titleInput = form.elements.namedItem("title") as HTMLInputElement;
         const descriptionInput = form.elements.namedItem(
           "description",
@@ -118,16 +132,25 @@ export default function PhotoManager({
           height: uploadData.height,
           image_metadata: uploadData.image_metadata,
         });
-        setStatus("Uploaded successfully.");
+        setUploadState({
+          phase: "success",
+          message: "Uploaded successfully.",
+        });
         notifySuccess("Photograph uploaded successfully.");
         form.reset();
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        setStatus(`Upload failed: ${message}`);
+        setUploadState({
+          phase: "error",
+          message: `Upload failed: ${message}`,
+        });
         notifyError(`Upload failed: ${message}`);
       } finally {
-        if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
-        statusTimeoutRef.current = setTimeout(() => setStatus(""), 4000);
+        clearStatusTimer();
+        statusTimeoutRef.current = setTimeout(
+          () => setUploadState({ phase: "idle" }),
+          4000,
+        );
       }
     });
   }
@@ -247,16 +270,16 @@ export default function PhotoManager({
               loadingText="Uploading…"
               text="Upload photograph"
             />
-            {status && (
+            {uploadState.phase !== "idle" && (
               <output
                 aria-live="polite"
                 className={`text-xs ${
-                  status.startsWith("Upload failed")
-                    ? "text-signal"
-                    : "text-muted"
+                  uploadState.phase === "error" ? "text-signal" : "text-muted"
                 }`}
               >
-                {status}
+                {uploadState.phase === "active"
+                  ? uploadState.step
+                  : uploadState.message}
               </output>
             )}
           </div>
@@ -366,6 +389,7 @@ export default function PhotoManager({
                       type="button"
                       variant="secondary"
                       size="sm"
+                      disabled={isSavePending}
                       onClick={() => setEditingPhotoId(null)}
                     >
                       Cancel

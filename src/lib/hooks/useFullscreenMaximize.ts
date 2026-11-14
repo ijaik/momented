@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useState } from "react";
 export function useFullscreenMaximize() {
   const [isMaximized, setIsMaximized] = useState(false);
-  const enterMaximize = async () => {
+  const enterMaximize = useCallback(async () => {
     setIsMaximized(true);
     try {
       if (
@@ -10,20 +10,22 @@ export function useFullscreenMaximize() {
         document.fullscreenEnabled &&
         !document.fullscreenElement
       )
-        await document.documentElement.requestFullscreen().catch(() => {});
+        await document.documentElement
+          .requestFullscreen({ navigationUI: "hide" })
+          .catch(() => {});
     } catch {}
-  };
-  const exitMaximize = async () => {
+  }, []);
+  const exitMaximize = useCallback(async () => {
     setIsMaximized(false);
     try {
       if (typeof document !== "undefined" && document.fullscreenElement)
         await document.exitFullscreen().catch(() => {});
     } catch {}
-  };
-  const toggleMaximize = async () => {
+  }, []);
+  const toggleMaximize = useCallback(async () => {
     if (isMaximized) await exitMaximize();
     else await enterMaximize();
-  };
+  }, [isMaximized, enterMaximize, exitMaximize]);
   const onFullscreenChange = useEffectEvent(() => {
     if (
       typeof document !== "undefined" &&
@@ -41,11 +43,8 @@ export function useFullscreenMaximize() {
         target.isContentEditable)
     )
       return;
-    if (e.key === "Escape" && isMaximized) {
-      e.preventDefault();
-      void exitMaximize();
-      return;
-    }
+    // Note: Escape key dismissal is handled by FullscreenDialog's useDialogFocusTrap
+    // and by the browser's native fullscreen event.
     if (
       (e.key === "f" || e.key === "F") &&
       !e.metaKey &&
@@ -62,6 +61,8 @@ export function useFullscreenMaximize() {
     return () => {
       document.removeEventListener("fullscreenchange", onFullscreenChange);
       window.removeEventListener("keydown", onWindowKeyDown);
+      if (typeof document !== "undefined" && document.fullscreenElement)
+        void document.exitFullscreen().catch(() => {});
     };
   }, []);
   return {
