@@ -13,6 +13,24 @@ const icons: MetadataRoute.Manifest["icons"] = [
     type: "image/png",
     purpose: "any",
   },
+  {
+    purpose: "maskable",
+    sizes: "1024x1024",
+    src: "/icons/maskable_icon.png",
+    type: "image/png",
+  },
+  {
+    purpose: "maskable",
+    sizes: "192x192",
+    src: "/icons/maskable_icon_x192.png",
+    type: "image/png",
+  },
+  {
+    purpose: "maskable",
+    sizes: "512x512",
+    src: "/icons/maskable_icon_x512.png",
+    type: "image/png",
+  },
 ];
 export default function manifest(): MetadataRoute.Manifest {
   return {
