@@ -1,11 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
+  poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
-  devIndicators: false,
-  poweredByHeader: false,
+  turbopack: {
+    rules: {
+      "*.css": {
+        loaders: ["@tailwindcss/turbopack"],
+        as: "*.css",
+      },
+    },
+  },
   images: {
     loader: "custom",
     loaderFile: "./src/lib/cloudinary/cloudinaryLoader.ts",
