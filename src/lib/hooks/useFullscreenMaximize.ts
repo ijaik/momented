@@ -43,7 +43,7 @@ export function useFullscreenMaximize() {
         target.isContentEditable)
     )
       return;
-    // Note: Escape key dismissal is handled by FullscreenDialog's useDialogFocusTrap
+    // Note: Escape key dismissal is handled by FullscreenDialog's native <dialog>
     // and by the browser's native fullscreen event.
     if (
       (e.key === "f" || e.key === "F") &&

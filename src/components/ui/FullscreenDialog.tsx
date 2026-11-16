@@ -1,7 +1,6 @@
 "use client";
 import { Minimize2 } from "lucide-react";
-import { type ReactNode, useRef } from "react";
-import { useDialogFocusTrap } from "@/lib/hooks/useDialogFocusTrap";
+import { type ReactNode, useEffect, useRef } from "react";
 
 interface FullscreenDialogProps {
   isOpen: boolean;
@@ -23,17 +22,32 @@ export default function FullscreenDialog({
   children,
   ariaLabel = "Fullscreen view",
 }: FullscreenDialogProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-  useDialogFocusTrap(containerRef, isOpen, onClose, closeBtnRef);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen) {
+      if (!dialog.open) dialog.showModal();
+      document.body.style.overflow = "hidden";
+    } else if (dialog.open) {
+      dialog.close();
+      document.body.style.overflow = "";
+    }
+    return () => {
+      if (dialog?.open) dialog.close();
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
   return (
-    <div
-      ref={containerRef}
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label={ariaLabel}
-      className="fixed inset-0 z-50 flex flex-col justify-between bg-paper/97 backdrop-blur-2xl safe-fullscreen-inset select-none animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none [&:not([open])]:hidden open:flex flex-col justify-between overflow-hidden bg-paper/97 backdrop-blur-2xl safe-fullscreen-inset select-none border-0 outline-hidden overscroll-contain animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
     >
       <header className="flex w-full items-center justify-between gap-4 border-b border-line/60 pb-3.5">
         <div className="min-w-0">
@@ -45,7 +59,6 @@ export default function FullscreenDialog({
         <div className="flex items-center gap-2">
           {actions}
           <button
-            ref={closeBtnRef}
             type="button"
             onClick={onClose}
             aria-label="Exit fullscreen (Esc)"
@@ -65,6 +78,6 @@ export default function FullscreenDialog({
           {footer}
         </footer>
       )}
-    </div>
+    </dialog>
   );
 }

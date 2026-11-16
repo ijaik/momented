@@ -18,6 +18,14 @@ export interface DownloadButtonProps {
   fileName?: string;
 }
 type DownloadStatus = "idle" | "downloading" | "success" | "error";
+function triggerDownload(url: string, filename: string) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 export default function DownloadButton({
   photoId,
   cloudinaryUrl,
@@ -62,24 +70,14 @@ export default function DownloadButton({
           cloudinaryUrl,
           fileName: targetFileName,
         });
-        const link = document.createElement("a");
-        link.href = res.downloadUrl;
-        link.download = targetFileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        triggerDownload(res.downloadUrl, targetFileName);
         transitionToTemporaryStatus("success");
       } catch {
         try {
           const fallbackUrl = buildCloudinaryUrl(cloudinaryUrl, [
             "fl_attachment",
           ]);
-          const link = document.createElement("a");
-          link.href = fallbackUrl;
-          link.download = targetFileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          triggerDownload(fallbackUrl, targetFileName);
           transitionToTemporaryStatus("success");
         } catch {
           transitionToTemporaryStatus("error");

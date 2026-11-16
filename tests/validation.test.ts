@@ -12,14 +12,13 @@ describe("validation", () => {
     it("returns true for valid UUID v4 string", () => {
       expect(isValidUUID("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11")).toBe(true);
     });
-    it("returns true for positive integers", () => {
-      expect(isValidUUID(1)).toBe(true);
-      expect(isValidUUID(12)).toBe(true);
-    });
-    it("returns false for non-positive or non-integer numbers", () => {
+    it("returns false for non-string values including numbers", () => {
+      expect(isValidUUID(1)).toBe(false);
+      expect(isValidUUID(12)).toBe(false);
       expect(isValidUUID(0)).toBe(false);
       expect(isValidUUID(-5)).toBe(false);
-      expect(isValidUUID(1.5)).toBe(false);
+      expect(isValidUUID(null)).toBe(false);
+      expect(isValidUUID(undefined)).toBe(false);
     });
     it("returns false for invalid UUID strings", () => {
       expect(isValidUUID("not-a-uuid")).toBe(false);
@@ -33,17 +32,13 @@ describe("validation", () => {
         assertValidUUID("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"),
       ).not.toThrow();
     });
-    it("does not throw for valid positive integer", () => {
-      expect(() => assertValidUUID(5)).not.toThrow();
+    it("throws for non-UUID values including numbers", () => {
+      expect(() => assertValidUUID(5)).toThrow("Invalid ID.");
+      expect(() => assertValidUUID(-1)).toThrow("Invalid ID.");
     });
     it("throws for invalid UUID string", () => {
       expect(() => assertValidUUID("invalid-id", "Custom ID")).toThrow(
         "Invalid Custom ID.",
-      );
-    });
-    it("throws for invalid number", () => {
-      expect(() => assertValidUUID(-1, "Calendar ID")).toThrow(
-        "Invalid Calendar ID: must be a positive integer.",
       );
     });
   });

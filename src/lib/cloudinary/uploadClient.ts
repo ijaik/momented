@@ -35,6 +35,15 @@ export async function uploadPhotoToCloudinary(
     `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`,
     { method: "POST", body: formData },
   );
-  if (!uploadRes.ok) throw new Error("Cloudinary upload failed");
+  if (!uploadRes.ok) {
+    const errorJson = (await uploadRes.json().catch(() => null)) as {
+      error?: { message?: string };
+    } | null;
+    const errorMsg =
+      errorJson?.error?.message ||
+      `Cloudinary upload failed with status ${uploadRes.status}`;
+    console.error("Cloudinary upload error:", errorMsg, errorJson);
+    throw new Error(errorMsg);
+  }
   return uploadRes.json();
 }

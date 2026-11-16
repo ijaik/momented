@@ -26,14 +26,14 @@ const nextConfig: NextConfig = {
     const scriptSrc = isDev
       ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
       : "script-src 'self' 'unsafe-inline'";
-    const publicCsp = [
+    const csp = [
       "default-src 'self'",
       scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "font-src 'self' data:",
-      `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com https://cdn.jsdelivr.net ${supabaseUrl}`.trim(),
-      "worker-src 'self' blob:",
+      `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`.trim(),
+      "worker-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -41,12 +41,9 @@ const nextConfig: NextConfig = {
     ].join("; ");
     return [
       {
-        source: "/((?!admin).*)",
-        headers: [{ key: "Content-Security-Policy", value: publicCsp }],
-      },
-      {
         source: "/(.*)",
         headers: [
+          { key: "Content-Security-Policy", value: csp },
           { key: "X-DNS-Prefetch-Control", value: "on" },
           {
             key: "Strict-Transport-Security",

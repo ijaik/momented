@@ -27,13 +27,16 @@ export async function getAdminPhotos(): Promise<PhotoItem[]> {
     rules: row.rules ?? [],
   }));
 }
-export async function getAdminCollections(): Promise<BaseItem[]> {
+async function fetchAdminBaseItems(
+  table: "collections" | "rule_collections",
+  junctionTable: "photo_collections" | "photo_rule_collections",
+): Promise<BaseItem[]> {
   await verifyAdminSession();
   const db = getAdminDb();
   const { data, error } = await db
-    .from("collections")
+    .from(table)
     .select(
-      "id, title, description, cover_photo_id, photos!photo_collections(id, cloudinary_url, title)",
+      `id, title, description, cover_photo_id, photos!${junctionTable}(id, cloudinary_url, title)`,
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -55,33 +58,11 @@ export async function getAdminCollections(): Promise<BaseItem[]> {
     })),
   }));
 }
-export async function getAdminRuleCollections(): Promise<BaseItem[]> {
-  await verifyAdminSession();
-  const db = getAdminDb();
-  const { data, error } = await db
-    .from("rule_collections")
-    .select(
-      "id, title, description, cover_photo_id, photos!photo_rule_collections(id, cloudinary_url, title)",
-    )
-    .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: (row as { description: string | null }).description,
-    cover_photo_id: (row as { cover_photo_id: string | null }).cover_photo_id,
-    photos: (
-      (row.photos ?? []) as {
-        id: string;
-        cloudinary_url: string;
-        title: string | null;
-      }[]
-    ).map((p) => ({
-      id: String(p.id),
-      cloudinary_url: p.cloudinary_url,
-      title: p.title ?? undefined,
-    })),
-  }));
+export function getAdminCollections(): Promise<BaseItem[]> {
+  return fetchAdminBaseItems("collections", "photo_collections");
+}
+export function getAdminRuleCollections(): Promise<BaseItem[]> {
+  return fetchAdminBaseItems("rule_collections", "photo_rule_collections");
 }
 export async function getAdminCalendarCollections(): Promise<CalendarItem[]> {
   await verifyAdminSession();

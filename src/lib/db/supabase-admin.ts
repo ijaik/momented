@@ -4,8 +4,7 @@ import type { Database } from "@/types/database.types";
 export type JunctionTable =
   | "photo_collections"
   | "photo_rule_collections"
-  | "photo_calendar_collections"
-  | "series_photos";
+  | "photo_calendar_collections";
 let cachedAdminDb: SupabaseClient<Database> | null = null;
 export function getAdminDb(): SupabaseClient<Database> {
   if (cachedAdminDb) return cachedAdminDb;
@@ -34,7 +33,7 @@ export async function syncJunction(
 ): Promise<void> {
   const dynamicClient = db as SupabaseClient<Database>;
   const cleanTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
-  if (!skipDelete && table !== "series_photos") {
+  if (!skipDelete) {
     const { error: rpcError } = await dynamicClient.rpc(
       "replace_photo_junctions",
       {
@@ -47,18 +46,19 @@ export async function syncJunction(
     );
     if (!rpcError) return;
   }
-  if (!skipDelete) {
-    const { error: deleteError } = await dynamicClient
-      .from(table)
-      .delete()
-      .eq(mainCol, mainId);
-    if (deleteError)
-      throw new Error(
-        `Failed to clear junction table ${table}: ${deleteError.message}`,
-      );
-  }
-  if (cleanTargetIds.length > 0) {
-    const inserts = cleanTargetIds.map((targetId) => ({
+  // Safe diff-based sync: insert missing first, then delete obsolete, avoiding data loss on insert error
+  const { data: existingRows } = await dynamicClient
+    .from(table)
+    .select(targetCol)
+    .eq(mainCol, mainId);
+  const existingIds = new Set(
+    (existingRows ?? []).map((r) =>
+      String((r as unknown as Record<string, unknown>)[targetCol]),
+    ),
+  );
+  const toInsert = cleanTargetIds.filter((id) => !existingIds.has(id));
+  if (toInsert.length > 0) {
+    const inserts = toInsert.map((targetId) => ({
       [mainCol]: mainId,
       [targetCol]: targetId,
     }));
@@ -67,7 +67,23 @@ export async function syncJunction(
       .insert(inserts as never);
     if (insertError)
       throw new Error(
-        `Failed to update junction table ${table}: ${insertError.message}`,
+        `Failed to insert into junction table ${table}: ${insertError.message}`,
       );
+  }
+  if (!skipDelete) {
+    const toDelete = Array.from(existingIds).filter(
+      (id) => !cleanTargetIds.includes(id),
+    );
+    if (toDelete.length > 0) {
+      const { error: deleteError } = await dynamicClient
+        .from(table)
+        .delete()
+        .eq(mainCol, mainId)
+        .in(targetCol, toDelete);
+      if (deleteError)
+        throw new Error(
+          `Failed to remove obsolete records from junction table ${table}: ${deleteError.message}`,
+        );
+    }
   }
 }

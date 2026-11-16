@@ -2,7 +2,6 @@
 import { Check, Copy, Share2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
-import { useDialogFocusTrap } from "@/lib/hooks/useDialogFocusTrap";
 import { copyText, imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
   title?: string;
@@ -31,11 +30,22 @@ export default function ShareDialog({
   onTrackShare,
 }: ShareDialogProps) {
   const [feedback, setFeedback] = useState<FeedbackState>({ status: "idle" });
-  const panelRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileCacheRef = useRef<FileCacheState>({ status: "idle" });
   const hasTrackedRef = useRef(false);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      if (dialog?.open) dialog.close();
+      document.body.style.overflow = "";
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
   const shareUrl = (() => {
     if (typeof window === "undefined") return url || "";
     return new URL(url || window.location.href, window.location.origin).href;
@@ -50,14 +60,6 @@ export default function ShareDialog({
     setFeedback({ status: "idle" });
     onClose();
   };
-  useDialogFocusTrap(panelRef, true, close, closeBtnRef);
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    };
-  }, []);
   const trackShare = useCallback(async () => {
     if (!photoId || hasTrackedRef.current) return;
     hasTrackedRef.current = true;
@@ -183,109 +185,105 @@ export default function ShareDialog({
   const copied = feedback.status === "copied";
   const error = feedback.status === "error" ? feedback.message : null;
   return (
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center p-4 sm:p-6"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="share-dialog-title"
+      onCancel={(e) => {
+        e.preventDefault();
+        close();
+      }}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) close();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") close();
+      }}
+      className="fixed inset-0 z-100 m-auto max-w-md w-full overflow-hidden rounded-2xl border border-line/70 bg-surface/90 backdrop-blur-2xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] p-0 outline-hidden overscroll-contain backdrop:bg-ink/35 backdrop:backdrop-blur-xs animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)] [&:not([open])]:hidden"
     >
-      <button
-        type="button"
-        tabIndex={-1}
-        aria-label="Close share dialog"
-        onClick={close}
-        className="absolute inset-0 cursor-default bg-ink/35 backdrop-blur-xs animate-[dialog-backdrop-in_220ms_cubic-bezier(0.16,1,0.3,1)]"
-      />
-      <div
-        ref={panelRef}
-        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-line/70 bg-surface/90 backdrop-blur-2xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)]"
-      >
-        <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-6">
-          <div className="min-w-0">
-            <h3
-              id="share-dialog-title"
-              className="font-serif text-xl leading-snug tracking-tight text-ink"
-            >
-              Share this moment
-            </h3>
-            <p className="mt-1 text-sm text-muted">
-              Send the photograph, or a link to it.
-            </p>
-          </div>
-          <button
-            ref={closeBtnRef}
-            type="button"
-            onClick={close}
-            aria-label="Close share dialog"
-            className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-98 cursor-pointer"
+      <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-6">
+        <div className="min-w-0">
+          <h3
+            id="share-dialog-title"
+            className="font-serif text-xl leading-snug tracking-tight text-ink"
           >
-            <X size={18} aria-hidden="true" />
-          </button>
+            Share this moment
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            Send the photograph, or a link to it.
+          </p>
         </div>
-        <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
-          {supportsNativeShare && (
-            <div>
-              <button
-                type="button"
-                onClick={handleNativeShare}
-                disabled={isSharing}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-98 disabled:opacity-60 cursor-pointer"
-              >
-                <Share2 size={16} aria-hidden="true" />
-                {isSharing ? "Preparing…" : "Send the photograph"}
-              </button>
-              <p className="mt-2 text-center text-[13px] text-muted">
-                Opens your phone&apos;s share sheet with a preview image.
-              </p>
-            </div>
-          )}
-          <div>
-            <label
-              htmlFor="share-url"
-              className="mb-1.5 block text-sm font-medium text-ink"
-            >
-              Link
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                id="share-url"
-                name="share-url"
-                type="text"
-                readOnly
-                value={shareUrl}
-                className="min-w-0 flex-1 rounded-xl border border-line/80 bg-paper/60 px-3.5 py-2.5 text-sm text-ink backdrop-blur-xs transition-colors focus:border-ink/40 focus:outline-hidden"
-                onFocus={(e) => e.currentTarget.select()}
-              />
-              <button
-                type="button"
-                onClick={copyLink}
-                aria-live="polite"
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
-              >
-                {copied ? (
-                  <>
-                    <Check size={16} aria-hidden="true" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy size={16} aria-hidden="true" />
-                    Copy
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-          {error && (
-            <p
-              role="alert"
-              className="rounded-xl bg-danger-soft px-3.5 py-2.5 text-sm font-medium text-danger"
-            >
-              {error}
-            </p>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={close}
+          aria-label="Close share dialog"
+          className="-mr-1 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-soft/60 text-muted transition-all hover:bg-soft hover:text-ink active:scale-98 cursor-pointer"
+        >
+          <X size={18} aria-hidden="true" />
+        </button>
       </div>
-    </div>
+      <div className="flex flex-col gap-5 px-6 pb-6 pt-4">
+        {supportsNativeShare && (
+          <div>
+            <button
+              type="button"
+              onClick={handleNativeShare}
+              disabled={isSharing}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-solid px-5 py-3 text-sm font-medium text-on-solid shadow-xs transition-all hover:opacity-90 active:scale-98 disabled:opacity-60 cursor-pointer"
+            >
+              <Share2 size={16} aria-hidden="true" />
+              {isSharing ? "Preparing…" : "Send the photograph"}
+            </button>
+            <p className="mt-2 text-center text-[13px] text-muted">
+              Opens your phone&apos;s share sheet with a preview image.
+            </p>
+          </div>
+        )}
+        <div>
+          <label
+            htmlFor="share-url"
+            className="mb-1.5 block text-sm font-medium text-ink"
+          >
+            Link
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="share-url"
+              name="share-url"
+              type="text"
+              readOnly
+              value={shareUrl}
+              className="min-w-0 flex-1 rounded-xl border border-line/80 bg-paper/60 px-3.5 py-2.5 text-sm text-ink backdrop-blur-xs transition-colors focus:border-ink/40 focus:outline-hidden"
+              onFocus={(e) => e.currentTarget.select()}
+            />
+            <button
+              type="button"
+              onClick={copyLink}
+              aria-live="polite"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-line/80 bg-surface/80 backdrop-blur-xs px-4 py-2.5 text-sm font-medium text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
+            >
+              {copied ? (
+                <>
+                  <Check size={16} aria-hidden="true" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy size={16} aria-hidden="true" />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        {error && (
+          <p
+            role="alert"
+            className="rounded-xl bg-danger-soft px-3.5 py-2.5 text-sm font-medium text-danger"
+          >
+            {error}
+          </p>
+        )}
+      </div>
+    </dialog>
   );
 }

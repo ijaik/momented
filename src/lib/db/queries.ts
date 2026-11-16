@@ -260,37 +260,42 @@ async function getPhotosForEntity(
   ascending = false,
   tag = "collections",
   entityTag = `${tag}-${entityId}`,
+  limit?: number,
 ): Promise<{ data: Photo[]; error: string | null }> {
   "use cache";
   cacheTag("photos", tag, entityTag);
   cacheLife("weeks");
-  const { data, error } = await supabase
+  let query = supabase
     .from("photos")
     .select(`${PHOTO_CARD_COLUMNS}, ${junction.table}!inner()`)
     .eq(`${junction.table}.${junction.column}`, entityId)
     .order("created_at", { ascending });
+  if (limit) query = query.limit(limit);
+  const { data, error } = await query;
   throwIfUnexpectedDbError(error, `getPhotosForEntity(${junction.table})`);
   return {
     data: (data ?? []) as unknown as Photo[],
     error: error?.message ?? null,
   };
 }
-export function getPhotosForCollection(collectionId: string) {
+export function getPhotosForCollection(collectionId: string, limit?: number) {
   return getPhotosForEntity(
     COLLECTION_JUNCTION,
     collectionId,
     false,
     "collections",
     `collection-${collectionId}`,
+    limit,
   );
 }
-export function getPhotosForRule(ruleId: string) {
+export function getPhotosForRule(ruleId: string, limit?: number) {
   return getPhotosForEntity(
     RULE_JUNCTION,
     ruleId,
     false,
     "rules",
     `rule-${ruleId}`,
+    limit,
   );
 }
 export async function getRelatedPhotos({
@@ -316,21 +321,25 @@ export async function getRelatedPhotos({
     monthIndex <= 12
       ? monthIndex
       : null;
-  const [collectionRes, seriesRes, ruleRes, calendarRes, homeRes] =
+  const [collectionRes, seriesRes, ruleRes, calendarRes, fallbackRes] =
     await Promise.all([
       collectionId
-        ? getPhotosForCollection(collectionId)
+        ? getPhotosForCollection(collectionId, 4)
         : Promise.resolve({ data: [] as Photo[], error: null }),
       seriesId
         ? getSeriesById(seriesId)
         : Promise.resolve({ data: null, error: null }),
       ruleId
-        ? getPhotosForRule(ruleId)
+        ? getPhotosForRule(ruleId, 4)
         : Promise.resolve({ data: [] as Photo[], error: null }),
       validMonth
-        ? getPhotosForCalendarMonth(validMonth)
+        ? getPhotosForCalendarMonth(validMonth, 4)
         : Promise.resolve({ data: [] as Photo[], error: null }),
-      getHomePhotos(),
+      supabase
+        .from("photos")
+        .select(PHOTO_CARD_COLUMNS)
+        .order("created_at", { ascending: false })
+        .limit(4),
     ]);
   const seriesPhotos: Photo[] = seriesRes.data?.series_photos
     ? (
@@ -348,7 +357,7 @@ export async function getRelatedPhotos({
     seriesPhotos,
     ruleRes.data,
     calendarRes.data,
-    homeRes.data,
+    (fallbackRes.data ?? []) as unknown as Photo[],
   ];
   for (const pool of pools) {
     for (const p of pool) {
@@ -360,38 +369,38 @@ export async function getRelatedPhotos({
   }
   return Array.from(relatedMap.values()).slice(0, 3);
 }
-export function getPhotosForCalendarMonth(monthIndex: number) {
+export function getPhotosForCalendarMonth(monthIndex: number, limit?: number) {
   return getPhotosForEntity(
     CALENDAR_JUNCTION,
     monthIndex,
     false,
     "calendar",
     `calendar-${monthIndex}`,
+    limit,
   );
 }
-export async function getCollectionById(id: string) {
+async function getEntityDetails(
+  table: "collections" | "rule_collections",
+  id: string,
+) {
   "use cache";
-  cacheTag("collections", `collection-${id}`);
+  const tag = table === "collections" ? "collections" : "rules";
+  const singular = table === "collections" ? "collection" : "rule";
+  cacheTag(tag, `${singular}-${id}`);
   cacheLife("weeks");
   const { data, error } = await supabase
-    .from("collections")
+    .from(table)
     .select("title, description")
     .eq("id", id)
     .single();
-  throwIfUnexpectedDbError(error, `getCollectionById(${id})`);
+  throwIfUnexpectedDbError(error, `getEntityDetails(${table}, ${id})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
-export async function getRuleCollectionById(id: string) {
-  "use cache";
-  cacheTag("rules", `rule-${id}`);
-  cacheLife("weeks");
-  const { data, error } = await supabase
-    .from("rule_collections")
-    .select("title, description")
-    .eq("id", id)
-    .single();
-  throwIfUnexpectedDbError(error, `getRuleCollectionById(${id})`);
-  return { data: data ?? null, error: error?.message ?? null };
+export function getCollectionById(id: string) {
+  return getEntityDetails("collections", id);
+}
+export function getRuleCollectionById(id: string) {
+  return getEntityDetails("rule_collections", id);
 }
 export async function getCalendarMonthById(monthIndex: number) {
   "use cache";
@@ -405,31 +414,28 @@ export async function getCalendarMonthById(monthIndex: number) {
   throwIfUnexpectedDbError(error, `getCalendarMonthById(${monthIndex})`);
   return { data: data ?? null, error: error?.message ?? null };
 }
-export async function getCuratedCollections() {
+async function getEntityCollectionList(
+  table: "collections" | "rule_collections",
+  junctionTable: "photo_collections" | "photo_rule_collections",
+) {
   "use cache";
-  cacheTag("collections", "photos");
+  const tag = table === "collections" ? "collections" : "rules";
+  cacheTag(tag, "photos");
   cacheLife("weeks");
   const { data, error } = await supabase
-    .from("collections")
+    .from(table)
     .select(
-      "id, title, description, cover_photo_id, created_at, photos!photo_collections(id, cloudinary_url, created_at)",
+      `id, title, description, cover_photo_id, created_at, photos!${junctionTable}(id, cloudinary_url, created_at)`,
     )
     .order("created_at", { ascending: false });
-  throwIfUnexpectedDbError(error, "getCuratedCollections");
+  throwIfUnexpectedDbError(error, `getEntityCollectionList(${table})`);
   return { data: data ?? [], error: error?.message ?? null };
 }
-export async function getRuleCollectionsList() {
-  "use cache";
-  cacheTag("rules", "collections", "photos");
-  cacheLife("weeks");
-  const { data, error } = await supabase
-    .from("rule_collections")
-    .select(
-      "id, title, description, cover_photo_id, created_at, photos!photo_rule_collections(id, cloudinary_url, created_at)",
-    )
-    .order("created_at", { ascending: false });
-  throwIfUnexpectedDbError(error, "getRuleCollectionsList");
-  return { data: data ?? [], error: error?.message ?? null };
+export function getCuratedCollections() {
+  return getEntityCollectionList("collections", "photo_collections");
+}
+export function getRuleCollectionsList() {
+  return getEntityCollectionList("rule_collections", "photo_rule_collections");
 }
 export async function getCalendarCollectionsList() {
   "use cache";

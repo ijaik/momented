@@ -6,12 +6,19 @@ const IP_PATTERN =
 export async function getClientIp(): Promise<string> {
   try {
     const headerStore = await headers();
-    const rawIp =
+    // Platform-verified reverse proxy headers that cannot be spoofed by clients
+    const trustedIp =
       headerStore.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
-      headerStore.get("cf-connecting-ip")?.trim() ||
-      headerStore.get("x-real-ip")?.trim() ||
-      headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
-    if (rawIp && rawIp !== "unknown" && IP_PATTERN.test(rawIp)) return rawIp;
+      headerStore.get("cf-connecting-ip")?.trim();
+    if (trustedIp && trustedIp !== "unknown" && IP_PATTERN.test(trustedIp))
+      return trustedIp;
+    // In local development, allow real-ip or forwarded-for fallbacks
+    if (process.env.NODE_ENV !== "production") {
+      const devIp =
+        headerStore.get("x-real-ip")?.trim() ||
+        headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
+      if (devIp && devIp !== "unknown" && IP_PATTERN.test(devIp)) return devIp;
+    }
   } catch {}
   try {
     const cookieStore = await cookies();

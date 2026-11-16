@@ -2,6 +2,7 @@
 import { updateTag } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { verifyAdminSession } from "@/lib/auth/auth";
+import { revalidatePhotos } from "@/lib/cache/tags";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 import { insertPhotoToDb } from "@/lib/db/mutations";
 import { parsePhotoDate } from "@/lib/utils/dateUtils";
@@ -158,11 +159,7 @@ export async function savePhotoToDbAction(
     collectionIds: data.collectionIds ?? [],
     ruleIds: data.ruleIds ?? [],
   });
-  updateTag("photos");
-  updateTag("photos-ids");
-  updateTag("collections");
-  updateTag("rules");
-  updateTag("calendar");
+  revalidatePhotos(id);
   updateTag(`calendar-${monthId}`);
   for (const cid of data.collectionIds ?? []) updateTag(`collection-${cid}`);
   for (const rid of data.ruleIds ?? []) updateTag(`rule-${rid}`);

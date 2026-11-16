@@ -6,10 +6,8 @@ export const CACHE_TAGS = {
   collections: "collections",
   collectionsIds: "collections-ids",
   rules: "rules",
-  ruleCollections: "rule_collections",
   ruleCollectionsIds: "rule_collections-ids",
   calendar: "calendar",
-  calendarCollections: "calendar_collections",
   calendarCollectionsIds: "calendar_collections-ids",
   series: "series",
   seriesIds: "series-ids",
@@ -27,15 +25,12 @@ export function revalidateCollections(id?: string) {
   updateTag(CACHE_TAGS.collections);
   updateTag(CACHE_TAGS.rules);
   updateTag(CACHE_TAGS.collectionsIds);
-  updateTag(CACHE_TAGS.ruleCollectionsIds);
   updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`collection-${id}`);
 }
 export function revalidateRules(id?: string) {
   updateTag(CACHE_TAGS.collections);
   updateTag(CACHE_TAGS.rules);
-  updateTag(CACHE_TAGS.ruleCollections);
-  updateTag(CACHE_TAGS.collectionsIds);
   updateTag(CACHE_TAGS.ruleCollectionsIds);
   updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`rule-${id}`);
@@ -43,7 +38,6 @@ export function revalidateRules(id?: string) {
 export function revalidateCalendar(id?: string | number) {
   updateTag(CACHE_TAGS.collections);
   updateTag(CACHE_TAGS.calendar);
-  updateTag(CACHE_TAGS.calendarCollections);
   updateTag(CACHE_TAGS.calendarCollectionsIds);
   updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`calendar-${id}`);

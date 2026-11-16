@@ -166,38 +166,10 @@ export default function PhotoDetailView({
               <span>Maximize</span>
             </span>
           </button>
-          {/* Mobile Caption Block (below image on small screens) */}
-          <figcaption className="mt-6 border-b border-line/70 pb-6 lg:hidden">
-            <h1 className="font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl font-normal">
-              {title}
-            </h1>
-            {photo.description ? (
-              <p className="mt-3.5 max-w-xl whitespace-pre-wrap text-base leading-relaxed text-muted">
-                {photo.description}
-              </p>
-            ) : (
-              <p className="mt-3.5 max-w-xl text-sm leading-relaxed text-muted">
-                A public domain photograph documenting light and atmosphere,
-                dedicated under Creative Commons CC0 1.0 Universal.
-              </p>
-            )}
-            <p className="mt-3.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-muted">
-              <span>{displayDate}</span>
-              {photo.camera_model && (
-                <>
-                  <span aria-hidden="true">—</span>
-                  <span>Shot on {photo.camera_model}</span>
-                </>
-              )}
-              <span aria-hidden="true">—</span>
-              <span>by {photo.artist || siteConfig.author.name}</span>
-            </p>
-          </figcaption>
         </figure>
         {/* Right Column — Editorial & Metadata Column */}
         <aside className="flex min-w-0 flex-col gap-8 sm:gap-10">
-          {/* Desktop Heading Block */}
-          <div className="hidden lg:block border-b border-line/70 pb-6">
+          <header className="border-b border-line/70 pb-6">
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-[2.5rem] leading-[1.08] tracking-tight text-ink font-normal">
               {title}
             </h1>
@@ -222,7 +194,7 @@ export default function PhotoDetailView({
               <span aria-hidden="true">—</span>
               <span>by {photo.artist || siteConfig.author.name}</span>
             </p>
-          </div>
+          </header>
           {/* Primary Action Section */}
           <section aria-label="Actions" className="flex flex-col gap-3">
             <DownloadButton

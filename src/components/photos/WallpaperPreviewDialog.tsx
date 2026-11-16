@@ -14,9 +14,8 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
-import { useDialogFocusTrap } from "@/lib/hooks/useDialogFocusTrap";
 import type { Photo } from "@/types";
 export interface WallpaperPreviewDialogProps {
   photo: Photo;
@@ -33,19 +32,34 @@ export default function WallpaperPreviewDialog({
 }: WallpaperPreviewDialogProps) {
   const [deviceMode, setDeviceMode] = useState<DeviceMode>("mobile");
   const [showUiOverlay, setShowUiOverlay] = useState(true);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-  useDialogFocusTrap(dialogRef, isOpen, onClose, closeBtnRef);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (isOpen) {
+      if (!dialog.open) dialog.showModal();
+      document.body.style.overflow = "hidden";
+    } else if (dialog.open) {
+      dialog.close();
+      document.body.style.overflow = "";
+    }
+    return () => {
+      if (dialog?.open) dialog.close();
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   if (!isOpen) return null;
   const title = photo.title || "Untitled Momented";
   const alt = `Wallpaper preview for ${title}`;
   return (
-    <div
+    <dialog
       ref={dialogRef}
-      role="dialog"
-      aria-modal="true"
       aria-label={`Preview "${title}" as wallpaper`}
-      className="fixed inset-0 z-100 flex flex-col justify-between overflow-hidden bg-black/85 backdrop-blur-xl p-4 sm:p-6 animate-[dialog-backdrop-in_200ms_cubic-bezier(0.16,1,0.3,1)] select-none"
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
+      className="fixed inset-0 z-100 m-0 h-full max-h-none w-full max-w-none [&:not([open])]:hidden open:flex flex-col justify-between overflow-hidden bg-black/85 backdrop-blur-xl p-4 sm:p-6 border-0 select-none outline-hidden overscroll-contain animate-[dialog-backdrop-in_200ms_cubic-bezier(0.16,1,0.3,1)]"
     >
       <header className="relative z-30 mx-auto flex w-full max-w-5xl items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="min-w-0">
@@ -112,7 +126,6 @@ export default function WallpaperPreviewDialog({
             />
           </div>
           <button
-            ref={closeBtnRef}
             type="button"
             onClick={onClose}
             aria-label="Close wallpaper preview (Esc)"
@@ -245,6 +258,6 @@ export default function WallpaperPreviewDialog({
             : "Original Frame"}
         </span>
       </footer>
-    </div>
+    </dialog>
   );
 }

@@ -10,17 +10,13 @@ export const MAX_PHOTO_IDS = 500;
 export const MAX_SERIES_PHOTO_IDS = 100;
 export const MAX_DIMENSION = 30_000;
 export function isValidUUID(id: unknown): boolean {
-  if (typeof id === "number") return Number.isInteger(id) && id > 0;
   return typeof id === "string" && UUID_PATTERN.test(id.trim());
 }
-export function assertValidUUID(id: string | number, label = "ID"): void {
-  if (typeof id === "number") {
-    if (!Number.isInteger(id) || id <= 0)
-      throw new Error(`Invalid ${label}: must be a positive integer.`);
-    return;
-  }
-  if (typeof id !== "string" || !UUID_PATTERN.test(id.trim()))
-    throw new Error(`Invalid ${label}.`);
+export function assertValidUUID(
+  id: unknown,
+  label = "ID",
+): asserts id is string {
+  if (!isValidUUID(id)) throw new Error(`Invalid ${label}.`);
 }
 export function assertBoundedString(
   value: string,

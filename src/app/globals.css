@@ -79,6 +79,16 @@
   ::backdrop {
     background-color: var(--color-paper);
   }
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+  dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  html:has(dialog[open]:modal) {
+    overflow: hidden;
+  }
 }
 .focus-media:focus-visible {
   outline: 2px solid #fff;
