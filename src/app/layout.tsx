@@ -7,6 +7,7 @@ import {
 import type { ReactNode } from "react";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
+
 const instrumentSerif = Instrument_Serif({
   weight: "400",
   subsets: ["latin"],

@@ -39,7 +39,7 @@ export default function SeriesUploadQueue({
       <div className="flex flex-col gap-3">
         {queuedFiles.map((item, idx) => (
           <div
-            key={`queued-${item.file.name}-${idx}`}
+            key={item.preview}
             className="group relative flex flex-col gap-3 rounded-xl border border-line/70 bg-soft/40 p-3.5 backdrop-blur-xs sm:flex-row sm:items-start"
           >
             <div className="flex items-center gap-3 sm:flex-col sm:items-center">

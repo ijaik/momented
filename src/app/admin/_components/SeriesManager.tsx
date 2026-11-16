@@ -40,7 +40,9 @@ import type {
   QueuedSlideFile,
   SeriesAdminItem,
 } from "./series/types";
-export type { SeriesAdminItem, PhotoOption, QueuedSlideFile };
+
+export type { PhotoOption, QueuedSlideFile, SeriesAdminItem };
+
 interface SeriesManagerProps {
   series: SeriesAdminItem[];
   allPhotos: PhotoOption[];

@@ -356,7 +356,7 @@ export default function SeriesCarousel({
             >
               {photos.map((photo, idx) => (
                 <button
-                  key={`indicator-${photo.id}-${idx}`}
+                  key={`indicator-${photo.id}`}
                   type="button"
                   onClick={() => goToSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
@@ -533,7 +533,7 @@ export default function SeriesCarousel({
                 >
                   {photos.map((photo, idx) => (
                     <button
-                      key={`max-ind-${photo.id}-${idx}`}
+                      key={`max-ind-${photo.id}`}
                       type="button"
                       onClick={() => goToSlide(idx)}
                       aria-label={`Go to slide ${idx + 1}`}

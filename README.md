@@ -72,17 +72,17 @@ Follow these steps to set up the project locally.
 
 Create a `.env.local` file in the root directory. You will need active accounts with Supabase and Cloudinary.
 
-| Variable                               | Description                                          |
-| :------------------------------------- | :--------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`             | Your Supabase database URL.                          |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anonymous key.                         |
-| `SUPABASE_SECRET_KEY`                  | Your Supabase service role key.                      |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`    | Your Cloudinary cloud name.                          |
-| `CLOUDINARY_API_KEY`                   | Your Cloudinary API key.                             |
-| `CLOUDINARY_API_SECRET`                | Your Cloudinary API secret.                          |
-| `ADMIN_PASSWORD_HASH`                  | Your bcrypt hashed password for the admin dashboard. |
-| `ADMIN_SESSION_SECRET`                 | A long, random, secure string for JWT encryption.    |
-| `UPSTASH_REDIS_REST_URL`               | (Optional) Upstash Redis URL for distributed rate limiting & login lockout. |
+| Variable                               | Description                                                                   |
+| :------------------------------------- | :---------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Your Supabase database URL.                                                   |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anonymous key.                                                  |
+| `SUPABASE_SECRET_KEY`                  | Your Supabase service role key.                                               |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`    | Your Cloudinary cloud name.                                                   |
+| `CLOUDINARY_API_KEY`                   | Your Cloudinary API key.                                                      |
+| `CLOUDINARY_API_SECRET`                | Your Cloudinary API secret.                                                   |
+| `ADMIN_PASSWORD_HASH`                  | Your bcrypt hashed password for the admin dashboard.                          |
+| `ADMIN_SESSION_SECRET`                 | A long, random, secure string for JWT encryption.                             |
+| `UPSTASH_REDIS_REST_URL`               | (Optional) Upstash Redis URL for distributed rate limiting & login lockout.   |
 | `UPSTASH_REDIS_REST_TOKEN`             | (Optional) Upstash Redis token for distributed rate limiting & login lockout. |
 
 > **💡 Tip:** Generate `ADMIN_PASSWORD_HASH` by hashing your desired admin password using bcrypt. Generate a long, random string for `ADMIN_SESSION_SECRET`.
