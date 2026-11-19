@@ -92,7 +92,7 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
   const title = (photoData?.title as string) || "Random Photograph";
   return (
     <div className="rounded-xl border border-line/70 bg-surface/30 p-5 sm:p-7">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between pb-6 border-b border-line/60">
+      <div className="flex flex-col gap-4 pb-6 border-b border-line/60">
         <div>
           <h3 className="font-serif text-xl sm:text-2xl text-ink font-normal">
             Live API Playground
@@ -102,7 +102,7 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
             your browser.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 w-full min-w-0">
           {/* Orientation Filter */}
           <label className="sr-only" htmlFor="orientation-select">
             Filter by orientation
@@ -111,11 +111,11 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
             id="orientation-select"
             value={orientation}
             onChange={(e) => setOrientation(e.target.value)}
-            className="h-9 cursor-pointer rounded-md border border-line bg-paper px-3 text-xs font-mono text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ink"
+            className="h-9 w-full sm:w-auto max-w-full cursor-pointer rounded-md border border-line bg-paper px-3 text-xs font-mono text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ink"
           >
             <option value="all">Orientation: All</option>
-            <option value="portrait">Orientation: Portrait (Phone)</option>
-            <option value="landscape">Orientation: Landscape (Desktop)</option>
+            <option value="portrait">Orientation: Portrait</option>
+            <option value="landscape">Orientation: Landscape</option>
           </select>
           {/* Mode / Parameter Filter */}
           <label className="sr-only" htmlFor="mode-select">
@@ -125,25 +125,19 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
             id="mode-select"
             value={mode}
             onChange={(e) => setMode(e.target.value as ApiMode)}
-            className="h-9 cursor-pointer rounded-md border border-line bg-paper px-3 text-xs font-mono text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ink"
+            className="h-9 w-full sm:w-auto max-w-full truncate cursor-pointer rounded-md border border-line bg-paper px-3 text-xs font-mono text-ink focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ink"
           >
             <option value="json">Response: JSON Metadata</option>
-            <option value="redirect">
-              Action: Redirect to Wallpaper (?redirect=true)
-            </option>
-            <option value="raw">
-              Action: Redirect to Raw Master (&amp;raw=true)
-            </option>
-            <option value="download">
-              Action: Download Attachment (?download=true)
-            </option>
+            <option value="redirect">Action: Redirect (?redirect=true)</option>
+            <option value="raw">Action: Raw Master (&amp;raw=true)</option>
+            <option value="download">Action: Download (?download=true)</option>
           </select>
           {/* Action Button */}
           <button
             type="button"
             onClick={handleAction}
             disabled={loading}
-            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-md bg-ink px-4 text-xs font-mono uppercase tracking-wider text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="inline-flex h-9 w-full sm:w-auto shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-ink px-4 text-xs font-mono uppercase tracking-wider text-paper transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {loading ? (
               <Loader2 size={13} className="animate-spin" aria-hidden="true" />
@@ -166,8 +160,8 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
       </div>
       {/* Target URL Preview */}
       <div className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-line/50 bg-paper/60 px-3.5 py-2.5 font-mono text-xs">
-        <div className="flex items-center gap-2 overflow-x-auto text-muted">
-          <span className="font-semibold text-ink uppercase text-[11px]">
+        <div className="flex items-center gap-2 overflow-x-auto text-muted min-w-0">
+          <span className="font-semibold text-ink uppercase text-[11px] shrink-0">
             GET
           </span>
           <span className="truncate text-ink/80">{fullUrl}</span>
@@ -270,7 +264,7 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
                 </button>
               </div>
             </div>
-            <pre className="max-h-80 overflow-y-auto rounded-lg border border-line/70 bg-paper/80 p-4 font-mono text-xs leading-relaxed text-ink/90">
+            <pre className="max-h-80 overflow-auto rounded-lg border border-line/70 bg-paper/80 p-4 font-mono text-xs leading-relaxed text-ink/90">
               <code>{JSON.stringify(result, null, 2)}</code>
             </pre>
           </div>
