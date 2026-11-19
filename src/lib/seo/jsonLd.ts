@@ -71,6 +71,28 @@ export function aboutPageJsonLd(): JsonLdObject {
     },
   };
 }
+export function developersPageJsonLd(): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    name: `Public Wallpaper API — ${siteConfig.name}`,
+    description:
+      "Public developer API documentation for fetching random high-resolution CC0 wallpapers and photograph metadata.",
+    url: `${siteConfig.url}/developers`,
+    author: {
+      "@type": "Person",
+      "@id": `${siteConfig.url}/#author`,
+      name: siteConfig.author.name,
+      url: siteConfig.author.github,
+    },
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${siteConfig.url}/#website`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+  };
+}
 export function faqPageJsonLd(
   faqs: { question: string; answer: string }[],
 ): JsonLdObject {

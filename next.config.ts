@@ -41,6 +41,15 @@ const nextConfig: NextConfig = {
     ].join("; ");
     return [
       {
+        source: "/fallback-photos/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "Content-Security-Policy", value: csp },

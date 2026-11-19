@@ -106,6 +106,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteConfig.url}/about`,
       lastModified: fallbackDate,
     },
+    {
+      url: `${siteConfig.url}/developers`,
+      lastModified: fallbackDate,
+    },
   ];
   const photoRoutes: MetadataRoute.Sitemap = photos.map((p) => {
     const optUrl = optimizeImageUrl(p.cloudinary_url);

@@ -93,6 +93,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link
+                  href="/developers"
+                  className="transition-colors hover:text-ink hover:underline underline-offset-4"
+                >
+                  Developers &amp; API
+                </Link>
+              </li>
+              <li>
                 <a
                   href="https://creativecommons.org/publicdomain/zero/1.0/"
                   target="_blank"

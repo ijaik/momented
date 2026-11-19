@@ -3,22 +3,29 @@ import { cookies, headers } from "next/headers";
 
 const IP_PATTERN =
   /^(?:(?:\d{1,3}\.){3}\d{1,3}|(?:[0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|::1)$/;
+export function extractClientIp(headerStore: {
+  get(name: string): string | null;
+}): string {
+  // Platform-verified reverse proxy headers that cannot be spoofed by clients
+  const trustedIp =
+    headerStore.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
+    headerStore.get("cf-connecting-ip")?.trim();
+  if (trustedIp && trustedIp !== "unknown" && IP_PATTERN.test(trustedIp))
+    return trustedIp;
+  // In local development, allow real-ip or forwarded-for fallbacks
+  if (process.env.NODE_ENV !== "production") {
+    const devIp =
+      headerStore.get("x-real-ip")?.trim() ||
+      headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
+    if (devIp && devIp !== "unknown" && IP_PATTERN.test(devIp)) return devIp;
+  }
+  return "127.0.0.1";
+}
 export async function getClientIp(): Promise<string> {
   try {
     const headerStore = await headers();
-    // Platform-verified reverse proxy headers that cannot be spoofed by clients
-    const trustedIp =
-      headerStore.get("x-vercel-forwarded-for")?.split(",")[0]?.trim() ||
-      headerStore.get("cf-connecting-ip")?.trim();
-    if (trustedIp && trustedIp !== "unknown" && IP_PATTERN.test(trustedIp))
-      return trustedIp;
-    // In local development, allow real-ip or forwarded-for fallbacks
-    if (process.env.NODE_ENV !== "production") {
-      const devIp =
-        headerStore.get("x-real-ip")?.trim() ||
-        headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
-      if (devIp && devIp !== "unknown" && IP_PATTERN.test(devIp)) return devIp;
-    }
+    const trustedIp = extractClientIp(headerStore);
+    if (trustedIp !== "127.0.0.1") return trustedIp;
   } catch {}
   try {
     const cookieStore = await cookies();

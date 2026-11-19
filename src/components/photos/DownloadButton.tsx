@@ -8,7 +8,6 @@ import {
   useTransition,
 } from "react";
 import { getDownloadUrlAction } from "@/actions/download";
-import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 export interface DownloadButtonProps {
   photoId: string | number;
   cloudinaryUrl: string;
@@ -73,15 +72,7 @@ export default function DownloadButton({
         triggerDownload(res.downloadUrl, targetFileName);
         transitionToTemporaryStatus("success");
       } catch {
-        try {
-          const fallbackUrl = buildCloudinaryUrl(cloudinaryUrl, [
-            "fl_attachment",
-          ]);
-          triggerDownload(fallbackUrl, targetFileName);
-          transitionToTemporaryStatus("success");
-        } catch {
-          transitionToTemporaryStatus("error");
-        }
+        transitionToTemporaryStatus("error");
       }
     });
   };

@@ -6,6 +6,8 @@ let redis: Redis | null = null;
 let hasLoggedUpstashWarning = false;
 export const STAT_MAX_REQUESTS = 120;
 export const STAT_WINDOW_MS = 60 * 60 * 1000;
+export const API_MAX_REQUESTS = 60;
+export const API_WINDOW_MS = 60 * 60 * 1000;
 const LOGIN_MAX_FAILURES = 5;
 export const GLOBAL_LOGIN_MAX_FAILURES = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -41,9 +43,11 @@ function getRedis(): Redis | null {
   return redis;
 }
 let _statLimiter: Ratelimit | null = null;
+let _apiLimiter: Ratelimit | null = null;
 let _loginLimiter: Ratelimit | null = null;
 let _globalLoginLimiter: Ratelimit | null = null;
 const statEphemeralCache = new Map<string, number>();
+const apiEphemeralCache = new Map<string, number>();
 const loginEphemeralCache = new Map<string, number>();
 const globalLoginEphemeralCache = new Map<string, number>();
 function getStatLimiter(r: Redis): Ratelimit {
@@ -56,6 +60,17 @@ function getStatLimiter(r: Redis): Ratelimit {
     });
   }
   return _statLimiter;
+}
+function getApiLimiter(r: Redis): Ratelimit {
+  if (!_apiLimiter) {
+    _apiLimiter = new Ratelimit({
+      redis: r,
+      limiter: Ratelimit.slidingWindow(API_MAX_REQUESTS, "1 h"),
+      prefix: "rl:api",
+      ephemeralCache: apiEphemeralCache,
+    });
+  }
+  return _apiLimiter;
 }
 function getLoginLimiter(r: Redis): Ratelimit {
   if (!_loginLimiter) {
@@ -81,6 +96,7 @@ function getGlobalLoginLimiter(r: Redis): Ratelimit {
 }
 const MAX_MEM_CACHE_SIZE = 1_000;
 const memStatStore = new Map<string, { count: number; resetAt: number }>();
+const memApiStore = new Map<string, { count: number; resetAt: number }>();
 type LoginFailureEntry =
   | { status: "counting"; failures: number; resetAt: number }
   | { status: "locked"; resetAt: number };
@@ -180,6 +196,79 @@ export async function checkRateLimit(
   }
   entry.count += 1;
   return { limited: false, retryAfterSeconds: 0 };
+}
+export interface ApiRateLimitResult {
+  limited: boolean;
+  limit: number;
+  remaining: number;
+  reset: number;
+  retryAfterSeconds: number;
+}
+// shortcut: IP-based sliding window rate limiter without API keys; upgrade to signed user tokens if tenant isolation is required
+export async function checkApiRateLimit(
+  ip: string,
+): Promise<ApiRateLimitResult> {
+  const key = `api:random:${ip}`;
+  const r = getRedis();
+  if (r) {
+    try {
+      const { success, limit, remaining, reset } =
+        await getApiLimiter(r).limit(key);
+      const retryAfterSeconds = success
+        ? 0
+        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
+      return {
+        limited: !success,
+        limit,
+        remaining,
+        reset,
+        retryAfterSeconds,
+      };
+    } catch (err) {
+      console.warn(
+        "[RateLimit] Upstash API limiter error, using fallback:",
+        err,
+      );
+    }
+  }
+  const now = Date.now();
+  const entry = memApiStore.get(key);
+  if (!entry || now > entry.resetAt) {
+    pruneExpiredMapEntries(memApiStore, now);
+    memApiStore.set(key, { count: 1, resetAt: now + API_WINDOW_MS });
+    return {
+      limited: false,
+      limit: API_MAX_REQUESTS,
+      remaining: API_MAX_REQUESTS - 1,
+      reset: now + API_WINDOW_MS,
+      retryAfterSeconds: 0,
+    };
+  }
+  if (entry.count >= API_MAX_REQUESTS) {
+    const retryAfterSeconds = Math.max(
+      0,
+      Math.ceil((entry.resetAt - now) / 1000),
+    );
+    return {
+      limited: true,
+      limit: API_MAX_REQUESTS,
+      remaining: 0,
+      reset: entry.resetAt,
+      retryAfterSeconds,
+    };
+  }
+  entry.count += 1;
+  return {
+    limited: false,
+    limit: API_MAX_REQUESTS,
+    remaining: Math.max(0, API_MAX_REQUESTS - entry.count),
+    reset: entry.resetAt,
+    retryAfterSeconds: 0,
+  };
+}
+export function clearApiRateLimitForTest(ip?: string): void {
+  if (ip) memApiStore.delete(`api:random:${ip}`);
+  else memApiStore.clear();
 }
 export async function getLoginLockout(key: string): Promise<number> {
   const r = getRedis();

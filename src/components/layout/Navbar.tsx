@@ -10,6 +10,7 @@ const links = [
   { name: "Collections", href: "/collections" },
   { name: "Series", href: "/series" },
   { name: "About", href: "/about" },
+  { name: "Developers", href: "/developers" },
 ];
 const isActivePath = (pathname: string, href: string) =>
   href === "/"

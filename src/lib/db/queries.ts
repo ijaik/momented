@@ -73,6 +73,38 @@ export async function getSitemapPhotos(): Promise<
     cloudinary_url?: string | null;
   }[];
 }
+export type ApiPhoto = Pick<
+  Photo,
+  | "id"
+  | "title"
+  | "description"
+  | "cloudinary_url"
+  | "cloudinary_public_id"
+  | "width"
+  | "height"
+  | "camera_make"
+  | "camera_model"
+  | "focal_length"
+  | "aperture"
+  | "shutter_speed"
+  | "iso"
+  | "artist"
+  | "taken_at"
+  | "created_at"
+>;
+export async function getPublicApiPhotosPool(): Promise<ApiPhoto[]> {
+  "use cache";
+  cacheTag("api-photos", "photos");
+  cacheLife("weeks");
+  const { data, error } = await supabase
+    .from("photos")
+    .select(
+      "id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at",
+    )
+    .not("cloudinary_url", "is", null);
+  throwIfUnexpectedDbError(error, "getPublicApiPhotosPool");
+  return (data ?? []) as ApiPhoto[];
+}
 export async function getHomePhotos() {
   "use cache";
   cacheTag("photos");
