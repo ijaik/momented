@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ToastProvider from "@/components/ui/ToastProvider";
+import { verifyAdminSession } from "@/lib/auth/auth";
 import {
   getAdminCalendarCollections,
   getAdminCollections,
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 };
 export const instant = false;
 export default async function AdminDashboard() {
+  await verifyAdminSession();
   const [photos, collections, rules, calendars, series] = await Promise.all([
     getAdminPhotos(),
     getAdminCollections(),

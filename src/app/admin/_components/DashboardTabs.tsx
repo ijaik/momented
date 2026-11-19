@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { Activity, type KeyboardEvent, useState } from "react";
-import { logoutAction } from "@/actions/auth";
+import { logoutAction, logoutAllAction } from "@/actions/auth";
 import Button from "@/components/ui/Button";
 import type { CalendarItem } from "./CalendarManager";
 import type { BaseItem } from "./ItemManager";
@@ -76,11 +76,24 @@ export default function DashboardTabs({
             Curatorial editorial workspace
           </p>
         </div>
-        <form action={logoutAction}>
-          <Button variant="secondary" size="sm" type="submit">
-            Log out
-          </Button>
-        </form>
+        <div className="flex items-center gap-2">
+          <form action={logoutAction}>
+            <Button variant="secondary" size="sm" type="submit">
+              Log out
+            </Button>
+          </form>
+          <form action={logoutAllAction}>
+            <Button
+              variant="ghost"
+              size="sm"
+              type="submit"
+              className="text-xs text-muted hover:text-ink cursor-pointer"
+              title="Invalidates all sessions across all devices"
+            >
+              Log out all devices
+            </Button>
+          </form>
+        </div>
       </header>
       <div
         role="tablist"

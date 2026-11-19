@@ -21,6 +21,8 @@ import {
   FieldLabel,
   FormInput,
   FormTextarea,
+  PillCheckboxGroup,
+  type PillOption,
   SubmitButton,
 } from "./AdminForms";
 export interface PhotoItem {
@@ -34,14 +36,10 @@ export interface PhotoItem {
   collections?: { id: string | number; title: string }[];
   rules?: { id: string | number; title: string }[];
 }
-interface OptionItem {
-  id: string | number;
-  title: string;
-}
 interface PhotoManagerProps {
   photos: PhotoItem[];
-  collections: OptionItem[];
-  rules: OptionItem[];
+  collections: PillOption[];
+  rules: PillOption[];
 }
 type UploadState =
   | { phase: "idle" }
@@ -208,41 +206,11 @@ export default function PhotoManager({
           </div>
           <div>
             <FieldLabel as="span">Collections</FieldLabel>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {collections.map((c) => (
-                <label
-                  key={c.id}
-                  className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    name="collection_ids"
-                    value={c.id}
-                    className="sr-only"
-                  />
-                  <span>{c.title}</span>
-                </label>
-              ))}
-            </div>
+            <PillCheckboxGroup name="collection_ids" options={collections} />
           </div>
           <div>
             <FieldLabel as="span">Rules</FieldLabel>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {rules?.map((r) => (
-                <label
-                  key={r.id}
-                  className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    name="rule_ids"
-                    value={r.id}
-                    className="sr-only"
-                  />
-                  <span>{r.title}</span>
-                </label>
-              ))}
-            </div>
+            <PillCheckboxGroup name="rule_ids" options={rules} />
           </div>
           <div>
             <FieldLabel htmlFor="photo-caption">Caption</FieldLabel>
@@ -330,53 +298,19 @@ export default function PhotoManager({
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <FieldLabel as="span">Collections</FieldLabel>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {collections.map((c) => {
-                          const isChecked = photo.collections?.some(
-                            (pc) => String(pc.id) === String(c.id),
-                          );
-                          return (
-                            <label
-                              key={c.id}
-                              className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                name="collection_ids"
-                                value={c.id}
-                                defaultChecked={isChecked}
-                                className="sr-only"
-                              />
-                              <span>{c.title}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                      <PillCheckboxGroup
+                        name="collection_ids"
+                        options={collections}
+                        selectedIds={photo.collections?.map((c) => c.id)}
+                      />
                     </div>
                     <div>
                       <FieldLabel as="span">Rules</FieldLabel>
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {rules?.map((r) => {
-                          const isChecked = photo.rules?.some(
-                            (pr) => String(pr.id) === String(r.id),
-                          );
-                          return (
-                            <label
-                              key={r.id}
-                              className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                name="rule_ids"
-                                value={r.id}
-                                defaultChecked={isChecked}
-                                className="sr-only"
-                              />
-                              <span>{r.title}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
+                      <PillCheckboxGroup
+                        name="rule_ids"
+                        options={rules}
+                        selectedIds={photo.rules?.map((r) => r.id)}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

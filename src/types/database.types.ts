@@ -8,6 +8,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_sessions: {
+        Row: {
+          id: string;
+          created_at: string;
+          expires_at: string;
+          ip_address: string | null;
+          user_agent: string | null;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          expires_at: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          expires_at?: string;
+          ip_address?: string | null;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       photos: {
         Row: {
           id: string;

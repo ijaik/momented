@@ -27,8 +27,10 @@ async function createCollection(
   formData: FormData,
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
-  const { title, description, cover_photo_id, photoIds } =
-    parseEntityFormData(formData);
+  const { title, description, cover_photo_id, photoIds } = parseEntityFormData(
+    formData,
+    { requireTitle: true },
+  );
   const id = await createCollectionInDb(kind, {
     title,
     description,
@@ -45,8 +47,10 @@ async function editCollection(
 ): Promise<{ success: boolean }> {
   await verifyAdminSession();
   assertValidUUID(id, "Item ID");
-  const { title, description, cover_photo_id, photoIds } =
-    parseEntityFormData(formData);
+  const { title, description, cover_photo_id, photoIds } = parseEntityFormData(
+    formData,
+    { requireTitle: true },
+  );
   await updateCollectionInDb(kind, id, {
     title,
     description,

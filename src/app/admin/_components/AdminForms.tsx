@@ -2,7 +2,6 @@ import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
-  SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
 
@@ -70,28 +69,43 @@ export function FormTextarea({
     />
   );
 }
-interface FormSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  className?: string;
-  children?: ReactNode;
+export interface PillOption {
+  id: string | number;
+  title: string;
 }
-export function FormSelect({
-  id,
+interface PillCheckboxGroupProps {
+  name: string;
+  options: PillOption[];
+  selectedIds?: (string | number)[];
+}
+export function PillCheckboxGroup({
   name,
-  children,
-  className = "",
-  ...props
-}: FormSelectProps) {
-  const resolvedId = id || name;
-  const resolvedName = name || id;
+  options,
+  selectedIds,
+}: PillCheckboxGroupProps) {
   return (
-    <select
-      id={resolvedId}
-      name={resolvedName}
-      className={`${baseInputStyle} ${className}`}
-      {...props}
-    >
-      {children}
-    </select>
+    <div className="flex flex-wrap gap-1.5 pt-1">
+      {options.map((opt) => {
+        const isChecked = selectedIds
+          ? selectedIds.some((id) => String(id) === String(opt.id))
+          : false;
+        return (
+          <label
+            key={opt.id}
+            className="group inline-flex items-center gap-1.5 cursor-pointer rounded-full border border-line px-3 py-1 text-xs font-medium text-muted hover:bg-soft hover:text-ink has-checked:bg-solid has-checked:text-on-solid has-checked:border-solid transition-colors"
+          >
+            <input
+              type="checkbox"
+              name={name}
+              value={opt.id}
+              defaultChecked={isChecked}
+              className="sr-only"
+            />
+            <span>{opt.title}</span>
+          </label>
+        );
+      })}
+    </div>
   );
 }
 interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

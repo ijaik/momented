@@ -1,11 +1,15 @@
 "use server";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
+  createAdminSession,
+  invalidateAdminSession,
+  invalidateAllAdminSessions,
+  parseAdminToken,
   SESSION_COOKIE,
   SESSION_COOKIE_MAX_AGE,
-  signAdminToken,
+  SESSION_COOKIE_OPTIONS,
 } from "@/lib/auth/auth";
 import {
   clearGlobalLoginFailures,
@@ -70,25 +74,30 @@ export async function loginAction(
     clearLoginFailures(lockoutKey),
     clearGlobalLoginFailures(),
   ]);
-  const token = await signAdminToken();
+  const userAgent = (await headers()).get("user-agent") || undefined;
+  const token = await createAdminSession({ ip, userAgent });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, {
+    ...SESSION_COOKIE_OPTIONS,
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
     maxAge: SESSION_COOKIE_MAX_AGE,
-    path: "/",
-    sameSite: "strict",
     priority: "high",
   });
   redirect("/admin");
 }
 export async function logoutAction(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete({
-    name: SESSION_COOKIE,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
-  redirect("/");
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (token) {
+    const parsed = await parseAdminToken(token);
+    if (parsed?.sessionId) await invalidateAdminSession(parsed.sessionId);
+  }
+  cookieStore.delete(SESSION_COOKIE_OPTIONS);
+  redirect("/admin/login");
+}
+export async function logoutAllAction(): Promise<void> {
+  await invalidateAllAdminSessions();
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_OPTIONS);
+  redirect("/admin/login");
 }
