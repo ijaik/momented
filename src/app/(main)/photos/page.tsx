@@ -4,7 +4,7 @@ import JsonLd from "@/components/seo/JsonLd";
 import EmptyState from "@/components/ui/EmptyState";
 import PageHeader from "@/components/ui/PageHeader";
 import { siteConfig } from "@/config/site";
-import { getHomePhotos } from "@/lib/db/queries";
+import { getAllPhotos } from "@/lib/db/queries";
 import { breadcrumbJsonLd, homePageGalleryJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
@@ -14,7 +14,7 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/photos",
 });
 export default async function PhotosPage() {
-  const { data: photos, error } = await getHomePhotos();
+  const { data: photos, error } = await getAllPhotos();
   if (error)
     return (
       <EmptyState description="The photographs failed to load. Please try again in a moment." />

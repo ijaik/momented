@@ -12,13 +12,12 @@ export function extractClientIp(headerStore: {
     headerStore.get("cf-connecting-ip")?.trim();
   if (trustedIp && trustedIp !== "unknown" && IP_PATTERN.test(trustedIp))
     return trustedIp;
-  // In local development, allow real-ip or forwarded-for fallbacks
-  if (process.env.NODE_ENV !== "production") {
-    const devIp =
-      headerStore.get("x-real-ip")?.trim() ||
-      headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
-    if (devIp && devIp !== "unknown" && IP_PATTERN.test(devIp)) return devIp;
-  }
+  // Standard reverse proxy headers (Nginx, Caddy, Traefik, Docker, Railway, etc.)
+  const standardIp =
+    headerStore.get("x-real-ip")?.trim() ||
+    headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (standardIp && standardIp !== "unknown" && IP_PATTERN.test(standardIp))
+    return standardIp;
   return "127.0.0.1";
 }
 export async function getClientIp(): Promise<string> {

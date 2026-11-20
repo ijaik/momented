@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  isValidAdminToken,
+  parseAdminToken,
   SESSION_COOKIE,
   SESSION_COOKIE_OPTIONS,
 } from "@/lib/auth/auth";
@@ -11,7 +11,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(cleanUrl);
   }
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const isValid = await isValidAdminToken(token);
+  const parsed = await parseAdminToken(token);
+  const isValid = Boolean(parsed?.sessionId);
   if (path === "/admin/login") {
     if (isValid) return NextResponse.redirect(new URL("/admin", request.url));
     const response = NextResponse.next();

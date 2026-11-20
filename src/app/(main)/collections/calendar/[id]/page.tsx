@@ -5,12 +5,11 @@ import CalendarMonthView, {
   type YearGroup,
 } from "@/components/collections/CalendarMonthView";
 import JsonLd from "@/components/seo/JsonLd";
-import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
-  getCalendarCollectionsList,
   getCalendarMonthById,
   getPhotosForCalendarMonth,
 } from "@/lib/db/queries";
@@ -18,17 +17,8 @@ import { breadcrumbJsonLd, collectionPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { getPhotoDate, isPhotoUndated } from "@/lib/utils/dateUtils";
 import type { PageProps, Photo } from "@/types";
-export async function generateStaticParams(): Promise<{ id: string }[]> {
-  const { data: calendars } = await getCalendarCollectionsList();
-  const activeIds = (calendars ?? [])
-    .filter(
-      (c) =>
-        Array.isArray(c.photos) &&
-        c.photos.some((p) => Boolean(p?.id && p?.cloudinary_url)),
-    )
-    .map((c) => ({ id: String(c.id) }));
-  if (activeIds.length === 0) return [{ id: "1" }];
-  return activeIds;
+export function generateStaticParams(): { id: string }[] {
+  return Array.from({ length: 12 }, (_, i) => ({ id: String(i + 1) }));
 }
 export async function generateMetadata({
   params,
@@ -111,7 +101,7 @@ async function CalendarMonthContent({
           ]),
         ]}
       />
-      <DetailLayout
+      <PageHeader
         badge="Photographs by Month"
         backLink={{ href: "/collections/calendar", label: "Calendar" }}
         title={collection.title}
@@ -121,20 +111,19 @@ async function CalendarMonthContent({
             ? undefined
             : `${monthPhotos.length} ${monthPhotos.length === 1 ? "photograph" : "photographs"}`
         }
-      >
-        {structuredYears.length > 0 || undatedPhotos.length > 0 ? (
-          <CalendarMonthView
-            collectionTitle={collection.title}
-            structuredYears={structuredYears}
-            undatedPhotos={undatedPhotos}
-          />
-        ) : (
-          <EmptyState
-            description={`No photographs were taken in ${collection.title.toLowerCase()} yet.`}
-            className="pt-6"
-          />
-        )}
-      </DetailLayout>
+      />
+      {structuredYears.length > 0 || undatedPhotos.length > 0 ? (
+        <CalendarMonthView
+          collectionTitle={collection.title}
+          structuredYears={structuredYears}
+          undatedPhotos={undatedPhotos}
+        />
+      ) : (
+        <EmptyState
+          description={`No photographs were taken in ${collection.title.toLowerCase()} yet.`}
+          className="pt-6"
+        />
+      )}
     </>
   );
 }

@@ -1,9 +1,9 @@
 import type {
-  ButtonHTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
   TextareaHTMLAttributes,
 } from "react";
+import Button, { type ButtonProps } from "@/components/ui/Button";
 
 interface FieldLabelProps {
   htmlFor?: string;
@@ -108,33 +108,18 @@ export function PillCheckboxGroup({
     </div>
   );
 }
-interface SubmitButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  isLoading?: boolean;
-  loadingText?: ReactNode;
-  text: ReactNode;
-  size?: "sm" | "md";
-  className?: string;
-}
 export function SubmitButton({
-  isLoading,
-  loadingText,
   text,
+  children,
   size = "sm",
-  className = "",
   ...props
-}: SubmitButtonProps) {
-  const sizes = {
-    sm: "px-4 py-2 text-xs uppercase tracking-wider gap-1.5 rounded-full",
-    md: "px-6 py-2.5 text-xs uppercase tracking-wider gap-2 rounded-full",
-  };
+}: Omit<ButtonProps, "variant" | "children"> & {
+  text?: ReactNode;
+  children?: ReactNode;
+}) {
   return (
-    <button
-      {...props}
-      type="submit"
-      disabled={isLoading || props.disabled}
-      className={`inline-flex items-center justify-center font-semibold bg-solid text-on-solid shadow-xs transition-all duration-100 ease-out hover:opacity-90 active:scale-98 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 ${sizes[size]} ${className}`}
-    >
-      {isLoading ? loadingText : text}
-    </button>
+    <Button type="submit" variant="primary" size={size} {...props}>
+      {text || children}
+    </Button>
   );
 }

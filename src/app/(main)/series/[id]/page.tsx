@@ -4,8 +4,8 @@ import { Suspense } from "react";
 import JsonLd from "@/components/seo/JsonLd";
 import SeriesCarousel from "@/components/series/SeriesCarousel";
 import CoverCard from "@/components/ui/CoverCard";
-import DetailLayout from "@/components/ui/DetailLayout";
 import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import { getAllIds, getSeriesById } from "@/lib/db/queries";
@@ -87,52 +87,51 @@ async function SeriesDetailContent({
           ]),
         ]}
       />
-      <DetailLayout
+      <PageHeader
         badge="Series"
         backLink={{ href: "/series", label: "All Series" }}
         title={series.title}
         description={series.description}
         meta={`${sortedPhotos.length} ${sortedPhotos.length === 1 ? "photograph" : "photographs"} • ${displayDate}`}
-      >
-        {sortedPhotos.length > 0 ? (
-          <>
-            <SeriesCarousel
-              seriesTitle={series.title}
-              seriesDescription={series.description}
-              photos={sortedPhotos}
-              createdAt={displayDate}
-            />
-            <div className="mt-16 border-t border-line/70 pt-12">
-              <h2 className="font-serif text-2xl tracking-tight text-ink sm:text-3xl">
-                Frames in this Series
-              </h2>
-              <p className="mt-1.5 text-xs sm:text-sm text-muted">
-                Individual photographs captured in this sequence.
-              </p>
-              <div className="mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 md:grid-cols-3">
-                {sortedPhotos.map((photo, idx) => (
-                  <CoverCard
-                    key={photo.id}
-                    item={{
-                      id: photo.id,
-                      title:
-                        photo.title ||
-                        `Frame ${String(idx + 1).padStart(2, "0")}`,
-                      description: photo.description,
-                      cloudinary_url: photo.cloudinary_url,
-                    }}
-                    href={`/photo/${photo.id}`}
-                    size="compact"
-                    meta={`0${idx + 1}`}
-                  />
-                ))}
-              </div>
+      />
+      {sortedPhotos.length > 0 ? (
+        <>
+          <SeriesCarousel
+            seriesTitle={series.title}
+            seriesDescription={series.description}
+            photos={sortedPhotos}
+            createdAt={displayDate}
+          />
+          <div className="mt-16 border-t border-line/70 pt-12">
+            <h2 className="font-serif text-2xl tracking-tight text-ink sm:text-3xl">
+              Frames in this Series
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted">
+              Individual photographs captured in this sequence.
+            </p>
+            <div className="mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 md:grid-cols-3">
+              {sortedPhotos.map((photo, idx) => (
+                <CoverCard
+                  key={photo.id}
+                  item={{
+                    id: photo.id,
+                    title:
+                      photo.title ||
+                      `Frame ${String(idx + 1).padStart(2, "0")}`,
+                    description: photo.description,
+                    cloudinary_url: photo.cloudinary_url,
+                  }}
+                  href={`/photo/${photo.id}`}
+                  size="compact"
+                  meta={`0${idx + 1}`}
+                />
+              ))}
             </div>
-          </>
-        ) : (
-          <EmptyState description="No photographs added to this series yet." />
-        )}
-      </DetailLayout>
+          </div>
+        </>
+      ) : (
+        <EmptyState description="No photographs added to this series yet." />
+      )}
     </>
   );
 }

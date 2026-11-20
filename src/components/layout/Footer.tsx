@@ -1,6 +1,6 @@
 import { ArrowUpRight, Heart } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import BrandLogo from "@/components/ui/BrandLogo";
 import { siteConfig } from "@/config/site";
 export default function Footer() {
   return (
@@ -9,24 +9,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-6 flex flex-col justify-between">
             <div>
-              <Link
-                href="/"
-                className="group inline-flex items-center gap-2.5 transition-opacity hover:opacity-85"
-              >
-                <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 group-hover:scale-102">
-                  <Image
-                    src="/icons/icon.svg"
-                    alt="Momented logo"
-                    width={28}
-                    height={28}
-                    unoptimized
-                    className="h-full w-full object-contain"
-                  />
-                </span>
-                <span className="font-serif text-2xl tracking-tight text-ink">
-                  {siteConfig.name}
-                </span>
-              </Link>
+              <BrandLogo />
               <p className="mt-3 max-w-sm text-xs sm:text-sm leading-relaxed text-muted">
                 {siteConfig.description}
               </p>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
-import DetailLayout from "@/components/ui/DetailLayout";
+import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
@@ -81,7 +81,7 @@ async function SingleCollectionContent({
           ]),
         ]}
       />
-      <DetailLayout
+      <PageHeader
         badge="Thematic Collections"
         backLink={{ href: "/collections", label: "All Collections" }}
         title={collection.title}
@@ -91,12 +91,11 @@ async function SingleCollectionContent({
             ? undefined
             : `${photos.length} ${photos.length === 1 ? "photograph" : "photographs"}`
         }
-      >
-        <PhotoGrid
-          photos={photos}
-          emptyMessage="No photographs have been added to this collection yet."
-        />
-      </DetailLayout>
+      />
+      <PhotoGrid
+        photos={photos}
+        emptyMessage="No photographs have been added to this collection yet."
+      />
     </>
   );
 }

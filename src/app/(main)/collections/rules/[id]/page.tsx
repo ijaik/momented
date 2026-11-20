@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import PhotoGrid from "@/components/photos/PhotoGrid";
 import JsonLd from "@/components/seo/JsonLd";
-import DetailLayout from "@/components/ui/DetailLayout";
+import PageHeader from "@/components/ui/PageHeader";
 import Skeleton from "@/components/ui/Skeleton";
 import { siteConfig } from "@/config/site";
 import {
@@ -82,7 +82,7 @@ async function SingleRuleContent({
           ]),
         ]}
       />
-      <DetailLayout
+      <PageHeader
         badge="Composition Rule"
         backLink={{ href: "/collections/rules", label: "All Rules" }}
         title={collection.title}
@@ -92,12 +92,11 @@ async function SingleRuleContent({
             ? undefined
             : `${photos.length} ${photos.length === 1 ? "photograph" : "photographs"}`
         }
-      >
-        <PhotoGrid
-          photos={photos}
-          emptyMessage="No photographs by this rule yet."
-        />
-      </DetailLayout>
+      />
+      <PhotoGrid
+        photos={photos}
+        emptyMessage="No photographs by this rule yet."
+      />
     </>
   );
 }

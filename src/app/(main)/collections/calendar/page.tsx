@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import CollectionsTabs from "@/components/collections/CollectionsTabs";
-import JsonLd from "@/components/seo/JsonLd";
-import CoverCard from "@/components/ui/CoverCard";
-import EmptyState from "@/components/ui/EmptyState";
-import PageHeader from "@/components/ui/PageHeader";
+import CollectionHubView from "@/components/collections/CollectionHubView";
 import { siteConfig } from "@/config/site";
 import { getCalendarCollectionsList } from "@/lib/db/queries";
-import { breadcrumbJsonLd, hubPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = buildPageMetadata({
   title: "Calendar Collections",
@@ -18,56 +13,23 @@ export default async function CalendarCollectionsPage() {
   const displayCollections = (calendarCollections ?? []).filter(
     (col) => col.photos && col.photos.length > 0,
   );
-  const count = displayCollections.length;
   return (
-    <>
-      <JsonLd
-        data={[
-          hubPageJsonLd({
-            title: "Calendar Collections",
-            description: "Photographs grouped by the month they were taken.",
-            url: `${siteConfig.url}/collections/calendar`,
-            items: displayCollections.map((col) => ({
-              name: col.title,
-              description: col.description,
-              url: `${siteConfig.url}/collections/calendar/${col.id}`,
-              image: col.photos?.[0]?.cloudinary_url,
-            })),
-          }),
-          breadcrumbJsonLd([
-            { name: "Collections", url: `${siteConfig.url}/collections` },
-            {
-              name: "Calendar Collections",
-              url: `${siteConfig.url}/collections/calendar`,
-            },
-          ]),
-        ]}
-      />
-      <PageHeader
-        badge="02 / Calendar"
-        title="Photographs by Month"
-        description="Photographs organized by the month they were taken."
-        meta={
-          count > 0
-            ? `${count} active ${count === 1 ? "month" : "months"}`
-            : undefined
-        }
-      />
-      <CollectionsTabs activeTab="calendar" />
-      {count > 0 ? (
-        <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2">
-          {displayCollections.map((col, index) => (
-            <CoverCard
-              key={col.id}
-              item={col}
-              href={`/collections/calendar/${col.id}`}
-              preload={index < 2}
-            />
-          ))}
-        </div>
-      ) : (
-        <EmptyState description="No calendar collections have been added yet." />
-      )}
-    </>
+    <CollectionHubView
+      activeTab="calendar"
+      badge="02 / Calendar"
+      title="Photographs by Month"
+      description="Photographs organized by the month they were taken."
+      countLabel={{ singular: "active month", plural: "active months" }}
+      emptyMessage="No calendar collections have been added yet."
+      baseHref="/collections/calendar"
+      items={displayCollections}
+      breadcrumbs={[
+        { name: "Collections", url: `${siteConfig.url}/collections` },
+        {
+          name: "Calendar Collections",
+          url: `${siteConfig.url}/collections/calendar`,
+        },
+      ]}
+    />
   );
 }

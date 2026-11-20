@@ -23,28 +23,21 @@ export function revalidatePhotos(id?: string | number) {
 }
 export function revalidateCollections(id?: string) {
   updateTag(CACHE_TAGS.collections);
-  updateTag(CACHE_TAGS.rules);
   updateTag(CACHE_TAGS.collectionsIds);
-  updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`collection-${id}`);
 }
 export function revalidateRules(id?: string) {
-  updateTag(CACHE_TAGS.collections);
   updateTag(CACHE_TAGS.rules);
   updateTag(CACHE_TAGS.ruleCollectionsIds);
-  updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`rule-${id}`);
 }
 export function revalidateCalendar(id?: string | number) {
-  updateTag(CACHE_TAGS.collections);
   updateTag(CACHE_TAGS.calendar);
   updateTag(CACHE_TAGS.calendarCollectionsIds);
-  updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`calendar-${id}`);
 }
 export function revalidateSeries(id?: string) {
   updateTag(CACHE_TAGS.series);
   updateTag(CACHE_TAGS.seriesIds);
-  updateTag(CACHE_TAGS.photos);
   if (id) updateTag(`series-${id}`);
 }

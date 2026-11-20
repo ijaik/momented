@@ -1,9 +1,9 @@
 "use client";
 import { ArrowRight, Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import BrandLogo from "@/components/ui/BrandLogo";
 
 const links = [
   { name: "Photographs", href: "/photos" },
@@ -79,35 +79,10 @@ export default function Navbar() {
           aria-label="Main"
           className="mx-auto flex h-16 max-w-360 items-center justify-between px-5 sm:px-8 lg:px-12"
         >
-          <Link
-            href="/"
+          <BrandLogo
+            isHeroTransparent={isHeroTransparent}
             onClick={() => setOpenedAt(null)}
-            className="group flex items-center gap-2.5 cursor-pointer transition-opacity duration-200 ease-out hover:opacity-80"
-          >
-            <span
-              className={`relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-md transition-transform duration-200 ease-out group-hover:scale-102 ${
-                isHeroTransparent ? "bg-white dark:bg-black" : ""
-              }`}
-            >
-              <Image
-                src="/icons/icon.svg"
-                alt="Momented logo"
-                aria-hidden="true"
-                width={28}
-                height={28}
-                loading="eager"
-                unoptimized
-                className="h-full w-full object-contain"
-              />
-            </span>
-            <span
-              className={`font-serif text-[1.375rem] leading-none tracking-tight transition-colors duration-200 ${
-                isHeroTransparent ? "text-white" : "text-ink"
-              }`}
-            >
-              Momented
-            </span>
-          </Link>
+          />
           <ul className="hidden items-center gap-7 md:flex">
             {links.map(({ name, href }) => {
               const active = isActivePath(pathname, href);

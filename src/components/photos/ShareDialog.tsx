@@ -36,13 +36,9 @@ export default function ShareDialog({
   const hasTrackedRef = useRef(false);
   useEffect(() => {
     const dialog = dialogRef.current;
-    if (dialog && !dialog.open) {
-      dialog.showModal();
-      document.body.style.overflow = "hidden";
-    }
+    if (dialog && !dialog.open) dialog.showModal();
     return () => {
       if (dialog?.open) dialog.close();
-      document.body.style.overflow = "";
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     };
   }, []);

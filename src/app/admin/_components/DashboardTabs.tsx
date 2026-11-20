@@ -1,18 +1,15 @@
 "use client";
-import dynamic from "next/dynamic";
 import { Activity, type KeyboardEvent, useState } from "react";
 import { logoutAction, logoutAllAction } from "@/actions/auth";
+import BrandLogo from "@/components/ui/BrandLogo";
 import Button from "@/components/ui/Button";
-import type { CalendarItem } from "./CalendarManager";
+import CalendarManager, { type CalendarItem } from "./CalendarManager";
+import CollectionManager from "./CollectionManager";
 import type { BaseItem } from "./ItemManager";
-import type { PhotoItem } from "./PhotoManager";
-import type { SeriesAdminItem } from "./SeriesManager";
+import PhotoManager, { type PhotoItem } from "./PhotoManager";
+import RuleManager from "./RuleManager";
+import SeriesManager, { type SeriesAdminItem } from "./SeriesManager";
 
-const PhotoManager = dynamic(() => import("./PhotoManager"));
-const SeriesManager = dynamic(() => import("./SeriesManager"));
-const CollectionManager = dynamic(() => import("./CollectionManager"));
-const RuleManager = dynamic(() => import("./RuleManager"));
-const CalendarManager = dynamic(() => import("./CalendarManager"));
 type TabType = "photos" | "collections" | "rules" | "calendar" | "series";
 const TAB_ORDER: TabType[] = [
   "photos",
@@ -43,13 +40,6 @@ export default function DashboardTabs({
   series,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("photos");
-  const [visitedTabs, setVisitedTabs] = useState<Set<TabType>>(
-    () => new Set(["photos"]),
-  );
-  const activate = (tab: TabType) => {
-    setActiveTab(tab);
-    setVisitedTabs((prev) => (prev.has(tab) ? prev : new Set(prev).add(tab)));
-  };
   const onTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, tab: TabType) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (dir === 0) return;
@@ -57,7 +47,7 @@ export default function DashboardTabs({
     const currentIndex = TAB_ORDER.indexOf(tab);
     const next =
       TAB_ORDER[(currentIndex + dir + TAB_ORDER.length) % TAB_ORDER.length];
-    activate(next);
+    setActiveTab(next);
     document.getElementById(`tab-${next}`)?.focus({ preventScroll: true });
   };
   return (
@@ -65,9 +55,7 @@ export default function DashboardTabs({
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-4 border-b border-line/70 pb-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <p className="font-serif text-2xl tracking-tight text-ink">
-              Momented
-            </p>
+            <BrandLogo />
             <span className="editorial-label text-muted px-2.5 py-0.5 rounded-full border border-line/80 bg-soft/80 font-medium">
               Studio
             </span>
@@ -112,7 +100,7 @@ export default function DashboardTabs({
                 aria-selected={isActive}
                 aria-controls={`panel-${tab}`}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => activate(tab)}
+                onClick={() => setActiveTab(tab)}
                 onKeyDown={(e) => onTabKeyDown(e, tab)}
                 className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-colors duration-150 ease-out whitespace-nowrap cursor-pointer ${
                   isActive
@@ -133,15 +121,13 @@ export default function DashboardTabs({
           aria-labelledby="tab-photos"
           hidden={activeTab !== "photos"}
         >
-          {visitedTabs.has("photos") && (
-            <Activity mode={activeTab === "photos" ? "visible" : "hidden"}>
-              <PhotoManager
-                photos={photos}
-                collections={collections}
-                rules={rules}
-              />
-            </Activity>
-          )}
+          <Activity mode={activeTab === "photos" ? "visible" : "hidden"}>
+            <PhotoManager
+              photos={photos}
+              collections={collections}
+              rules={rules}
+            />
+          </Activity>
         </div>
         <div
           id="panel-collections"
@@ -149,11 +135,9 @@ export default function DashboardTabs({
           aria-labelledby="tab-collections"
           hidden={activeTab !== "collections"}
         >
-          {visitedTabs.has("collections") && (
-            <Activity mode={activeTab === "collections" ? "visible" : "hidden"}>
-              <CollectionManager collections={collections} allPhotos={photos} />
-            </Activity>
-          )}
+          <Activity mode={activeTab === "collections" ? "visible" : "hidden"}>
+            <CollectionManager collections={collections} allPhotos={photos} />
+          </Activity>
         </div>
         <div
           id="panel-rules"
@@ -161,11 +145,9 @@ export default function DashboardTabs({
           aria-labelledby="tab-rules"
           hidden={activeTab !== "rules"}
         >
-          {visitedTabs.has("rules") && (
-            <Activity mode={activeTab === "rules" ? "visible" : "hidden"}>
-              <RuleManager rules={rules} allPhotos={photos} />
-            </Activity>
-          )}
+          <Activity mode={activeTab === "rules" ? "visible" : "hidden"}>
+            <RuleManager rules={rules} allPhotos={photos} />
+          </Activity>
         </div>
         <div
           id="panel-calendar"
@@ -173,11 +155,9 @@ export default function DashboardTabs({
           aria-labelledby="tab-calendar"
           hidden={activeTab !== "calendar"}
         >
-          {visitedTabs.has("calendar") && (
-            <Activity mode={activeTab === "calendar" ? "visible" : "hidden"}>
-              <CalendarManager calendars={calendars} allPhotos={photos} />
-            </Activity>
-          )}
+          <Activity mode={activeTab === "calendar" ? "visible" : "hidden"}>
+            <CalendarManager calendars={calendars} allPhotos={photos} />
+          </Activity>
         </div>
         <div
           id="panel-series"
@@ -185,11 +165,9 @@ export default function DashboardTabs({
           aria-labelledby="tab-series"
           hidden={activeTab !== "series"}
         >
-          {visitedTabs.has("series") && (
-            <Activity mode={activeTab === "series" ? "visible" : "hidden"}>
-              <SeriesManager series={series} allPhotos={photos} />
-            </Activity>
-          )}
+          <Activity mode={activeTab === "series" ? "visible" : "hidden"}>
+            <SeriesManager series={series} allPhotos={photos} />
+          </Activity>
         </div>
       </div>
     </main>

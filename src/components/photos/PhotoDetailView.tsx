@@ -70,7 +70,7 @@ export default function PhotoDetailView({
   return (
     <>
       {/* Back Link & Lateral Sequential Navigation */}
-      <div className="mt-8 md:mt-12 flex items-center justify-between border-b border-line/60 pb-4">
+      <div className="mt-8 sm:mt-12 md:mt-14 flex items-center justify-between border-b border-line/60 pb-4">
         <Link
           href="/photos"
           className="group inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted transition-colors hover:text-ink"
