@@ -3,7 +3,9 @@ import {
   getCloudinarySignatureAction,
   type SavePhotoPayload,
 } from "@/actions/upload";
-import { compressImageWithExif } from "@/lib/utils/imageCompression";
+
+// Cloudinary free-tier direct upload limit (10 MB)
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 export interface UploadedCloudinaryAsset {
   secure_url: string;
   public_id: string;
@@ -21,7 +23,18 @@ export async function uploadPhotoToCloudinary(
     signatureData?: CloudinarySignatureResponse;
   } = {},
 ): Promise<UploadedCloudinaryAsset> {
-  const fileToUpload = await compressImageWithExif(file, onStatusChange);
+  let fileToUpload: File | Blob = file;
+  if (file.size > MAX_UPLOAD_BYTES) {
+    try {
+      const { compressImage } = await import("imagepressor");
+      fileToUpload = await compressImage(file, {
+        mimeType: "image/webp",
+        onProgress: (_progress, stage) => onStatusChange?.(`${stage}…`),
+      });
+    } catch (err) {
+      console.warn("Image compression failed, uploading original:", err);
+    }
+  }
   const signData = signatureData ?? (await getCloudinarySignatureAction());
   onStatusChange?.("Uploading…");
   const formData = new FormData();

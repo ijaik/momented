@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.photos (
     shares INTEGER NOT NULL DEFAULT 0,
     CONSTRAINT photos_width_positive CHECK (width > 0),
     CONSTRAINT photos_height_positive CHECK (height > 0),
+    CONSTRAINT photos_iso_positive CHECK (iso IS NULL OR iso > 0),
     CONSTRAINT photos_downloads_non_negative CHECK (downloads >= 0),
     CONSTRAINT photos_shares_non_negative CHECK (shares >= 0)
 );
@@ -147,9 +148,9 @@ ON CONFLICT (id) DO NOTHING;
 -- 5. Performance Indexes
 -- ==============================================================================
 
--- Fast descending sort for gallery & feeds
-CREATE INDEX IF NOT EXISTS idx_photos_created_at 
-    ON public.photos (created_at DESC);
+-- Fast descending sort for gallery & feeds (leftmost prefix also covers created_at DESC)
+CREATE INDEX IF NOT EXISTS idx_photos_created_at_id 
+    ON public.photos (created_at DESC, id DESC);
 
 -- Composite index for taken_at with fallback to created_at
 CREATE INDEX IF NOT EXISTS idx_photos_taken_at_created_at 

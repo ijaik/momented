@@ -112,7 +112,7 @@ export async function getAllPhotos() {
   const { data, error } = await supabase
     .from("photos")
     .select(
-      "id, title, description, cloudinary_url, width, height, camera_make, camera_model",
+      "id, title, description, cloudinary_url, width, height, camera_make, camera_model, taken_at, created_at",
     )
     .order("created_at", { ascending: false });
   throwIfUnexpectedDbError(error, "getAllPhotos");

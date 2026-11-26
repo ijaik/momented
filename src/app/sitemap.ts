@@ -83,6 +83,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: latestPhotoDate,
     },
     {
+      url: `${siteConfig.url}/walk`,
+      lastModified: latestPhotoDate,
+    },
+    {
       url: `${siteConfig.url}/series`,
       lastModified: getMaxDate(seriesDates, latestPhotoDate),
     },

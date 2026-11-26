@@ -7,6 +7,7 @@ import BrandLogo from "@/components/ui/BrandLogo";
 
 const links = [
   { name: "Photographs", href: "/photos" },
+  { name: "Walk", href: "/walk" },
   { name: "Collections", href: "/collections" },
   { name: "Series", href: "/series" },
   { name: "About", href: "/about" },

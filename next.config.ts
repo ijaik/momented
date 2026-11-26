@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  allowedDevOrigins: ["10.45.54.47"],
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
@@ -33,7 +34,7 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://res.cloudinary.com",
       "font-src 'self' data:",
       `connect-src 'self' data: blob: https://res.cloudinary.com https://api.cloudinary.com ${supabaseUrl}`.trim(),
-      "worker-src 'self'",
+      "worker-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

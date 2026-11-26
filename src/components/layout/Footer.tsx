@@ -30,6 +30,14 @@ export default function Footer() {
               </li>
               <li>
                 <Link
+                  href="/walk"
+                  className="transition-colors hover:text-ink hover:underline underline-offset-4"
+                >
+                  Gallery Walk
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/collections"
                   className="transition-colors hover:text-ink hover:underline underline-offset-4"
                 >
