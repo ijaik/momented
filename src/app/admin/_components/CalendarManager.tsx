@@ -1,8 +1,9 @@
 import { editCalendarCollectionAction } from "@/actions/calendar";
-import ItemManager, { type BaseItem } from "./ItemManager";
-import type { ChecklistPhoto } from "./PhotoChecklist";
+import type { CalendarItem, ChecklistPhoto } from "@/types/admin";
+import ItemManager from "./ItemManager";
 
-export type CalendarItem = BaseItem<string | number>;
+export type { CalendarItem };
+
 interface CalendarManagerProps {
   calendars: CalendarItem[];
   allPhotos: ChecklistPhoto[];
@@ -18,8 +19,6 @@ export default function CalendarManager({
       title="Calendar collections"
       subtitle="Months are populated automatically from photograph dates."
       editButtonLabel="Edit details & cover"
-      descName="description"
-      descLabel="Description"
       editAction={editCalendarCollectionAction}
       renderContent={(cal) =>
         cal.description ? (

@@ -19,6 +19,29 @@ export function parsePhotoDate(dateStr?: string | null): Date | null {
   const parsed = new Date(trimmed);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
+const PG_TIMESTAMP_PATTERN =
+  /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2}(?:\.\d+)?)(?:Z|([+-]\d{2})(?::?(\d{2}))?)$/i;
+/** Preserves Postgres microsecond precision in PostgREST timestamp filters while normalizing UTC offsets to `Z`. */
+export function formatTimestampForPostgrest(
+  dateStr?: string | null,
+): string | null {
+  if (!dateStr || typeof dateStr !== "string") return null;
+  const trimmed = dateStr.trim();
+  if (!parsePhotoDate(trimmed)) return null;
+  const match = trimmed.match(PG_TIMESTAMP_PATTERN);
+  if (match) {
+    const [, datePart, timePart, offsetHours, offsetMinutes] = match;
+    if (
+      !offsetHours ||
+      ((offsetHours === "+00" || offsetHours === "-00") &&
+        (!offsetMinutes || offsetMinutes === "00"))
+    ) {
+      return `${datePart}T${timePart}Z`;
+    }
+    return `${datePart}T${timePart}${offsetHours}:${offsetMinutes || "00"}`;
+  }
+  return parsePhotoDate(trimmed)?.toISOString() ?? null;
+}
 export function isPhotoUndated(photo: { taken_at?: string | null }): boolean {
   const parsed = parsePhotoDate(photo.taken_at);
   return !parsed || parsed.getUTCFullYear() <= 1970;

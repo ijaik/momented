@@ -1,6 +1,7 @@
 "use client";
-import { AlertCircle, Check, Loader2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { AlertCircle, Check, X } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { useNativeDialog } from "@/lib/hooks/useNativeDialog";
 import {
   type ConfirmActionOptions,
   registerConfirmHandler,
@@ -14,12 +15,17 @@ export default function ToastProvider() {
     resolve: (val: boolean) => void;
   } | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+  const confirmTitleId = useId();
   useEffect(() => {
+    const timers = timersRef.current;
     const unregisterToast = registerToastListener((toast) => {
       setToasts((prev) => [...prev, toast]);
-      setTimeout(() => {
+      const timer = setTimeout(() => {
+        timers.delete(timer);
         setToasts((prev) => prev.filter((t) => t.id !== toast.id));
       }, 4000);
+      timers.add(timer);
     });
     const unregisterConfirm = registerConfirmHandler((options, resolve) => {
       setConfirmState({ options, resolve });
@@ -27,15 +33,11 @@ export default function ToastProvider() {
     return () => {
       unregisterToast();
       unregisterConfirm();
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
     };
   }, []);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (confirmState) {
-      if (!dialog.open) dialog.showModal();
-    } else if (dialog.open) dialog.close();
-  }, [confirmState]);
+  useNativeDialog(dialogRef, Boolean(confirmState));
   const handleCloseConfirm = (confirmed: boolean) => {
     if (confirmState) {
       confirmState.resolve(confirmed);
@@ -45,7 +47,6 @@ export default function ToastProvider() {
   };
   return (
     <>
-      {/* Toast notifications container */}
       <section
         aria-label="Notifications"
         aria-live="polite"
@@ -56,24 +57,16 @@ export default function ToastProvider() {
             key={toast.id}
             className="pointer-events-auto flex items-center gap-2.5 rounded-xl border border-line bg-surface/95 px-4 py-2.5 text-xs font-sans text-ink shadow-lg backdrop-blur-md animate-[dialog-panel-in_180ms_cubic-bezier(0.16,1,0.3,1)] max-w-sm"
           >
-            {toast.type === "success" && (
+            {toast.type === "success" ? (
               <Check
                 size={14}
                 className="shrink-0 text-ink"
                 aria-hidden="true"
               />
-            )}
-            {toast.type === "error" && (
+            ) : (
               <AlertCircle
                 size={14}
                 className="shrink-0 text-danger"
-                aria-hidden="true"
-              />
-            )}
-            {toast.type === "info" && (
-              <Loader2
-                size={14}
-                className="shrink-0 animate-spin text-ink"
                 aria-hidden="true"
               />
             )}
@@ -91,9 +84,9 @@ export default function ToastProvider() {
           </div>
         ))}
       </section>
-      {/* Confirmation modal using native <dialog> */}
       <dialog
         ref={dialogRef}
+        aria-labelledby={confirmState ? confirmTitleId : undefined}
         onCancel={(e) => {
           e.preventDefault();
           handleCloseConfirm(false);
@@ -103,7 +96,10 @@ export default function ToastProvider() {
         {confirmState && (
           <div className="flex flex-col gap-4">
             <div>
-              <h3 className="font-serif text-lg font-semibold text-ink">
+              <h3
+                id={confirmTitleId}
+                className="font-serif text-lg font-semibold text-ink"
+              >
                 {confirmState.options.title}
               </h3>
               {confirmState.options.message && (
@@ -123,10 +119,10 @@ export default function ToastProvider() {
               <button
                 type="button"
                 onClick={() => handleCloseConfirm(true)}
-                className={`rounded-full px-4 py-1.5 text-xs font-medium text-white cursor-pointer ${
+                className={`rounded-full px-4 py-1.5 text-xs font-medium cursor-pointer ${
                   confirmState.options.isDestructive
-                    ? "bg-danger hover:bg-danger/90"
-                    : "bg-solid hover:opacity-90"
+                    ? "bg-danger text-white hover:bg-danger/90"
+                    : "bg-solid text-on-solid hover:opacity-90"
                 }`}
               >
                 {confirmState.options.confirmLabel || "Confirm"}

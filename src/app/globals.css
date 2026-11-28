@@ -41,13 +41,12 @@
     --color-signal: #f5f5f5;
     --color-danger: #f87171;
     --color-danger-soft: #2a1215;
-    color-scheme: dark;
   }
 }
+:root {
+  color-scheme: light dark;
+}
 @layer base {
-  :root {
-    color-scheme: light;
-  }
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
@@ -86,7 +85,8 @@
     overflow: hidden;
     overscroll-behavior: contain;
   }
-  html:has(dialog[open]:modal) {
+  html:has(dialog[open]:modal),
+  html:fullscreen {
     overflow: hidden;
   }
 }
@@ -131,17 +131,15 @@
       color-mix(in srgb, var(--color-ink) 8%, transparent);
   }
   .safe-fullscreen-inset {
-    padding-top: max(1rem, env(safe-area-inset-top, 0px));
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-    padding-left: max(1rem, env(safe-area-inset-left, 0px));
-    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    --inset-pad: 1rem;
+    padding-block: max(var(--inset-pad), env(safe-area-inset-top, 0px))
+      max(var(--inset-pad), env(safe-area-inset-bottom, 0px));
+    padding-inline: max(var(--inset-pad), env(safe-area-inset-left, 0px))
+      max(var(--inset-pad), env(safe-area-inset-right, 0px));
   }
   @media (min-width: 640px) {
     .safe-fullscreen-inset {
-      padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
-      padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
-      padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
-      padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
+      --inset-pad: 1.5rem;
     }
   }
 }

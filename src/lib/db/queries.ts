@@ -1,7 +1,9 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { supabase } from "@/lib/db/supabase";
-import { sortSeriesPhotos } from "@/lib/utils/series";
+import { formatTimestampForPostgrest } from "@/lib/utils/dateUtils";
+import { extractSortedSeriesPhotos } from "@/lib/utils/series";
+import { isValidUUID } from "@/lib/utils/validation";
 import type { Photo } from "@/types";
 
 function throwIfUnexpectedDbError(
@@ -65,7 +67,8 @@ export async function getSitemapPhotos(): Promise<
   const { data, error } = await supabase
     .from("photos")
     .select("id, created_at, cloudinary_url")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   throwIfUnexpectedDbError(error, "getSitemapPhotos");
   return (data ?? []) as {
     id: string;
@@ -96,12 +99,12 @@ export async function getPublicApiPhotosPool(): Promise<ApiPhoto[]> {
   "use cache";
   cacheTag("api-photos", "photos");
   cacheLife("weeks");
+  // shortcut: full cached pool in memory; switch to SQL TABLESAMPLE/random offset RPC above ~1,000 photos
   const { data, error } = await supabase
     .from("photos")
     .select(
       "id, title, description, cloudinary_url, cloudinary_public_id, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, artist, taken_at, created_at",
-    )
-    .not("cloudinary_url", "is", null);
+    );
   throwIfUnexpectedDbError(error, "getPublicApiPhotosPool");
   return (data ?? []) as ApiPhoto[];
 }
@@ -114,11 +117,11 @@ export async function getAllPhotos() {
     .select(
       "id, title, description, cloudinary_url, width, height, camera_make, camera_model, taken_at, created_at",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   throwIfUnexpectedDbError(error, "getAllPhotos");
   return { data: (data ?? []) as Photo[], error: error?.message ?? null };
 }
-export const getHomePhotos = getAllPhotos;
 export interface HomeEditorialData {
   heroPhoto: Photo | null;
   recentPhotos: Photo[];
@@ -175,6 +178,7 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
         "id, title, description, cloudinary_url, width, height, camera_make, camera_model, focal_length, aperture, shutter_speed, iso, taken_at, created_at",
       )
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(13),
     supabase.from("photos").select("id", { count: "exact", head: true }),
     getSeriesList(1),
@@ -189,29 +193,14 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
   const recentPhotos = allPhotos.slice(1, 13);
   const totalPhotos = countRes.count ?? allPhotos.length;
   const rawLatestSeries = seriesRes.data?.[0] ?? null;
-  let featuredSeries: HomeEditorialData["featuredSeries"] = null;
-  if (rawLatestSeries) {
-    const rawPhotos =
-      (rawLatestSeries.series_photos as unknown as {
-        position: number;
-        photos: {
-          id: string;
-          title: string | null;
-          cloudinary_url: string;
-          width: number;
-          height: number;
-        } | null;
-      }[]) || [];
-    const sortedPhotos = sortSeriesPhotos(rawPhotos)
-      .map((sp) => sp.photos)
-      .filter((p): p is NonNullable<typeof p> => Boolean(p));
-    featuredSeries = {
-      id: rawLatestSeries.id,
-      title: rawLatestSeries.title,
-      description: rawLatestSeries.description,
-      photos: sortedPhotos,
-    };
-  }
+  const featuredSeries = rawLatestSeries
+    ? {
+        id: rawLatestSeries.id,
+        title: rawLatestSeries.title,
+        description: rawLatestSeries.description,
+        photos: extractSortedSeriesPhotos(rawLatestSeries.series_photos),
+      }
+    : null;
   const collections = collectionsRes.data ?? [];
   const featuredCollection =
     collections.find((c) => Array.isArray(c.photos) && c.photos.length > 0) ??
@@ -244,7 +233,14 @@ export async function getHomeEditorialData(): Promise<HomeEditorialData> {
 }
 export async function getPhotoById(id: string) {
   "use cache";
-  cacheTag(`photo-${id}`, "photos", "series");
+  cacheTag(
+    `photo-${id}`,
+    "photos",
+    "series",
+    "collections",
+    "rules",
+    "calendar",
+  );
   cacheLife("weeks");
   const { data, error } = await supabase
     .from("photos")
@@ -266,22 +262,39 @@ export async function getAdjacentPhotos(
   "use cache";
   cacheTag(`photo-${photoId}-adjacent`, "photos");
   cacheLife("weeks");
-  if (!createdAt) return { prev: null, next: null };
+  const filterTs = formatTimestampForPostgrest(createdAt);
+  if (!filterTs || !isValidUUID(photoId)) return { prev: null, next: null };
   const prevPromise = supabase
     .from("photos")
     .select("id, title")
-    .gt("created_at", createdAt)
+    .neq("id", photoId)
+    .or(
+      `created_at.gt.${filterTs},and(created_at.eq.${filterTs},id.gt.${photoId})`,
+    )
     .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
     .limit(1)
     .maybeSingle();
   const nextPromise = supabase
     .from("photos")
     .select("id, title")
-    .lt("created_at", createdAt)
+    .neq("id", photoId)
+    .or(
+      `created_at.lt.${filterTs},and(created_at.eq.${filterTs},id.lt.${photoId})`,
+    )
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(1)
     .maybeSingle();
   const [prevRes, nextRes] = await Promise.all([prevPromise, nextPromise]);
+  throwIfUnexpectedDbError(
+    prevRes.error,
+    `getAdjacentPhotos(${photoId}, prev)`,
+  );
+  throwIfUnexpectedDbError(
+    nextRes.error,
+    `getAdjacentPhotos(${photoId}, next)`,
+  );
   return {
     prev: prevRes.data ?? null,
     next: nextRes.data ?? null,
@@ -302,7 +315,8 @@ async function getPhotosForEntity(
     .from("photos")
     .select(`${PHOTO_CARD_COLUMNS}, ${junction.table}!inner()`)
     .eq(`${junction.table}.${junction.column}`, entityId)
-    .order("created_at", { ascending });
+    .order("created_at", { ascending })
+    .order("id", { ascending });
   if (limit) query = query.limit(limit);
   const { data, error } = await query;
   throwIfUnexpectedDbError(error, `getPhotosForEntity(${junction.table})`);
@@ -354,6 +368,16 @@ export async function getRelatedPhotos({
     monthIndex <= 12
       ? monthIndex
       : null;
+  const [colRes, seriesRes, ruleRes, calRes] = await Promise.all([
+    collectionId
+      ? getPhotosForCollection(collectionId, 4)
+      : Promise.resolve(null),
+    seriesId ? getSeriesById(seriesId) : Promise.resolve(null),
+    ruleId ? getPhotosForRule(ruleId, 4) : Promise.resolve(null),
+    validMonth
+      ? getPhotosForCalendarMonth(validMonth, 4)
+      : Promise.resolve(null),
+  ]);
   const relatedMap = new Map<string, Photo>();
   const addPhotos = (pool: Photo[]) => {
     for (const p of pool) {
@@ -364,39 +388,27 @@ export async function getRelatedPhotos({
     }
     return false;
   };
-  if (collectionId) {
-    const colRes = await getPhotosForCollection(collectionId, 4);
-    if (addPhotos(colRes.data)) return Array.from(relatedMap.values());
-  }
-  if (seriesId) {
-    const sRes = await getSeriesById(seriesId);
-    const seriesPhotos: Photo[] = sRes.data?.series_photos
-      ? (
-          sRes.data.series_photos as unknown as {
-            position: number;
-            photos: Photo | null;
-          }[]
-        )
-          .map((sp) => sp.photos)
-          .filter((p): p is Photo => Boolean(p))
-      : [];
-    if (addPhotos(seriesPhotos)) return Array.from(relatedMap.values());
-  }
-  if (ruleId) {
-    const ruleRes = await getPhotosForRule(ruleId, 4);
-    if (addPhotos(ruleRes.data)) return Array.from(relatedMap.values());
-  }
-  if (validMonth) {
-    const calRes = await getPhotosForCalendarMonth(validMonth, 4);
-    if (addPhotos(calRes.data)) return Array.from(relatedMap.values());
+  const pools: Photo[][] = [
+    colRes?.data ?? [],
+    extractSortedSeriesPhotos(
+      seriesRes?.data?.series_photos as unknown as
+        | { position: number; photos: Photo | null }[]
+        | undefined,
+    ),
+    ruleRes?.data ?? [],
+    calRes?.data ?? [],
+  ];
+  for (const pool of pools) {
+    if (addPhotos(pool)) return Array.from(relatedMap.values());
   }
   if (relatedMap.size < 3) {
     const { data: fallbackPhotos } = await supabase
       .from("photos")
       .select(PHOTO_CARD_COLUMNS)
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(4);
-    addPhotos((fallbackPhotos ?? []) as unknown as Photo[]);
+    addPhotos((fallbackPhotos ?? []) as Photo[]);
   }
   return Array.from(relatedMap.values()).slice(0, 3);
 }
@@ -458,7 +470,8 @@ async function getEntityCollectionList(
     .select(
       `id, title, description, cover_photo_id, created_at, photos!${junctionTable}(id, cloudinary_url, created_at)`,
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   throwIfUnexpectedDbError(error, `getEntityCollectionList(${table})`);
   return { data: data ?? [], error: error?.message ?? null };
 }
@@ -497,6 +510,7 @@ export async function getSeriesList(limit?: number) {
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, description, cloudinary_url, width, height, created_at))",
     )
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .order("position", { referencedTable: "series_photos", ascending: true });
   if (limit) query = query.limit(limit);
   const { data, error } = await query;

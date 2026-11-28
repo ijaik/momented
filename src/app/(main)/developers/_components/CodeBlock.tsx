@@ -1,7 +1,6 @@
 "use client";
 import { Check, Copy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { copyText } from "@/lib/utils/share";
+import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 
 interface CodeBlockProps {
   code: string;
@@ -15,24 +14,9 @@ export default function CodeBlock({
   label = "code snippet",
   className = "",
 }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
-  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    return () => {
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-    };
-  }, []);
-  const handleCopy = async () => {
-    try {
-      await copyText(code);
-      setCopied(true);
-      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-      resetTimerRef.current = setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (err) {
-      console.warn("Failed to copy code snippet:", err);
-    }
+  const { copied, copy } = useCopyToClipboard();
+  const handleCopy = () => {
+    void copy(code);
   };
   return (
     <div

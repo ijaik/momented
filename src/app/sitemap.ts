@@ -9,6 +9,7 @@ import {
   getSeriesList,
   getSitemapPhotos,
 } from "@/lib/db/queries";
+import { extractSortedSeriesPhotos } from "@/lib/utils/series";
 
 function getMaxDate(
   dates: (string | null | undefined)[],
@@ -123,63 +124,66 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(optUrl ? { images: [optUrl] } : {}),
     };
   });
-  const collectionRoutes: MetadataRoute.Sitemap = (curatedRes.data ?? [])
-    .filter((c) => c.photos && c.photos.length > 0)
-    .map((c) => {
-      const validImages = (c.photos ?? [])
-        .map((p) => optimizeImageUrl(p?.cloudinary_url))
-        .filter((url): url is string => Boolean(url));
-      const dates = [
-        c.created_at,
-        ...(c.photos ?? []).map(
-          (p) => (p as { created_at?: string | null })?.created_at,
-        ),
-      ];
-      return {
-        url: `${siteConfig.url}/collections/${c.id}`,
-        lastModified: getMaxDate(dates, latestPhotoDate),
-        ...(validImages.length > 0 ? { images: validImages.slice(0, 5) } : {}),
-      };
-    });
-  const ruleRoutes: MetadataRoute.Sitemap = (rulesRes.data ?? [])
-    .filter((r) => r.photos && r.photos.length > 0)
-    .map((r) => {
-      const validImages = (r.photos ?? [])
-        .map((p) => optimizeImageUrl(p?.cloudinary_url))
-        .filter((url): url is string => Boolean(url));
-      const dates = [
-        r.created_at,
-        ...(r.photos ?? []).map(
-          (p) => (p as { created_at?: string | null })?.created_at,
-        ),
-      ];
-      return {
-        url: `${siteConfig.url}/collections/rules/${r.id}`,
-        lastModified: getMaxDate(dates, latestPhotoDate),
-        ...(validImages.length > 0 ? { images: validImages.slice(0, 5) } : {}),
-      };
-    });
+  const buildCollectionRoutes = (
+    items:
+      | {
+          id: string;
+          created_at?: string | null;
+          photos?:
+            | {
+                cloudinary_url?: string | null;
+                created_at?: string | null;
+              }[]
+            | null;
+        }[]
+      | null,
+    pathPrefix: string,
+  ): MetadataRoute.Sitemap =>
+    (items ?? [])
+      .filter((item) => item.photos && item.photos.length > 0)
+      .map((item) => {
+        const validImages = (item.photos ?? [])
+          .map((p) => optimizeImageUrl(p?.cloudinary_url))
+          .filter((url): url is string => Boolean(url));
+        const dates = [
+          item.created_at,
+          ...(item.photos ?? []).map((p) => p?.created_at),
+        ];
+        return {
+          url: `${siteConfig.url}${pathPrefix}/${item.id}`,
+          lastModified: getMaxDate(dates, latestPhotoDate),
+          ...(validImages.length > 0
+            ? { images: validImages.slice(0, 5) }
+            : {}),
+        };
+      });
+  const collectionRoutes = buildCollectionRoutes(
+    curatedRes.data,
+    "/collections",
+  );
+  const ruleRoutes = buildCollectionRoutes(rulesRes.data, "/collections/rules");
   const seriesRoutes: MetadataRoute.Sitemap = (seriesRes.data ?? [])
-    .filter(
-      (s) =>
-        s.series_photos &&
-        (s.series_photos as unknown as { position: number }[]).length > 0,
-    )
-    .map((s) => {
-      const rawPhotos =
-        (s.series_photos as unknown as {
+    .map((s) => ({
+      id: s.id,
+      created_at: s.created_at,
+      orderedPhotos: extractSortedSeriesPhotos(
+        s.series_photos as unknown as {
           position: number;
           photos: {
             cloudinary_url?: string | null;
             created_at?: string | null;
           } | null;
-        }[]) || [];
-      const images = rawPhotos
-        .map((sp) => optimizeImageUrl(sp.photos?.cloudinary_url))
+        }[],
+      ),
+    }))
+    .filter((s) => s.orderedPhotos.length > 0)
+    .map((s) => {
+      const images = s.orderedPhotos
+        .map((photo) => optimizeImageUrl(photo.cloudinary_url))
         .filter((url): url is string => Boolean(url));
       const dates = [
         s.created_at,
-        ...rawPhotos.map((sp) => sp.photos?.created_at),
+        ...s.orderedPhotos.map((photo) => photo.created_at),
       ];
       return {
         url: `${siteConfig.url}/series/${s.id}`,

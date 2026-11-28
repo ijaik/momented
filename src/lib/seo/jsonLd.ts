@@ -13,6 +13,42 @@ export type JsonLdObject = {
   "@context": "https://schema.org";
   "@type": string;
 } & { [key: string]: JsonLdValue };
+const WEBSITE_REF = {
+  "@type": "WebSite",
+  "@id": `${siteConfig.url}/#website`,
+  name: siteConfig.name,
+  url: siteConfig.url,
+};
+const AUTHOR_REF = {
+  "@type": "Person",
+  "@id": `${siteConfig.url}/#author`,
+  name: siteConfig.author.name,
+  url: siteConfig.author.github,
+};
+function buildPhotoItemList(
+  photos: {
+    id: string | number;
+    title?: string | null;
+    description?: string | null;
+    cloudinary_url: string;
+  }[],
+  fallbackPrefix: string,
+  maxItems?: number,
+) {
+  const sliced = maxItems ? photos.slice(0, maxItems) : photos;
+  return {
+    "@type": "ItemList",
+    numberOfItems: maxItems ? photos.length : sliced.length,
+    itemListElement: sliced.map((photo, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: photo.title || `${fallbackPrefix} ${index + 1}`,
+      url: `${siteConfig.url}/photo/${photo.id}`,
+      image: getSocialShareImageUrl(photo.cloudinary_url),
+      ...(photo.description ? { description: photo.description } : {}),
+    })),
+  };
+}
 export function websiteJsonLd(): JsonLdObject {
   return {
     "@context": "https://schema.org",
@@ -23,18 +59,8 @@ export function websiteJsonLd(): JsonLdObject {
     url: siteConfig.url,
     description: siteConfig.description,
     inLanguage: "en-US",
-    author: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: siteConfig.author.name,
-      url: siteConfig.author.github,
-    },
-    publisher: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: siteConfig.author.name,
-      url: siteConfig.author.github,
-    },
+    author: AUTHOR_REF,
+    publisher: AUTHOR_REF,
     license: "https://creativecommons.org/publicdomain/zero/1.0/",
   };
 }
@@ -63,12 +89,7 @@ export function aboutPageJsonLd(): JsonLdObject {
       "@id": `${siteConfig.url}/#author`,
       name: siteConfig.author.name,
     },
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    isPartOf: WEBSITE_REF,
   };
 }
 export function developersPageJsonLd(): JsonLdObject {
@@ -79,34 +100,8 @@ export function developersPageJsonLd(): JsonLdObject {
     description:
       "Public developer API documentation for fetching random high-resolution CC0 wallpapers and photograph metadata.",
     url: `${siteConfig.url}/developers`,
-    author: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: siteConfig.author.name,
-      url: siteConfig.author.github,
-    },
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
-  };
-}
-export function faqPageJsonLd(
-  faqs: { question: string; answer: string }[],
-): JsonLdObject {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
-      },
-    })),
+    author: AUTHOR_REF,
+    isPartOf: WEBSITE_REF,
   };
 }
 export function hubPageJsonLd({
@@ -131,12 +126,7 @@ export function hubPageJsonLd({
     name: title,
     description,
     url,
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    isPartOf: WEBSITE_REF,
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: items.length,
@@ -172,6 +162,59 @@ export function breadcrumbJsonLd(
 export function photographJsonLd(photo: Photo): JsonLdObject {
   const name = photo.title || "A Momented Photograph";
   const artistName = photo.artist || siteConfig.author.name;
+  const person = {
+    "@type": "Person",
+    "@id": `${siteConfig.url}/#author`,
+    name: artistName,
+    url: siteConfig.author.github,
+  };
+  const exifEntries = photo.camera_model
+    ? [
+        {
+          "@type": "PropertyValue",
+          name: "Camera",
+          value: photo.camera_make
+            ? `${photo.camera_make} ${photo.camera_model}`
+            : photo.camera_model,
+        },
+        ...(photo.focal_length
+          ? [
+              {
+                "@type": "PropertyValue",
+                name: "Focal Length",
+                value: photo.focal_length,
+              },
+            ]
+          : []),
+        ...(photo.aperture
+          ? [
+              {
+                "@type": "PropertyValue",
+                name: "Aperture",
+                value: photo.aperture,
+              },
+            ]
+          : []),
+        ...(photo.shutter_speed
+          ? [
+              {
+                "@type": "PropertyValue",
+                name: "Shutter Speed",
+                value: photo.shutter_speed,
+              },
+            ]
+          : []),
+        ...(photo.iso
+          ? [
+              {
+                "@type": "PropertyValue",
+                name: "ISO",
+                value: String(photo.iso),
+              },
+            ]
+          : []),
+      ]
+    : null;
   return {
     "@context": "https://schema.org",
     "@type": "ImageObject",
@@ -186,26 +229,11 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     representativeOfPage: true,
     inLanguage: "en-US",
     genre: "Photography",
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    isPartOf: WEBSITE_REF,
     ...(photo.created_at ? { datePublished: photo.created_at } : {}),
     ...(photo.taken_at ? { dateCreated: photo.taken_at } : {}),
-    creator: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: artistName,
-      url: siteConfig.author.github,
-    },
-    author: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: artistName,
-      url: siteConfig.author.github,
-    },
+    creator: person,
+    author: person,
     copyrightHolder: {
       "@type": "Person",
       "@id": `${siteConfig.url}/#author`,
@@ -217,55 +245,7 @@ export function photographJsonLd(photo: Photo): JsonLdObject {
     acquireLicensePage: `${siteConfig.url}/about`,
     ...(photo.width ? { width: photo.width } : {}),
     ...(photo.height ? { height: photo.height } : {}),
-    ...(photo.camera_model
-      ? {
-          exifData: [
-            {
-              "@type": "PropertyValue",
-              name: "Camera",
-              value: photo.camera_make
-                ? `${photo.camera_make} ${photo.camera_model}`
-                : photo.camera_model,
-            },
-            ...(photo.focal_length
-              ? [
-                  {
-                    "@type": "PropertyValue",
-                    name: "Focal Length",
-                    value: photo.focal_length,
-                  },
-                ]
-              : []),
-            ...(photo.aperture
-              ? [
-                  {
-                    "@type": "PropertyValue",
-                    name: "Aperture",
-                    value: photo.aperture,
-                  },
-                ]
-              : []),
-            ...(photo.shutter_speed
-              ? [
-                  {
-                    "@type": "PropertyValue",
-                    name: "Shutter Speed",
-                    value: photo.shutter_speed,
-                  },
-                ]
-              : []),
-            ...(photo.iso
-              ? [
-                  {
-                    "@type": "PropertyValue",
-                    name: "ISO",
-                    value: String(photo.iso),
-                  },
-                ]
-              : []),
-          ],
-        }
-      : {}),
+    ...(exifEntries ? { exifData: exifEntries } : {}),
   };
 }
 export function photoPageJsonLd(photo: Photo): JsonLdObject {
@@ -281,12 +261,7 @@ export function photoPageJsonLd(photo: Photo): JsonLdObject {
       photo.description ||
       `Photograph "${name}" exploring light and shadow by ${artistName}.`,
     inLanguage: "en-US",
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
+    isPartOf: WEBSITE_REF,
     primaryImageOfPage: {
       "@type": "ImageObject",
       "@id": `${siteConfig.url}/photo/${photo.id}#image`,
@@ -321,24 +296,8 @@ export function homePageGalleryJsonLd(
     description: options.description || siteConfig.description,
     url: options.url || `${siteConfig.url}/`,
     inLanguage: "en-US",
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: photos.length,
-      itemListElement: photos.slice(0, 50).map((photo, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        name: photo.title || `Moment ${index + 1}`,
-        url: `${siteConfig.url}/photo/${photo.id}`,
-        image: getSocialShareImageUrl(photo.cloudinary_url),
-        ...(photo.description ? { description: photo.description } : {}),
-      })),
-    },
+    isPartOf: WEBSITE_REF,
+    mainEntity: buildPhotoItemList(photos, "Moment", 50),
   };
 }
 export function collectionPageJsonLd(
@@ -351,7 +310,6 @@ export function collectionPageJsonLd(
     cloudinary_url: string;
   }[] = [],
 ): JsonLdObject {
-  const photos = photoItems.slice(0, 50);
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -359,23 +317,8 @@ export function collectionPageJsonLd(
     ...(collection.description ? { description: collection.description } : {}),
     ...(coverImageUrl ? { image: getSocialShareImageUrl(coverImageUrl) } : {}),
     url,
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: photos.length,
-      itemListElement: photos.map((photo, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        name: photo.title || `Frame ${index + 1}`,
-        url: `${siteConfig.url}/photo/${photo.id}`,
-        image: getSocialShareImageUrl(photo.cloudinary_url),
-      })),
-    },
+    isPartOf: WEBSITE_REF,
+    mainEntity: buildPhotoItemList(photoItems, "Frame", 50),
   };
 }
 export function seriesPageJsonLd(
@@ -393,28 +336,8 @@ export function seriesPageJsonLd(
     ...(photos[0]
       ? { image: getSocialShareImageUrl(photos[0].cloudinary_url) }
       : {}),
-    author: {
-      "@type": "Person",
-      "@id": `${siteConfig.url}/#author`,
-      name: siteConfig.author.name,
-      url: siteConfig.author.github,
-    },
-    isPartOf: {
-      "@type": "WebSite",
-      "@id": `${siteConfig.url}/#website`,
-      name: siteConfig.name,
-      url: siteConfig.url,
-    },
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: photos.length,
-      itemListElement: photos.map((photo, index) => ({
-        "@type": "ListItem",
-        position: index + 1,
-        name: photo.title || `Frame ${index + 1}`,
-        url: `${siteConfig.url}/photo/${photo.id}`,
-        image: getSocialShareImageUrl(photo.cloudinary_url),
-      })),
-    },
+    author: AUTHOR_REF,
+    isPartOf: WEBSITE_REF,
+    mainEntity: buildPhotoItemList(photos, "Frame"),
   };
 }

@@ -1,39 +1,87 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import cloudinary from "@/lib/cloudinary/cloudinary";
-import {
-  getAdminDb,
-  type JunctionTable,
-  syncJunction,
-} from "@/lib/db/supabase-admin";
+import { getAdminDb } from "@/lib/db/supabase-admin";
+import { parsePhotoDate } from "@/lib/utils/dateUtils";
 import { CLOUDINARY_PUBLIC_ID_PATTERN } from "@/lib/utils/validation";
+import type { Database } from "@/types/database.types";
 
-type ContentTable = "collections" | "rule_collections";
-interface CollectionSpec {
-  table: ContentTable;
-  junction: { table: JunctionTable; mainCol: string };
+type JunctionTable =
+  | "photo_collections"
+  | "photo_rule_collections"
+  | "photo_calendar_collections";
+async function syncJunction(
+  db: SupabaseClient<Database>,
+  table: JunctionTable,
+  mainCol: string,
+  mainId: string | number,
+  targetCol: string,
+  targetIds: string[],
+  { skipDelete = false }: { skipDelete?: boolean } = {},
+): Promise<void> {
+  const cleanTargetIds = Array.from(new Set(targetIds.filter(Boolean)));
+  if (skipDelete) {
+    if (cleanTargetIds.length === 0) return;
+    let insertError: { message: string } | null = null;
+    if (table === "photo_collections") {
+      const rows = cleanTargetIds.map((targetId) =>
+        mainCol === "photo_id"
+          ? { photo_id: String(mainId), collection_id: targetId }
+          : { collection_id: String(mainId), photo_id: targetId },
+      );
+      ({ error: insertError } = await db
+        .from("photo_collections")
+        .insert(rows));
+    } else if (table === "photo_rule_collections") {
+      const rows = cleanTargetIds.map((targetId) =>
+        mainCol === "photo_id"
+          ? { photo_id: String(mainId), rule_id: targetId }
+          : { rule_id: String(mainId), photo_id: targetId },
+      );
+      ({ error: insertError } = await db
+        .from("photo_rule_collections")
+        .insert(rows));
+    } else {
+      const rows = cleanTargetIds.map((targetId) =>
+        mainCol === "photo_id"
+          ? {
+              photo_id: String(mainId),
+              calendar_id: Number.parseInt(targetId, 10),
+            }
+          : { calendar_id: Number(mainId), photo_id: targetId },
+      );
+      ({ error: insertError } = await db
+        .from("photo_calendar_collections")
+        .insert(rows));
+    }
+    if (insertError)
+      throw new Error(
+        `Failed to insert into junction table ${table}: ${insertError.message}`,
+      );
+    return;
+  }
+  const { error: rpcError } = await db.rpc("replace_photo_junctions", {
+    p_table_name: table,
+    p_main_col: mainCol,
+    p_main_id: String(mainId),
+    p_target_col: targetCol,
+    p_target_ids: cleanTargetIds,
+  });
+  if (rpcError) {
+    throw new Error(
+      `Failed to sync junction table ${table}: ${rpcError.message}`,
+    );
+  }
 }
-const COLLECTION_SPECS: Record<"collection" | "rule", CollectionSpec> = {
-  collection: {
-    table: "collections",
-    junction: { table: "photo_collections", mainCol: "collection_id" },
-  },
-  rule: {
-    table: "rule_collections",
-    junction: {
-      table: "photo_rule_collections",
-      mainCol: "rule_id",
-    },
-  },
-};
 export async function deletePhotoFromDb(
-  id: string | number,
+  id: string,
   publicId?: string,
 ): Promise<void> {
   const db = getAdminDb();
   const { data: deletedPhoto, error } = await db
     .from("photos")
     .delete()
-    .eq("id", id as never)
+    .eq("id", id)
     .select("cloudinary_public_id")
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -47,7 +95,7 @@ export async function deletePhotoFromDb(
   }
 }
 export async function updatePhotoInDb(
-  id: string | number,
+  id: string,
   params: {
     title: string;
     description: string;
@@ -59,7 +107,7 @@ export async function updatePhotoInDb(
   const { error } = await db
     .from("photos")
     .update({ title: params.title, description: params.description })
-    .eq("id", id as never);
+    .eq("id", id);
   if (error) throw new Error(error.message);
   await Promise.all([
     syncJunction(
@@ -123,57 +171,57 @@ export async function insertPhotoToDb(params: {
     .single();
   if (dbError || !newPhoto)
     throw new Error(`Database Error: ${dbError?.message || "Insert failed"}`);
-  const photoDate = params.taken_at ? new Date(params.taken_at) : new Date();
+  const photoDate = parsePhotoDate(params.taken_at) ?? new Date();
   const monthId = photoDate.getUTCMonth() + 1;
-  await Promise.all([
-    db
-      .from("photo_calendar_collections")
-      .insert([{ photo_id: newPhoto.id, calendar_id: monthId }]),
-    syncJunction(
-      db,
-      "photo_collections",
-      "photo_id",
-      newPhoto.id,
-      "collection_id",
-      params.collectionIds,
-      { skipDelete: true },
-    ),
-    syncJunction(
-      db,
-      "photo_rule_collections",
-      "photo_id",
-      newPhoto.id,
-      "rule_id",
-      params.ruleIds,
-      { skipDelete: true },
-    ),
-  ]);
-  const { data: latestCalendarPhoto } = await db
-    .from("photos")
-    .select("id, photo_calendar_collections!inner()")
-    .eq("photo_calendar_collections.calendar_id", monthId)
-    .order("taken_at", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (latestCalendarPhoto?.id) {
-    await db
-      .from("calendar_collections")
-      .update({ cover_photo_id: latestCalendarPhoto.id })
-      .eq("id", monthId);
+  try {
+    const [calendarRes] = await Promise.all([
+      db
+        .from("photo_calendar_collections")
+        .insert([{ photo_id: newPhoto.id, calendar_id: monthId }]),
+      syncJunction(
+        db,
+        "photo_collections",
+        "photo_id",
+        newPhoto.id,
+        "collection_id",
+        params.collectionIds,
+        { skipDelete: true },
+      ),
+      syncJunction(
+        db,
+        "photo_rule_collections",
+        "photo_id",
+        newPhoto.id,
+        "rule_id",
+        params.ruleIds,
+        { skipDelete: true },
+      ),
+    ]);
+    if (calendarRes.error) {
+      throw new Error(
+        `Failed to link photo to calendar month: ${calendarRes.error.message}`,
+      );
+    }
+  } catch (err) {
+    await db.from("photos").delete().eq("id", newPhoto.id);
+    throw err;
   }
+  await db
+    .from("calendar_collections")
+    .update({ cover_photo_id: newPhoto.id })
+    .eq("id", monthId)
+    .is("cover_photo_id", null);
   return { id: newPhoto.id, monthId };
 }
 export async function deleteCollectionFromDb(
   kind: "collection" | "rule",
   id: string,
 ): Promise<void> {
-  const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
-  const { error } = await db
-    .from(spec.table)
-    .delete()
-    .eq("id" as never, id as never);
+  const { error } =
+    kind === "collection"
+      ? await db.from("collections").delete().eq("id", id)
+      : await db.from("rule_collections").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 export async function createCollectionInDb(
@@ -185,28 +233,22 @@ export async function createCollectionInDb(
     photoIds: string[];
   },
 ): Promise<string> {
-  const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
-  const { data, error } = (await db
-    .from(spec.table)
-    .insert([
-      {
-        title: params.title,
-        description: params.description,
-        cover_photo_id: params.cover_photo_id,
-      } as never,
-    ])
-    .select("id")
-    .single()) as {
-    data: { id: string } | null;
-    error: { message: string } | null;
+  const row = {
+    title: params.title,
+    description: params.description,
+    cover_photo_id: params.cover_photo_id,
   };
+  const { data, error } =
+    kind === "collection"
+      ? await db.from("collections").insert([row]).select("id").single()
+      : await db.from("rule_collections").insert([row]).select("id").single();
   if (error || !data)
     throw new Error(error?.message || "Failed to create collection");
   await syncJunction(
     db,
-    spec.junction.table,
-    spec.junction.mainCol,
+    kind === "collection" ? "photo_collections" : "photo_rule_collections",
+    kind === "collection" ? "collection_id" : "rule_id",
     data.id,
     "photo_id",
     params.photoIds,
@@ -224,21 +266,21 @@ export async function updateCollectionInDb(
     photoIds: string[];
   },
 ): Promise<void> {
-  const spec = COLLECTION_SPECS[kind];
   const db = getAdminDb();
-  const { error } = await db
-    .from(spec.table)
-    .update({
-      title: params.title,
-      description: params.description,
-      cover_photo_id: params.cover_photo_id,
-    } as never)
-    .eq("id" as never, id as never);
+  const patch = {
+    title: params.title,
+    description: params.description,
+    cover_photo_id: params.cover_photo_id,
+  };
+  const { error } =
+    kind === "collection"
+      ? await db.from("collections").update(patch).eq("id", id)
+      : await db.from("rule_collections").update(patch).eq("id", id);
   if (error) throw new Error(error.message);
   await syncJunction(
     db,
-    spec.junction.table,
-    spec.junction.mainCol,
+    kind === "collection" ? "photo_collections" : "photo_rule_collections",
+    kind === "collection" ? "collection_id" : "rule_id",
     id,
     "photo_id",
     params.photoIds,
@@ -261,7 +303,7 @@ export async function updateCalendarCollectionInDb(
       description: params.description,
       cover_photo_id: params.cover_photo_id,
     })
-    .eq("id", id as never);
+    .eq("id", id);
   if (error) throw new Error(error.message);
   await syncJunction(
     db,

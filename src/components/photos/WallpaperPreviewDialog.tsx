@@ -14,8 +14,9 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import DownloadButton from "@/components/photos/DownloadButton";
+import { useNativeDialog } from "@/lib/hooks/useNativeDialog";
 import type { Photo } from "@/types";
 export interface WallpaperPreviewDialogProps {
   photo: Photo;
@@ -33,16 +34,7 @@ export default function WallpaperPreviewDialog({
   const [deviceMode, setDeviceMode] = useState<DeviceMode>("mobile");
   const [showUiOverlay, setShowUiOverlay] = useState(true);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen)
-      if (!dialog.open) dialog.showModal();
-      else if (dialog.open) dialog.close();
-    return () => {
-      if (dialog?.open) dialog.close();
-    };
-  }, [isOpen]);
+  useNativeDialog(dialogRef, isOpen);
   if (!isOpen) return null;
   const title = photo.title || "Untitled Momented";
   const alt = `Wallpaper preview for ${title}`;

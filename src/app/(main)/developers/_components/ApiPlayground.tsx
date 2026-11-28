@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState, useSyncExternalStore } from "react";
-import { copyText } from "@/lib/utils/share";
+import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
 
 const emptySubscribe = () => () => {};
 function getClientOrigin(): string {
@@ -27,7 +27,7 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
   const [orientation, setOrientation] = useState<string>("all");
   const [mode, setMode] = useState<ApiMode>("json");
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopyToClipboard();
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [rateLimitInfo, setRateLimitInfo] = useState<{
     remaining: string | null;
@@ -78,13 +78,7 @@ export default function ApiPlayground({ baseUrl }: { baseUrl: string }) {
   };
   const handleCopyJson = async () => {
     if (!result) return;
-    try {
-      await copyText(JSON.stringify(result, null, 2));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.warn("Failed to copy JSON:", err);
-    }
+    await copy(JSON.stringify(result, null, 2));
   };
   const photoData = (result?.data as Record<string, unknown>) || null;
   const imageData = (photoData?.image as Record<string, unknown>) || null;

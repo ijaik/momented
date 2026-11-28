@@ -12,7 +12,8 @@ import { getAllIds, getSeriesById } from "@/lib/db/queries";
 import { breadcrumbJsonLd, seriesPageJsonLd } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
-import { sortSeriesPhotos } from "@/lib/utils/series";
+import { extractSortedSeriesPhotos } from "@/lib/utils/series";
+import { isValidUUID } from "@/lib/utils/validation";
 import type { PageProps, Photo, SeriesSlidePhoto } from "@/types";
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("series");
@@ -23,7 +24,7 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_")
+  if (!isValidUUID(id))
     return {
       title: "Series Not Found",
       robots: { index: false, follow: false },
@@ -41,9 +42,9 @@ export async function generateMetadata({
   const rawPhotos =
     (series.series_photos as unknown as {
       position: number;
-      photos: Photo;
+      photos: Photo | null;
     }[]) || [];
-  const firstPhoto = sortSeriesPhotos(rawPhotos)[0]?.photos;
+  const firstPhoto = extractSortedSeriesPhotos(rawPhotos)[0];
   return buildPageMetadata({
     title,
     description,
@@ -61,19 +62,17 @@ async function SeriesDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") notFound();
+  if (!isValidUUID(id)) notFound();
   const { data: series } = await getSeriesById(id);
   if (!series) notFound();
   const rawPhotos =
     (series.series_photos as unknown as RawSeriesPhotoJoin[]) || [];
-  const sortedPhotos: SeriesSlidePhoto[] = sortSeriesPhotos(rawPhotos)
-    .filter((sp): sp is { position: number; photos: Photo } =>
-      Boolean(sp.photos),
-    )
-    .map((sp) => ({
-      ...sp.photos,
-      position: sp.position,
-    }));
+  const sortedPhotos: SeriesSlidePhoto[] = extractSortedSeriesPhotos(
+    rawPhotos,
+  ).map((photo, position) => ({
+    ...photo,
+    position,
+  }));
   const url = `${siteConfig.url}/series/${id}`;
   const displayDate = formatDisplayDate(series.created_at);
   return (
@@ -110,22 +109,23 @@ async function SeriesDetailContent({
               Individual photographs captured in this sequence.
             </p>
             <div className="mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 md:grid-cols-3">
-              {sortedPhotos.map((photo, idx) => (
-                <CoverCard
-                  key={photo.id}
-                  item={{
-                    id: photo.id,
-                    title:
-                      photo.title ||
-                      `Frame ${String(idx + 1).padStart(2, "0")}`,
-                    description: photo.description,
-                    cloudinary_url: photo.cloudinary_url,
-                  }}
-                  href={`/photo/${photo.id}`}
-                  size="compact"
-                  meta={`0${idx + 1}`}
-                />
-              ))}
+              {sortedPhotos.map((photo, idx) => {
+                const frameNum = String(idx + 1).padStart(2, "0");
+                return (
+                  <CoverCard
+                    key={photo.id}
+                    item={{
+                      id: photo.id,
+                      title: photo.title || `Frame ${frameNum}`,
+                      description: photo.description,
+                      cloudinary_url: photo.cloudinary_url,
+                    }}
+                    href={`/photo/${photo.id}`}
+                    size="compact"
+                    meta={frameNum}
+                  />
+                );
+              })}
             </div>
           </div>
         </>

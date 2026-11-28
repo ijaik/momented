@@ -2,6 +2,7 @@
 import {
   type ReactNode,
   type SubmitEvent,
+  useId,
   useState,
   useTransition,
 } from "react";
@@ -11,21 +12,18 @@ import {
   notifyError,
   notifySuccess,
 } from "@/components/ui/notifications";
+import type { BaseItem, ChecklistPhoto } from "@/types/admin";
 import {
   FieldLabel,
   FormInput,
   FormTextarea,
   SubmitButton,
 } from "./AdminForms";
-import PhotoChecklist, { type ChecklistPhoto } from "./PhotoChecklist";
+import PhotoChecklist from "./PhotoChecklist";
 import PhotoThumbnails from "./PhotoThumbnails";
-export interface BaseItem<TId extends string | number = string> {
-  id: TId;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | number | null;
-  photos?: ChecklistPhoto[];
-}
+
+export type { BaseItem };
+
 interface ItemManagerProps<
   TId extends string | number = string,
   T extends BaseItem<TId> = BaseItem<TId>,
@@ -37,10 +35,7 @@ interface ItemManagerProps<
   newItemLabel?: string;
   editButtonLabel?: string;
   titlePlaceholder?: string;
-  descName: string;
-  descLabel: string;
   descPlaceholder?: string;
-  descRows?: number;
   createAction?: (formData: FormData) => Promise<{ success: boolean }>;
   editAction: (id: TId, formData: FormData) => Promise<{ success: boolean }>;
   deleteAction?: (id: TId) => Promise<{ success: boolean }>;
@@ -55,6 +50,73 @@ type PendingOp<TId> =
   | { type: "creating" }
   | { type: "editing"; id: TId }
   | { type: "deleting"; id: TId };
+function EntityForm({
+  allPhotos,
+  item,
+  titlePlaceholder,
+  descPlaceholder,
+  submitText,
+  isLoading,
+  onSubmit,
+  onCancel,
+}: {
+  allPhotos: ChecklistPhoto[];
+  item?: BaseItem<string | number>;
+  titlePlaceholder?: string;
+  descPlaceholder?: string;
+  submitText: string;
+  isLoading: boolean;
+  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+}) {
+  const formId = useId();
+  const titleId = `${formId}-title`;
+  const descId = `${formId}-desc`;
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
+    >
+      <div>
+        <FieldLabel htmlFor={titleId}>Title</FieldLabel>
+        <FormInput
+          id={titleId}
+          type="text"
+          name="title"
+          defaultValue={item?.title ?? ""}
+          required
+          placeholder={titlePlaceholder}
+        />
+      </div>
+      <div>
+        <FieldLabel htmlFor={descId}>Description</FieldLabel>
+        <FormTextarea
+          id={descId}
+          name="description"
+          defaultValue={item?.description ?? ""}
+          rows={3}
+          placeholder={descPlaceholder}
+        />
+      </div>
+      <PhotoChecklist
+        key={item ? String(item.id) : "new"}
+        photos={allPhotos}
+        linkedPhotos={item?.photos}
+        initialCoverId={item?.cover_photo_id}
+      />
+      <div className="flex items-center gap-3">
+        <SubmitButton
+          isLoading={isLoading}
+          loadingText="Saving…"
+          text={submitText}
+        />
+        <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
 export default function ItemManager<
   TId extends string | number = string,
   T extends BaseItem<TId> = BaseItem<TId>,
@@ -66,10 +128,7 @@ export default function ItemManager<
   newItemLabel = "New item",
   editButtonLabel = "Edit",
   titlePlaceholder = "Title",
-  descName,
-  descLabel,
   descPlaceholder = "",
-  descRows = 3,
   createAction,
   editAction,
   deleteAction,
@@ -167,46 +226,15 @@ export default function ItemManager<
         )}
       </div>
       {createAction && isCreating && (
-        <form
+        <EntityForm
+          allPhotos={allPhotos}
+          titlePlaceholder={titlePlaceholder}
+          descPlaceholder={descPlaceholder}
+          submitText="Create"
+          isLoading={isPending && pendingOp.type === "creating"}
           onSubmit={handleCreate}
-          className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
-        >
-          <div>
-            <FieldLabel htmlFor="new-title">Title</FieldLabel>
-            <FormInput
-              id="new-title"
-              type="text"
-              name="title"
-              required
-              placeholder={titlePlaceholder}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="new-desc">{descLabel}</FieldLabel>
-            <FormTextarea
-              id="new-desc"
-              name={descName}
-              rows={descRows}
-              placeholder={descPlaceholder}
-            />
-          </div>
-          <PhotoChecklist key="new" photos={allPhotos} />
-          <div className="flex items-center gap-3">
-            <SubmitButton
-              isLoading={isPending && pendingOp.type === "creating"}
-              loadingText="Saving…"
-              text="Create"
-            />
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setMode({ type: "idle" })}
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
+          onCancel={() => setMode({ type: "idle" })}
+        />
       )}
       <div className="flex flex-col">
         {items.map((item) => (
@@ -215,59 +243,18 @@ export default function ItemManager<
             className="border-b border-line py-8 first:border-t"
           >
             {editingId === item.id ? (
-              <form
+              <EntityForm
+                allPhotos={allPhotos}
+                item={item}
+                submitText="Save changes"
+                isLoading={
+                  isPending &&
+                  pendingOp.type === "editing" &&
+                  pendingOp.id === item.id
+                }
                 onSubmit={(e) => handleEdit(e, item.id)}
-                className="flex flex-col gap-5 rounded-2xl border border-line/70 bg-surface/75 p-6 shadow-xs backdrop-blur-md sm:p-7"
-              >
-                <div>
-                  <FieldLabel htmlFor={`edit-title-${item.id}`}>
-                    Title
-                  </FieldLabel>
-                  <FormInput
-                    id={`edit-title-${item.id}`}
-                    type="text"
-                    name="title"
-                    defaultValue={item.title}
-                    required
-                  />
-                </div>
-                <div>
-                  <FieldLabel htmlFor={`edit-desc-${item.id}`}>
-                    {descLabel}
-                  </FieldLabel>
-                  <FormTextarea
-                    id={`edit-desc-${item.id}`}
-                    name={descName}
-                    defaultValue={item.description ?? ""}
-                    rows={descRows}
-                  />
-                </div>
-                <PhotoChecklist
-                  key={item.id}
-                  photos={allPhotos}
-                  linkedPhotos={item.photos}
-                  initialCoverId={item.cover_photo_id}
-                />
-                <div className="flex items-center gap-3">
-                  <SubmitButton
-                    isLoading={
-                      isPending &&
-                      pendingOp.type === "editing" &&
-                      pendingOp.id === item.id
-                    }
-                    loadingText="Saving…"
-                    text="Save changes"
-                  />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setMode({ type: "idle" })}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
+                onCancel={() => setMode({ type: "idle" })}
+              />
             ) : (
               <>
                 <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">

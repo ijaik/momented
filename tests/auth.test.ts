@@ -51,6 +51,12 @@ mock.module("@/lib/db/supabase-admin", () => ({
             mockSessions.delete(val);
             return { error: null };
           },
+          lt: async (_: string, cutoff: string) => {
+            for (const [id, session] of mockSessions.entries()) {
+              if (session.expires_at < cutoff) mockSessions.delete(id);
+            }
+            return { error: null };
+          },
           not: async () => {
             mockSessions.clear();
             return { error: null };

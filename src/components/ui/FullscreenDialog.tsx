@@ -1,6 +1,7 @@
 "use client";
 import { Minimize2 } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useRef } from "react";
+import { useNativeDialog } from "@/lib/hooks/useNativeDialog";
 
 interface FullscreenDialogProps {
   isOpen: boolean;
@@ -23,16 +24,7 @@ export default function FullscreenDialog({
   ariaLabel = "Fullscreen view",
 }: FullscreenDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (isOpen)
-      if (!dialog.open) dialog.showModal();
-      else if (dialog.open) dialog.close();
-    return () => {
-      if (dialog?.open) dialog.close();
-    };
-  }, [isOpen]);
+  useNativeDialog(dialogRef, isOpen);
   if (!isOpen) return null;
   return (
     <dialog

@@ -67,3 +67,57 @@ export function parseEntityFormData(
     photoIds,
   };
 }
+export function parsePhotoEditInput(
+  id: string,
+  title: string,
+  description: string,
+  collectionIds: string[],
+  ruleIds: string[],
+): {
+  title: string;
+  description: string;
+  collectionIds: string[];
+  ruleIds: string[];
+} {
+  assertValidUUID(id, "Photo ID");
+  const cleanTitle = typeof title === "string" ? title.trim() : "";
+  if (!cleanTitle) throw new Error("Title is required.");
+  const cleanDescription =
+    typeof description === "string" ? description.trim() : "";
+  assertBoundedString(cleanTitle, MAX_TITLE_LENGTH, "Title");
+  assertBoundedString(cleanDescription, MAX_DESCRIPTION_LENGTH, "Description");
+  assertBoundedArray(collectionIds, MAX_PHOTO_IDS, "Collection IDs");
+  assertBoundedArray(ruleIds, MAX_PHOTO_IDS, "Rule IDs");
+  for (const cid of collectionIds) assertValidUUID(cid, "Collection ID");
+  for (const rid of ruleIds) assertValidUUID(rid, "Rule ID");
+  return {
+    title: cleanTitle,
+    description: cleanDescription,
+    collectionIds,
+    ruleIds,
+  };
+}
+export function sanitizeExifFields(meta: {
+  FocalLength?: string | number;
+  ISOSpeedRatings?: string | number;
+  ISO?: string | number;
+}): { focalLength: string | null; iso: number | null } {
+  const rawFocal = meta.FocalLength ?? "";
+  const cleanFocalDigits = rawFocal.toString().replace(/[^0-9.]/g, "");
+  const focalLength =
+    cleanFocalDigits &&
+    Number.isFinite(Number(cleanFocalDigits)) &&
+    Number(cleanFocalDigits) > 0
+      ? `${cleanFocalDigits}mm`
+      : null;
+  const rawIso = meta.ISOSpeedRatings ?? meta.ISO;
+  const parsedIso =
+    rawIso !== undefined && rawIso !== null
+      ? Number.parseInt(rawIso.toString(), 10)
+      : null;
+  const iso =
+    parsedIso !== null && Number.isInteger(parsedIso) && parsedIso > 0
+      ? parsedIso
+      : null;
+  return { focalLength, iso };
+}

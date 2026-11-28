@@ -1,6 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getPhotoAlt } from "@/lib/utils/photo";
 import type { Photo } from "@/types";
 export default function PhotoCard({
   photo,
@@ -12,10 +13,7 @@ export default function PhotoCard({
   const aspectRatio =
     photo.width && photo.height ? photo.width / photo.height : 1;
   const title = photo.title || "Untitled Momented";
-  const alt =
-    photo.description && photo.title && photo.description !== photo.title
-      ? `${photo.title} — ${photo.description}`
-      : photo.title || photo.description || "A Momented photograph";
+  const alt = getPhotoAlt(photo);
   return (
     <div className="group block w-full">
       <Link

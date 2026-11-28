@@ -117,7 +117,15 @@ export type Database = {
           description?: string | null;
           cover_photo_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "collections_cover_photo_id_fkey";
+            columns: ["cover_photo_id"];
+            isOneToOne: false;
+            referencedRelation: "photos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       rule_collections: {
         Row: {
@@ -141,7 +149,15 @@ export type Database = {
           description?: string | null;
           cover_photo_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "rule_collections_cover_photo_id_fkey";
+            columns: ["cover_photo_id"];
+            isOneToOne: false;
+            referencedRelation: "photos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       calendar_collections: {
         Row: {
@@ -162,7 +178,15 @@ export type Database = {
           description?: string | null;
           cover_photo_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "calendar_collections_cover_photo_id_fkey";
+            columns: ["cover_photo_id"];
+            isOneToOne: false;
+            referencedRelation: "photos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       photo_collections: {
         Row: {
@@ -276,7 +300,15 @@ export type Database = {
           description?: string | null;
           cover_photo_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "series_cover_photo_id_fkey";
+            columns: ["cover_photo_id"];
+            isOneToOne: false;
+            referencedRelation: "photos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       series_photos: {
         Row: {

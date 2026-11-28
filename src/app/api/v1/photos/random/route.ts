@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/config/site";
 import { checkApiRateLimit } from "@/lib/auth/rateLimit";
 import { extractClientIp } from "@/lib/auth/request";
-import cloudinary from "@/lib/cloudinary/cloudinary";
+import { buildSignedDownloadUrl } from "@/lib/cloudinary/cloudinary";
 import { buildCloudinaryUrl } from "@/lib/cloudinary/cloudinaryUtils";
 import { getStaticFallbackPhoto } from "@/lib/constants/fallbackPhotos";
 import { type ApiPhoto, getPublicApiPhotosPool } from "@/lib/db/queries";
@@ -192,16 +192,10 @@ export async function GET(request: NextRequest) {
     let downloadUrl = wallpaperUrl;
     if (photo.cloudinary_public_id && process.env.CLOUDINARY_API_SECRET) {
       try {
-        const cleanBaseName = (photo.title || `momented-${photo.id}`)
-          .trim()
-          .toLowerCase()
-          .replace(/\.[^/.]+$/, "")
-          .replace(/[^a-zA-Z0-9_-]/g, "_");
-        downloadUrl = cloudinary.url(photo.cloudinary_public_id, {
-          sign_url: true,
-          flags: `attachment:${cleanBaseName}`,
-          secure: true,
-        });
+        downloadUrl = buildSignedDownloadUrl(
+          photo.cloudinary_public_id,
+          photo.title || `momented-${photo.id}`,
+        );
       } catch (err) {
         console.warn(
           "Failed to sign Cloudinary download URL, using wallpaper fallback:",

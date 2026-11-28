@@ -18,8 +18,6 @@ export default function RuleManager({ rules, allPhotos }: RuleManagerProps) {
       title="Photography rules"
       newItemLabel="New rule collection"
       titlePlaceholder="Rule name, e.g. Rule of thirds"
-      descName="description"
-      descLabel="Description"
       descPlaceholder="Describe the technique or constraint"
       createAction={createRuleCollectionAction}
       editAction={editRuleCollectionAction}

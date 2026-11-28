@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   formatDisplayDate,
+  formatTimestampForPostgrest,
   getPhotoDate,
   isPhotoUndated,
   parsePhotoDate,
@@ -74,6 +75,24 @@ describe("dateUtils", () => {
     it("formats a valid date into en-US long format", () => {
       const formatted = formatDisplayDate("2024-04-12T00:00:00Z", null);
       expect(formatted).toBe("April 12, 2024");
+    });
+  });
+  describe("formatTimestampForPostgrest", () => {
+    it("preserves full microsecond precision without JS Date millisecond truncation", () => {
+      expect(
+        formatTimestampForPostgrest("2026-10-05T14:22:10.482917+00:00"),
+      ).toBe("2026-10-05T14:22:10.482917Z");
+      expect(formatTimestampForPostgrest("2026-10-05 14:22:10.0001+00")).toBe(
+        "2026-10-05T14:22:10.0001Z",
+      );
+      expect(
+        formatTimestampForPostgrest("2026-10-05T14:22:10.482917+05:30"),
+      ).toBe("2026-10-05T14:22:10.482917+05:30");
+    });
+    it("returns null for invalid or missing timestamps", () => {
+      expect(formatTimestampForPostgrest(null)).toBeNull();
+      expect(formatTimestampForPostgrest("")).toBeNull();
+      expect(formatTimestampForPostgrest("2026-99-99T00:00:00Z")).toBeNull();
     });
   });
 });

@@ -1,26 +1,39 @@
 "use client";
 import { Check, Copy, Share2, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { incrementShare } from "@/actions/download";
-import { copyText, imageUrlToFile } from "@/lib/utils/share";
+import { useCopyToClipboard } from "@/lib/hooks/useCopyToClipboard";
+import { useNativeDialog } from "@/lib/hooks/useNativeDialog";
+import { imageUrlToFile } from "@/lib/utils/share";
 export interface ShareDialogProps {
   title?: string;
-  photoId?: string | number;
+  photoId?: string;
   url?: string;
   imageUrl?: string;
   onClose: () => void;
   onTrackShare?: () => void | Promise<void>;
 }
-type FeedbackState =
+type ActionStatus =
   | { status: "idle" }
   | { status: "sharing" }
-  | { status: "copied" }
   | { status: "error"; message: string };
 type FileCacheState =
   | { status: "idle" }
   | { status: "loading"; url: string; promise: Promise<File | null> }
   | { status: "ready"; url: string; file: File }
   | { status: "failed"; url: string };
+function isOutsideDialogBounds(
+  e: React.PointerEvent<HTMLDialogElement>,
+  dialog: HTMLDialogElement,
+): boolean {
+  const r = dialog.getBoundingClientRect();
+  return (
+    e.clientX < r.left ||
+    e.clientX > r.right ||
+    e.clientY < r.top ||
+    e.clientY > r.bottom
+  );
+}
 export default function ShareDialog({
   title = "",
   photoId,
@@ -29,19 +42,17 @@ export default function ShareDialog({
   onClose,
   onTrackShare,
 }: ShareDialogProps) {
-  const [feedback, setFeedback] = useState<FeedbackState>({ status: "idle" });
+  const [actionStatus, setActionStatus] = useState<ActionStatus>({
+    status: "idle",
+  });
+  const { copied, copy, reset: resetCopy } = useCopyToClipboard();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pressedOutsideRef = useRef(false);
   const fileCacheRef = useRef<FileCacheState>({ status: "idle" });
   const hasTrackedRef = useRef(false);
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (dialog && !dialog.open) dialog.showModal();
-    return () => {
-      if (dialog?.open) dialog.close();
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    };
-  }, []);
+  const titleId = useId();
+  const shareInputId = useId();
+  useNativeDialog(dialogRef);
   const shareUrl = (() => {
     if (typeof window === "undefined") return url || "";
     return new URL(url || window.location.href, window.location.origin).href;
@@ -52,8 +63,8 @@ export default function ShareDialog({
   const supportsNativeShare =
     typeof navigator !== "undefined" && typeof navigator.share === "function";
   const close = () => {
-    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-    setFeedback({ status: "idle" });
+    resetCopy();
+    setActionStatus({ status: "idle" });
     onClose();
   };
   const trackShare = useCallback(async () => {
@@ -101,24 +112,18 @@ export default function ShareDialog({
     }
   }, [imageUrl, supportsNativeShare, getShareFile]);
   async function copyLink() {
-    try {
-      await copyText(shareUrl);
-      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
-      setFeedback({ status: "copied" });
-      copyTimerRef.current = setTimeout(() => {
-        setFeedback((prev) =>
-          prev.status === "copied" ? { status: "idle" } : prev,
-        );
-      }, 2000);
-    } catch {
-      setFeedback({
+    const ok = await copy(shareUrl);
+    if (!ok) {
+      setActionStatus({
         status: "error",
         message: "Couldn't copy the link — please try again.",
       });
+    } else if (actionStatus.status === "error") {
+      setActionStatus({ status: "idle" });
     }
   }
   async function handleNativeShare() {
-    setFeedback({ status: "sharing" });
+    setActionStatus({ status: "sharing" });
     let shared = false;
     try {
       const file = await getShareFile();
@@ -152,7 +157,7 @@ export default function ShareDialog({
               "name" in fallbackError &&
               (fallbackError as { name: string }).name !== "AbortError"
             ) {
-              setFeedback({
+              setActionStatus({
                 status: "error",
                 message: "Couldn't share right now — copy the link instead.",
               });
@@ -162,7 +167,7 @@ export default function ShareDialog({
         }
       }
     } catch {
-      setFeedback({
+      setActionStatus({
         status: "error",
         message: "Couldn't prepare the photo — copy the link instead.",
       });
@@ -172,34 +177,47 @@ export default function ShareDialog({
         await trackShare();
         close();
       } else
-        setFeedback((prev) =>
+        setActionStatus((prev) =>
           prev.status === "sharing" ? { status: "idle" } : prev,
         );
     }
   }
-  const isSharing = feedback.status === "sharing";
-  const copied = feedback.status === "copied";
-  const error = feedback.status === "error" ? feedback.message : null;
+  const isSharing = actionStatus.status === "sharing";
+  const error = actionStatus.status === "error" ? actionStatus.message : null;
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="share-dialog-title"
+      {...({ closedby: "any" } as Record<string, unknown>)}
+      aria-labelledby={titleId}
       onCancel={(e) => {
         e.preventDefault();
         close();
       }}
-      onClick={(e) => {
-        if (e.target === dialogRef.current) close();
+      onPointerDown={(e) => {
+        if ("closedBy" in HTMLDialogElement.prototype) return;
+        const dialog = dialogRef.current;
+        pressedOutsideRef.current = Boolean(
+          dialog && isOutsideDialogBounds(e, dialog),
+        );
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Escape") close();
+      onPointerUp={(e) => {
+        if ("closedBy" in HTMLDialogElement.prototype) return;
+        const dialog = dialogRef.current;
+        if (
+          pressedOutsideRef.current &&
+          dialog &&
+          isOutsideDialogBounds(e, dialog)
+        ) {
+          close();
+        }
+        pressedOutsideRef.current = false;
       }}
       className="fixed inset-0 z-100 m-auto max-w-md w-full overflow-hidden rounded-2xl border border-line/70 bg-surface/90 backdrop-blur-2xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] p-0 outline-hidden overscroll-contain backdrop:bg-ink/35 backdrop:backdrop-blur-xs animate-[dialog-panel-in_240ms_cubic-bezier(0.16,1,0.3,1)] [&:not([open])]:hidden"
     >
       <div className="flex items-start justify-between gap-4 px-6 pb-2 pt-6">
         <div className="min-w-0">
           <h3
-            id="share-dialog-title"
+            id={titleId}
             className="font-serif text-xl leading-snug tracking-tight text-ink"
           >
             Share this moment
@@ -236,14 +254,14 @@ export default function ShareDialog({
         )}
         <div>
           <label
-            htmlFor="share-url"
+            htmlFor={shareInputId}
             className="mb-1.5 block text-sm font-medium text-ink"
           >
             Link
           </label>
           <div className="flex items-center gap-2">
             <input
-              id="share-url"
+              id={shareInputId}
               name="share-url"
               type="text"
               readOnly

@@ -13,7 +13,11 @@ import FullscreenDialog from "@/components/ui/FullscreenDialog";
 import ReferenceRow, { type ReferenceLink } from "@/components/ui/ReferenceRow";
 import { siteConfig } from "@/config/site";
 import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
-import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
+import {
+  isEditableEventTarget,
+  useFullscreenMaximize,
+} from "@/lib/hooks/useFullscreenMaximize";
+import { getPhotoAlt } from "@/lib/utils/photo";
 import type { Photo } from "@/types";
 
 interface PhotoDetailViewProps {
@@ -35,10 +39,7 @@ export default function PhotoDetailView({
   const router = useRouter();
   const { isMaximized, toggleMaximize, exitMaximize } = useFullscreenMaximize();
   const title = photo.title || "Untitled Momented";
-  const alt =
-    photo.description && photo.title && photo.description !== photo.title
-      ? `${photo.title} — ${photo.description}`
-      : photo.title || photo.description || "A Momented Photograph";
+  const alt = getPhotoAlt(photo, "A Momented Photograph");
   const fileName = formatDownloadFilename(photo.title);
   const hasExif = hasPhotoExif(photo);
   const photoAspect =
@@ -48,14 +49,7 @@ export default function PhotoDetailView({
   useEffect(() => {
     if (isMaximized) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      )
-        return;
+      if (isEditableEventTarget(e.target)) return;
       if (e.key === "ArrowLeft" && prevPhoto) {
         e.preventDefault();
         router.push(`/photo/${prevPhoto.id}`);

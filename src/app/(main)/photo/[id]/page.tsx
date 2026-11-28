@@ -19,6 +19,7 @@ import {
 } from "@/lib/seo/jsonLd";
 import { buildPageMetadata } from "@/lib/seo/metadata";
 import { formatDisplayDate, getPhotoDate } from "@/lib/utils/dateUtils";
+import { isValidUUID } from "@/lib/utils/validation";
 import type { PageProps, Photo } from "@/types";
 export async function generateStaticParams(): Promise<{ id: string }[]> {
   const ids = await getAllIds("photos");
@@ -29,7 +30,7 @@ export async function generateMetadata({
   params,
 }: PageProps<{ id: string }>): Promise<Metadata> {
   const { id } = await params;
-  if (id === "_")
+  if (!isValidUUID(id))
     return {
       title: "Photograph Not Found",
       robots: { index: false, follow: false },
@@ -76,7 +77,7 @@ async function PhotoDetailContent({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === "_") notFound();
+  if (!isValidUUID(id)) notFound();
   const { data: photo } = await getPhotoById(id);
   if (!photo) notFound();
   const typedPhoto: Photo = photo;

@@ -16,7 +16,9 @@ import {
   notifyError,
   notifySuccess,
 } from "@/components/ui/notifications";
+import { siteConfig } from "@/config/site";
 import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
+import type { PhotoItem } from "@/types/admin";
 import {
   FieldLabel,
   FormInput,
@@ -25,17 +27,9 @@ import {
   type PillOption,
   SubmitButton,
 } from "./AdminForms";
-export interface PhotoItem {
-  id: string | number;
-  title: string;
-  description?: string | null;
-  cloudinary_url: string;
-  cloudinary_public_id?: string;
-  downloads?: number;
-  shares?: number;
-  collections?: { id: string | number; title: string }[];
-  rules?: { id: string | number; title: string }[];
-}
+
+export type { PhotoItem };
+
 interface PhotoManagerProps {
   photos: PhotoItem[];
   collections: PillOption[];
@@ -66,16 +60,12 @@ export default function PhotoManager({
       if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
     };
   }, []);
-  const [editingPhotoId, setEditingPhotoId] = useState<string | number | null>(
-    null,
-  );
-  const [deletingPhotoId, setDeletingPhotoId] = useState<
-    string | number | null
-  >(null);
+  const [editingPhotoId, setEditingPhotoId] = useState<string | null>(null);
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null);
   const [isUploadPending, startUploadTransition] = useTransition();
   const [isSavePending, startSaveTransition] = useTransition();
   const [isDeletePending, startDeleteTransition] = useTransition();
-  async function handleDeletePhoto(id: string | number, publicId?: string) {
+  async function handleDeletePhoto(id: string, publicId?: string) {
     const confirmed = await confirmAction({
       title: "Delete Photograph",
       message:
@@ -152,7 +142,7 @@ export default function PhotoManager({
       }
     });
   }
-  function saveEdit(event: SubmitEvent<HTMLFormElement>, id: string | number) {
+  function saveEdit(event: SubmitEvent<HTMLFormElement>, id: string) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     startSaveTransition(async () => {
@@ -200,7 +190,7 @@ export default function PhotoManager({
             <FormInput
               id="photo-artist"
               name="artist"
-              defaultValue="Jai"
+              defaultValue={siteConfig.author.name}
               placeholder="Photographer name"
             />
           </div>

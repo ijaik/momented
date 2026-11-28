@@ -21,8 +21,6 @@ export default function CollectionManager({
       title="Collections"
       newItemLabel="New collection"
       titlePlaceholder="Collection title"
-      descName="description"
-      descLabel="Description"
       descPlaceholder="The theme or mood of this collection"
       createAction={createCollectionAction}
       editAction={editCollectionAction}

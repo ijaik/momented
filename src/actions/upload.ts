@@ -7,6 +7,9 @@ import cloudinary from "@/lib/cloudinary/cloudinary";
 import { insertPhotoToDb } from "@/lib/db/mutations";
 import { parsePhotoDate } from "@/lib/utils/dateUtils";
 import {
+  assertBoundedArray,
+  assertBoundedString,
+  assertValidUUID,
   CLOUDINARY_PUBLIC_ID_PATTERN,
   CLOUDINARY_URL_PATTERN,
   MAX_ARTIST_LENGTH,
@@ -14,7 +17,7 @@ import {
   MAX_DIMENSION,
   MAX_PHOTO_IDS,
   MAX_TITLE_LENGTH,
-  UUID_PATTERN,
+  sanitizeExifFields,
 } from "@/lib/utils/validation";
 export interface CloudinarySignatureResponse {
   timestamp: number;
@@ -83,7 +86,11 @@ export async function getCloudinarySignatureAction(): Promise<CloudinarySignatur
     cloudName,
   };
 }
-function assertSafeAsset(data: SavePhotoPayload): void {
+function assertSafeAsset(data: SavePhotoPayload): {
+  title: string;
+  description: string | undefined;
+  artistInput: string | undefined;
+} {
   const cloudName = siteConfig.cloudinary.cloudName;
   if (
     typeof data.secure_url !== "string" ||
@@ -97,12 +104,15 @@ function assertSafeAsset(data: SavePhotoPayload): void {
     !CLOUDINARY_PUBLIC_ID_PATTERN.test(data.public_id)
   )
     throw new Error("Invalid image identifier.");
-  if (!data.title?.trim() || data.title.length > MAX_TITLE_LENGTH)
-    throw new Error("A valid title is required.");
-  if (data.description && data.description.length > MAX_DESCRIPTION_LENGTH)
-    throw new Error("Description is too long.");
-  if (data.artistInput && data.artistInput.length > MAX_ARTIST_LENGTH)
-    throw new Error("Artist name is too long.");
+  const title = typeof data.title === "string" ? data.title.trim() : "";
+  if (!title) throw new Error("A valid title is required.");
+  assertBoundedString(title, MAX_TITLE_LENGTH, "Title");
+  const description = data.description?.trim() || undefined;
+  if (description)
+    assertBoundedString(description, MAX_DESCRIPTION_LENGTH, "Description");
+  const artistInput = data.artistInput?.trim() || undefined;
+  if (artistInput)
+    assertBoundedString(artistInput, MAX_ARTIST_LENGTH, "Artist name");
   if (
     !Number.isInteger(data.width) ||
     !Number.isInteger(data.height) ||
@@ -113,26 +123,19 @@ function assertSafeAsset(data: SavePhotoPayload): void {
   )
     throw new Error("Invalid image dimensions.");
   for (const arr of [data.collectionIds, data.ruleIds]) {
-    if (arr && arr.length > MAX_PHOTO_IDS)
-      throw new Error("Too many junction IDs.");
-    for (const id of arr ?? []) {
-      if (!UUID_PATTERN.test(id)) throw new Error("Invalid junction ID.");
-    }
+    if (!arr) continue;
+    assertBoundedArray(arr, MAX_PHOTO_IDS, "Junction IDs");
+    for (const id of arr) assertValidUUID(id, "junction ID");
   }
+  return { title, description, artistInput };
 }
 export async function savePhotoToDbAction(
   data: SavePhotoPayload,
 ): Promise<{ success: boolean; id: string }> {
   await verifyAdminSession();
-  assertSafeAsset(data);
+  const { title, description, artistInput } = assertSafeAsset(data);
   const meta = data.image_metadata || {};
-  const rawFocal = meta.FocalLength || "";
-  const cleanFocal = rawFocal
-    ? `${rawFocal.toString().replace(/[^0-9.]/g, "")}mm`
-    : null;
-  const rawIso = meta.ISOSpeedRatings || meta.ISO;
-  const parsedIso = rawIso ? parseInt(rawIso.toString(), 10) : null;
-  const cleanIso = Number.isInteger(parsedIso) ? parsedIso : null;
+  const { focalLength: cleanFocal, iso: cleanIso } = sanitizeExifFields(meta);
   const exifArtist =
     meta.Artist || meta.Copyright || meta.Creator || meta.Byline || null;
   const rawExifDate = (meta.DateTimeOriginal ||
@@ -142,9 +145,9 @@ export async function savePhotoToDbAction(
     meta.DateCreated) as string | undefined;
   const takenAtDate = parsePhotoDate(rawExifDate)?.toISOString() ?? null;
   const { id, monthId } = await insertPhotoToDb({
-    title: data.title,
-    description: data.description,
-    artist: data.artistInput || exifArtist || siteConfig.author.name,
+    title,
+    description,
+    artist: artistInput || exifArtist || siteConfig.author.name,
     cloudinary_url: data.secure_url,
     cloudinary_public_id: data.public_id,
     width: data.width,

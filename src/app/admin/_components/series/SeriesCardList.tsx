@@ -1,7 +1,7 @@
 import { Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
-import type { SeriesAdminItem } from "./types";
+import type { SeriesAdminItem } from "@/types/admin";
 
 interface SeriesCardListProps {
   series: SeriesAdminItem[];

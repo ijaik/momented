@@ -1,7 +1,11 @@
 "use client";
 import { useActionState } from "react";
 import { loginAction } from "@/actions/auth";
-import { FormInput, SubmitButton } from "@/app/admin/_components/AdminForms";
+import {
+  FieldLabel,
+  FormInput,
+  SubmitButton,
+} from "@/app/admin/_components/AdminForms";
 import BrandLogo from "@/components/ui/BrandLogo";
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, {});
@@ -29,12 +33,7 @@ export default function LoginForm() {
             aria-hidden="true"
           />
           <div>
-            <label
-              htmlFor="admin-password"
-              className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted"
-            >
-              Password
-            </label>
+            <FieldLabel htmlFor="admin-password">Password</FieldLabel>
             <FormInput
               id="admin-password"
               type="password"

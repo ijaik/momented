@@ -12,7 +12,7 @@ export const CACHE_TAGS = {
   series: "series",
   seriesIds: "series-ids",
 } as const;
-export function revalidatePhotos(id?: string | number) {
+export function revalidatePhotos(id?: string) {
   updateTag(CACHE_TAGS.photos);
   updateTag(CACHE_TAGS.photosIds);
   updateTag(CACHE_TAGS.collections);
@@ -31,7 +31,7 @@ export function revalidateRules(id?: string) {
   updateTag(CACHE_TAGS.ruleCollectionsIds);
   if (id) updateTag(`rule-${id}`);
 }
-export function revalidateCalendar(id?: string | number) {
+export function revalidateCalendar(id?: number) {
   updateTag(CACHE_TAGS.calendar);
   updateTag(CACHE_TAGS.calendarCollectionsIds);
   if (id) updateTag(`calendar-${id}`);

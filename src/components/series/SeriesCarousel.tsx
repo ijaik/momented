@@ -15,8 +15,12 @@ import WallpaperPreviewButton from "@/components/photos/WallpaperPreviewButton";
 import FullscreenDialog from "@/components/ui/FullscreenDialog";
 import { siteConfig } from "@/config/site";
 import { formatDownloadFilename } from "@/lib/cloudinary/cloudinaryUtils";
-import { useFullscreenMaximize } from "@/lib/hooks/useFullscreenMaximize";
+import {
+  isEditableEventTarget,
+  useFullscreenMaximize,
+} from "@/lib/hooks/useFullscreenMaximize";
 import { formatDisplayDate } from "@/lib/utils/dateUtils";
+import { getPhotoAlt } from "@/lib/utils/photo";
 import type { SeriesSlidePhoto } from "@/types";
 
 interface SeriesCarouselProps {
@@ -25,6 +29,8 @@ interface SeriesCarouselProps {
   photos: SeriesSlidePhoto[];
   createdAt: string;
 }
+const TOOLBAR_ACTION_CLASS =
+  "inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 disabled:opacity-60 cursor-pointer";
 function rubberband(
   overshoot: number,
   dimension = 600,
@@ -34,6 +40,16 @@ function rubberband(
     (overshoot * dimension * constant) /
     (dimension + constant * Math.abs(overshoot))
   );
+}
+function applyBoundaryRubberband(
+  deltaX: number,
+  activeIndex: number,
+  totalSlides: number,
+  containerWidth: number,
+): number {
+  const atStart = activeIndex === 0 && deltaX > 0;
+  const atEnd = activeIndex === totalSlides - 1 && deltaX < 0;
+  return atStart || atEnd ? rubberband(deltaX, containerWidth) : deltaX;
 }
 export function calculateNextSlideIndex(
   deltaX: number,
@@ -51,20 +67,140 @@ export function calculateNextSlideIndex(
   }
   return currentIndex;
 }
+function SlideIndicatorBar({
+  photos,
+  activeIndex,
+  keyPrefix,
+  buttonPyClass,
+  className = "",
+  onSelect,
+}: {
+  photos: SeriesSlidePhoto[];
+  activeIndex: number;
+  keyPrefix: string;
+  buttonPyClass: string;
+  className?: string;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      <span className="text-xs font-mono tabular-nums text-muted">
+        {String(activeIndex + 1).padStart(2, "0")} /{" "}
+        {String(photos.length).padStart(2, "0")}
+      </span>
+      <nav aria-label="Slide indicators" className="flex items-center gap-0.5">
+        {photos.map((photo, idx) => (
+          <button
+            key={`${keyPrefix}-${photo.id}`}
+            type="button"
+            onClick={() => onSelect(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            aria-current={idx === activeIndex ? "true" : undefined}
+            className={`group flex items-center ${buttonPyClass} px-1 cursor-pointer`}
+          >
+            <span
+              className={`h-0.5 rounded-full transition-all duration-300 ${
+                idx === activeIndex
+                  ? "w-6 bg-ink"
+                  : "w-1.5 bg-line group-hover:bg-muted"
+              }`}
+            />
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
+function FrameMediaActions({
+  photo,
+  seriesTitle,
+  activeIndex,
+  fileName,
+  className,
+}: {
+  photo: SeriesSlidePhoto;
+  seriesTitle: string;
+  activeIndex: number;
+  fileName: string;
+  className?: string;
+}) {
+  return (
+    <>
+      <WallpaperPreviewButton
+        photo={photo}
+        fileName={fileName}
+        className={className}
+        variant="compact"
+      />
+      <DownloadButton
+        photoId={photo.id}
+        cloudinaryUrl={photo.cloudinary_url}
+        fileName={fileName}
+        className={className}
+        variant="compact"
+      />
+      <ShareButton
+        title={`${seriesTitle} — Frame ${activeIndex + 1}`}
+        photoId={photo.id}
+        imageUrl={photo.cloudinary_url}
+        className={className}
+        variant="compact"
+      />
+    </>
+  );
+}
+function CarouselSlidesTrack({
+  photos,
+  sizes,
+  slideClassName = "",
+  preloadFirstOnly = false,
+}: {
+  photos: SeriesSlidePhoto[];
+  sizes: string;
+  slideClassName?: string;
+  preloadFirstOnly?: boolean;
+}) {
+  return (
+    <>
+      {photos.map((photo, index) => {
+        const slideTitle =
+          photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
+        const slideAlt = getPhotoAlt(photo, slideTitle);
+        return (
+          <div
+            key={photo.id}
+            className={`relative flex h-full w-full flex-none items-center justify-center select-none ${slideClassName}`}
+          >
+            <div className="relative h-full w-full pointer-events-none select-none">
+              <Image
+                src={photo.cloudinary_url}
+                alt={slideAlt}
+                fill
+                preload={preloadFirstOnly ? index === 0 : false}
+                sizes={sizes}
+                className="object-contain pointer-events-none select-none"
+                draggable={false}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
 type GesturePhase =
   | { status: "idle" }
   | {
-      status: "detecting-touch";
+      status: "detecting";
+      pointerId: number;
       startX: number;
       startY: number;
       startTime: number;
     }
-  | {
-      status: "locked-vertical";
-    }
+  | { status: "locked-vertical" }
   | {
       status: "dragging";
-      source: "touch" | "mouse";
+      pointerId: number;
       startX: number;
       startTime: number;
       offset: number;
@@ -106,14 +242,7 @@ export default function SeriesCarousel({
     }
   }, [isMaximized, updateGesture]);
   const onWindowKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (
-      target &&
-      (target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable)
-    )
-      return;
+    if (isEditableEventTarget(e.target)) return;
     if (e.key === "ArrowLeft") {
       e.preventDefault();
       goToSlide(activeIndex - 1);
@@ -136,139 +265,101 @@ export default function SeriesCarousel({
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
   }, [isMaximized]);
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (totalSlides <= 1) return;
-    const touch = e.touches[0];
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.isPrimary || totalSlides <= 1) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragContainerWidthRef.current = e.currentTarget.clientWidth || 600;
+    if (e.pointerType === "mouse") {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {}
+      updateGesture({
+        status: "dragging",
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startTime: Date.now(),
+        offset: 0,
+      });
+      return;
+    }
     updateGesture({
-      status: "detecting-touch",
-      startX: touch.clientX,
-      startY: touch.clientY,
+      status: "detecting",
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
       startTime: Date.now(),
     });
   };
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     const current = gestureRef.current;
-    if (current.status !== "detecting-touch" && current.status !== "dragging")
-      return;
-    const touch = e.touches[0];
-    if (current.status === "detecting-touch") {
-      const deltaX = touch.clientX - current.startX;
-      const deltaY = touch.clientY - current.startY;
+    if (current.status === "detecting" && current.pointerId === e.pointerId) {
+      const deltaX = e.clientX - current.startX;
+      const deltaY = e.clientY - current.startY;
       if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
         if (Math.abs(deltaY) >= Math.abs(deltaX)) {
           updateGesture({ status: "locked-vertical" });
           return;
         }
-        const width = dragContainerWidthRef.current;
-        let effectiveOffset = deltaX;
-        if (
-          (activeIndex === 0 && deltaX > 0) ||
-          (activeIndex === totalSlides - 1 && deltaX < 0)
-        )
-          effectiveOffset = rubberband(deltaX, width);
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {}
         updateGesture({
           status: "dragging",
-          source: "touch",
+          pointerId: e.pointerId,
           startX: current.startX,
           startTime: current.startTime,
-          offset: effectiveOffset,
+          offset: applyBoundaryRubberband(
+            deltaX,
+            activeIndex,
+            totalSlides,
+            dragContainerWidthRef.current,
+          ),
         });
       }
       return;
     }
-    if (current.status === "dragging" && current.source === "touch") {
-      const deltaX = touch.clientX - current.startX;
-      const width = dragContainerWidthRef.current;
-      let effectiveOffset = deltaX;
-      if (
-        (activeIndex === 0 && deltaX > 0) ||
-        (activeIndex === totalSlides - 1 && deltaX < 0)
-      )
-        effectiveOffset = rubberband(deltaX, width);
+    if (current.status === "dragging" && current.pointerId === e.pointerId) {
+      const deltaX = e.clientX - current.startX;
       updateGesture({
         ...current,
-        offset: effectiveOffset,
+        offset: applyBoundaryRubberband(
+          deltaX,
+          activeIndex,
+          totalSlides,
+          dragContainerWidthRef.current,
+        ),
       });
     }
   };
-  const handleTouchEnd = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     const current = gestureRef.current;
-    if (current.status === "dragging" && current.source === "touch") {
-      const deltaX = current.offset;
-      const elapsed = Date.now() - current.startTime;
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+    if (current.status === "dragging" && current.pointerId === e.pointerId) {
+      const elapsed = Math.max(1, Date.now() - current.startTime);
       const nextIdx = calculateNextSlideIndex(
-        deltaX,
+        current.offset,
         elapsed,
         activeIndex,
         totalSlides,
       );
       goToSlide(nextIdx);
-    } else updateGesture({ status: "idle" });
+    } else if (current.status !== "idle") {
+      updateGesture({ status: "idle" });
+    }
   };
-  const handleTouchCancel = () => {
+  const handlePointerCancel = () => {
     updateGesture({ status: "idle" });
   };
-  const handleMouseMove = useEffectEvent((e: MouseEvent) => {
-    const current = gestureRef.current;
-    if (
-      current.status !== "dragging" ||
-      current.source !== "mouse" ||
-      totalSlides <= 1
-    )
-      return;
-    const deltaX = e.clientX - current.startX;
-    let dampenedOffset = deltaX;
-    const containerWidth = dragContainerWidthRef.current;
-    if (activeIndex === 0 && deltaX > 0)
-      dampenedOffset = rubberband(deltaX, containerWidth);
-    else if (activeIndex === totalSlides - 1 && deltaX < 0)
-      dampenedOffset = rubberband(deltaX, containerWidth);
-    updateGesture({
-      ...current,
-      offset: dampenedOffset,
-    });
-  });
-  const handleMouseUp = useEffectEvent(() => {
-    const current = gestureRef.current;
-    if (current.status !== "dragging" || current.source !== "mouse") return;
-    const deltaX = current.offset;
-    const elapsed = Math.max(1, Date.now() - current.startTime);
-    const nextIndex = calculateNextSlideIndex(
-      deltaX,
-      elapsed,
-      activeIndex,
-      totalSlides,
-    );
-    if (nextIndex !== activeIndex) goToSlide(nextIndex);
-    else updateGesture({ status: "idle" });
-  });
-  useEffect(() => {
-    const container = isMaximized
-      ? maxContainerRef.current
-      : containerRef.current;
-    if (!container || totalSlides <= 1) return;
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0) return;
-      dragContainerWidthRef.current = container.clientWidth || 600;
-      updateGesture({
-        status: "dragging",
-        source: "mouse",
-        startX: e.clientX,
-        startTime: Date.now(),
-        offset: 0,
-      });
-    };
-    const onMouseMove = (e: MouseEvent) => handleMouseMove(e);
-    const onMouseUp = () => handleMouseUp();
-    container.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      container.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [totalSlides, isMaximized, updateGesture]);
+  const pointerHandlers = {
+    onPointerDown: handlePointerDown,
+    onPointerMove: handlePointerMove,
+    onPointerUp: handlePointerUp,
+    onPointerCancel: handlePointerCancel,
+  };
   const currentPhoto = photos[activeIndex] || photos[0];
   if (!currentPhoto) return null;
   const currentAspect =
@@ -286,6 +377,9 @@ export default function SeriesCarousel({
     currentPhoto.title || seriesTitle,
     `-frame-${activeIndex + 1}`,
   );
+  const activeFrameHeading =
+    currentPhoto.title || `${seriesTitle} — Frame ${activeIndex + 1}`;
+  const activeFrameDescription = currentPhoto.description || seriesDescription;
   return (
     <section
       aria-label={`${seriesTitle} photo carousel`}
@@ -304,10 +398,7 @@ export default function SeriesCarousel({
       >
         <div
           ref={containerRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
+          {...pointerHandlers}
           className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
           style={{
             transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
@@ -317,63 +408,23 @@ export default function SeriesCarousel({
             willChange: isDragging ? "transform" : "auto",
           }}
         >
-          {photos.map((photo, index) => {
-            const slideTitle =
-              photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
-            const slideAlt = photo.description || photo.title || slideTitle;
-            return (
-              <div
-                key={photo.id}
-                className="relative flex h-full w-full flex-none items-center justify-center select-none"
-              >
-                <div className="relative h-full w-full pointer-events-none select-none">
-                  <Image
-                    src={photo.cloudinary_url}
-                    alt={slideAlt}
-                    fill
-                    preload={index === 0}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1080px"
-                    className="object-contain pointer-events-none select-none"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          <CarouselSlidesTrack
+            photos={photos}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1080px"
+            preloadFirstOnly
+          />
         </div>
       </div>
       {/* Slide Navigation & Indicator Strip */}
       {totalSlides > 1 && (
         <div className="flex w-full items-center justify-between gap-4 px-1">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono tabular-nums text-muted">
-              {String(activeIndex + 1).padStart(2, "0")} /{" "}
-              {String(totalSlides).padStart(2, "0")}
-            </span>
-            <nav
-              aria-label="Slide indicators"
-              className="flex items-center gap-0.5"
-            >
-              {photos.map((photo, idx) => (
-                <button
-                  key={`indicator-${photo.id}`}
-                  type="button"
-                  onClick={() => goToSlide(idx)}
-                  aria-label={`Go to slide ${idx + 1}`}
-                  aria-current={idx === activeIndex ? "true" : undefined}
-                  className="group flex items-center py-3 px-1 cursor-pointer"
-                >
-                  <span
-                    className={`h-0.5 rounded-full transition-all duration-300 ${
-                      idx === activeIndex
-                        ? "w-6 bg-ink"
-                        : "w-1.5 bg-line group-hover:bg-muted"
-                    }`}
-                  />
-                </button>
-              ))}
-            </nav>
-          </div>
+          <SlideIndicatorBar
+            photos={photos}
+            activeIndex={activeIndex}
+            keyPrefix="indicator"
+            buttonPyClass="py-3"
+            onSelect={goToSlide}
+          />
           <div className="hidden lg:flex items-center gap-2">
             <button
               type="button"
@@ -400,12 +451,10 @@ export default function SeriesCarousel({
       <div className="flex w-full flex-col gap-4 border-t border-line/70 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-serif text-xl tracking-tight text-ink sm:text-2xl font-normal">
-            {currentPhoto.title || `${seriesTitle} — Frame ${activeIndex + 1}`}
+            {activeFrameHeading}
           </h2>
-          {(currentPhoto.description || seriesDescription) && (
-            <p className="mt-1 text-sm text-muted">
-              {currentPhoto.description || seriesDescription}
-            </p>
+          {activeFrameDescription && (
+            <p className="mt-1 text-sm text-muted">{activeFrameDescription}</p>
           )}
           <p className="mt-1 text-xs text-muted font-mono">
             {activeDisplayDate}
@@ -428,32 +477,19 @@ export default function SeriesCarousel({
             <Info size={14} aria-hidden="true" />
             <span>{showExifDrawer ? "Hide details" : "Frame details"}</span>
           </button>
-          <WallpaperPreviewButton
+          <FrameMediaActions
             photo={currentPhoto}
+            seriesTitle={seriesTitle}
+            activeIndex={activeIndex}
             fileName={slideDownloadFileName}
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
-            variant="compact"
-          />
-          <DownloadButton
-            photoId={currentPhoto.id}
-            cloudinaryUrl={currentPhoto.cloudinary_url}
-            fileName={slideDownloadFileName}
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 disabled:opacity-60 cursor-pointer"
-            variant="compact"
-          />
-          <ShareButton
-            title={`${seriesTitle} — Frame ${activeIndex + 1}`}
-            photoId={currentPhoto.id}
-            imageUrl={currentPhoto.cloudinary_url}
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
-            variant="compact"
+            className={TOOLBAR_ACTION_CLASS}
           />
           <button
             type="button"
             onClick={toggleMaximize}
             aria-label="Maximize series"
             title="Maximize (F)"
-            className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium uppercase tracking-wider text-ink transition-all hover:bg-soft active:scale-98 cursor-pointer"
+            className={TOOLBAR_ACTION_CLASS}
           >
             <Maximize2 size={14} aria-hidden="true" />
             <span className="hidden sm:inline">Maximize</span>
@@ -488,69 +524,34 @@ export default function SeriesCarousel({
         title={seriesTitle}
         subtitle={<p className="text-xs font-mono text-muted">{createdAt}</p>}
         actions={
-          <>
-            <WallpaperPreviewButton
-              photo={currentPhoto}
-              fileName={slideDownloadFileName}
-              variant="compact"
-            />
-            <DownloadButton
-              photoId={currentPhoto.id}
-              cloudinaryUrl={currentPhoto.cloudinary_url}
-              fileName={slideDownloadFileName}
-              variant="compact"
-            />
-            <ShareButton
-              title={`${seriesTitle} — Frame ${activeIndex + 1}`}
-              photoId={currentPhoto.id}
-              imageUrl={currentPhoto.cloudinary_url}
-              variant="compact"
-            />
-          </>
+          <FrameMediaActions
+            photo={currentPhoto}
+            seriesTitle={seriesTitle}
+            activeIndex={activeIndex}
+            fileName={slideDownloadFileName}
+          />
         }
         footer={
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="truncate font-serif text-base text-ink">
-                {currentPhoto.title ||
-                  `${seriesTitle} — Frame ${activeIndex + 1}`}
+                {activeFrameHeading}
               </p>
-              {(currentPhoto.description || seriesDescription) && (
+              {activeFrameDescription && (
                 <p className="mt-0.5 line-clamp-1 text-xs text-muted">
-                  {currentPhoto.description || seriesDescription}
+                  {activeFrameDescription}
                 </p>
               )}
             </div>
             {totalSlides > 1 && (
-              <div className="flex items-center gap-3 self-end sm:self-center">
-                <span className="text-xs font-mono tabular-nums text-muted">
-                  {String(activeIndex + 1).padStart(2, "0")} /{" "}
-                  {String(totalSlides).padStart(2, "0")}
-                </span>
-                <nav
-                  aria-label="Slide indicators"
-                  className="flex items-center gap-0.5"
-                >
-                  {photos.map((photo, idx) => (
-                    <button
-                      key={`max-ind-${photo.id}`}
-                      type="button"
-                      onClick={() => goToSlide(idx)}
-                      aria-label={`Go to slide ${idx + 1}`}
-                      aria-current={idx === activeIndex ? "true" : undefined}
-                      className="group flex items-center py-2 px-1 cursor-pointer"
-                    >
-                      <span
-                        className={`h-0.5 rounded-full transition-all duration-300 ${
-                          idx === activeIndex
-                            ? "w-6 bg-ink"
-                            : "w-1.5 bg-line group-hover:bg-muted"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </nav>
-              </div>
+              <SlideIndicatorBar
+                photos={photos}
+                activeIndex={activeIndex}
+                keyPrefix="max-ind"
+                buttonPyClass="py-2"
+                className="self-end sm:self-center"
+                onSelect={goToSlide}
+              />
             )}
           </div>
         }
@@ -579,10 +580,7 @@ export default function SeriesCarousel({
         )}
         <div
           ref={maxContainerRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
+          {...pointerHandlers}
           className="flex h-full w-full select-none cursor-grab active:cursor-grabbing"
           style={{
             transform: `translateX(calc(-${activeIndex * 100}% + ${dragOffset}px))`,
@@ -592,28 +590,11 @@ export default function SeriesCarousel({
             willChange: isDragging ? "transform" : "auto",
           }}
         >
-          {photos.map((photo, index) => {
-            const slideTitle =
-              photo.title || `Frame ${String(index + 1).padStart(2, "0")}`;
-            const slideAlt = photo.description || photo.title || slideTitle;
-            return (
-              <div
-                key={`max-slide-${photo.id}`}
-                className="relative flex h-full w-full flex-none items-center justify-center select-none p-1 sm:p-4"
-              >
-                <div className="relative h-full w-full pointer-events-none select-none">
-                  <Image
-                    src={photo.cloudinary_url}
-                    alt={slideAlt}
-                    fill
-                    sizes="100vw"
-                    className="object-contain pointer-events-none select-none"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          <CarouselSlidesTrack
+            photos={photos}
+            sizes="100vw"
+            slideClassName="p-1 sm:p-4"
+          />
         </div>
       </FullscreenDialog>
     </section>

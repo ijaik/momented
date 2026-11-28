@@ -244,11 +244,6 @@ export function createWalkSceneController(
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  try {
-    const gl = renderer.getContext();
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-  } catch {}
   const theme = getThemeColors(isDark);
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(theme.bgColor);
@@ -261,17 +256,6 @@ export function createWalkSceneController(
     0.05,
     100,
   );
-  const hemiLight = new THREE.HemisphereLight(
-    isDark ? 0xf5f5f5 : 0xffffff,
-    isDark ? 0x111111 : 0xe0e0e0,
-    isDark ? 1.35 : 1.45,
-  );
-  scene.add(hemiLight);
-  const ambLight = new THREE.AmbientLight(
-    isDark ? 0x222222 : 0xffffff,
-    isDark ? 0.45 : 0.5,
-  );
-  scene.add(ambLight);
   const wallMat = new THREE.MeshBasicMaterial({
     map: createGradientTexture(4, 256, true, theme.wallStops),
     side: THREE.DoubleSide,
@@ -676,6 +660,8 @@ export function createWalkSceneController(
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("resize", handleResize);
   canvas.addEventListener("webglcontextlost", handleContextLost);
+  const raycaster = new THREE.Raycaster();
+  const pointerVec = new THREE.Vector2();
   return {
     setDarkMode(dark) {
       isDark = dark;
@@ -690,11 +676,6 @@ export function createWalkSceneController(
       floorMat.map?.dispose();
       floorMat.map = createGradientTexture(256, 4, false, nextTheme.floorStops);
       floorMat.needsUpdate = true;
-      hemiLight.color.set(dark ? 0xf5f5f5 : 0xffffff);
-      hemiLight.groundColor.set(dark ? 0x111111 : 0xe0e0e0);
-      hemiLight.intensity = dark ? 1.35 : 1.45;
-      ambLight.color.set(dark ? 0x222222 : 0xffffff);
-      ambLight.intensity = dark ? 0.45 : 0.5;
       for (const entry of frameEntries.values()) {
         if (entry.texState === "unloaded")
           entry.printMat.color.setHex(nextTheme.placeholderColor);
@@ -778,12 +759,11 @@ export function createWalkSceneController(
       if (!wasDrag) {
         dismissIntro();
         const rect = canvas.getBoundingClientRect();
-        const mouse = new THREE.Vector2(
+        pointerVec.set(
           ((e.clientX - rect.left) / rect.width) * 2 - 1,
           -((e.clientY - rect.top) / rect.height) * 2 + 1,
         );
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse, camera);
+        raycaster.setFromCamera(pointerVec, camera);
         const intersects = raycaster.intersectObjects(interactiveMeshes);
         if (intersects.length > 0) {
           const entry = intersects[0].object.userData as FrameEntry | undefined;
@@ -847,11 +827,6 @@ export function createWalkSceneController(
       for (const entry of frameEntries.values()) entry.tex?.dispose();
       for (const item of disposables) item.dispose();
       frameEntries.clear();
-      try {
-        const glContext = renderer.getContext();
-        glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, false);
-        glContext.pixelStorei(glContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-      } catch {}
       renderer.dispose();
     },
   };

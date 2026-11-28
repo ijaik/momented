@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
+import { logoutAllAction } from "@/actions/auth";
 import { getDownloadUrlAction } from "@/actions/download";
+import { editPhotoAction } from "@/actions/photos";
 import {
   checkRateLimit,
   clearGlobalLoginFailures,
@@ -10,6 +12,10 @@ import {
   recordGlobalLoginFailure,
   recordLoginFailure,
 } from "@/lib/auth/rateLimit";
+import {
+  parsePhotoEditInput,
+  sanitizeExifFields,
+} from "@/lib/utils/validation";
 
 describe("Security & Rate Limiting", () => {
   it("allows requests under the rate limit threshold", async () => {
@@ -78,5 +84,51 @@ describe("Download Server Action Protections", () => {
           "https://res.cloudinary.com/momented/image/upload/sample.jpg",
       }),
     ).rejects.toThrow("Invalid photo ID.");
+  });
+});
+describe("Admin Auth Gates & Photo Validation", () => {
+  const validPhotoId = "00000000-0000-4000-8000-000000000001";
+  it("rejects unauthenticated logoutAllAction and editPhotoAction calls", async () => {
+    expect(logoutAllAction()).rejects.toThrow();
+    expect(
+      editPhotoAction(validPhotoId, "Valid Title", "", [], []),
+    ).rejects.toThrow();
+  });
+  it("parsePhotoEditInput rejects blank/whitespace titles and trims valid text", () => {
+    expect(() => parsePhotoEditInput(validPhotoId, "   ", "", [], [])).toThrow(
+      "Title is required.",
+    );
+    expect(
+      parsePhotoEditInput(
+        validPhotoId,
+        "  Golden Light  ",
+        "  Evening walk  ",
+        [],
+        [],
+      ),
+    ).toEqual({
+      title: "Golden Light",
+      description: "Evening walk",
+      collectionIds: [],
+      ruleIds: [],
+    });
+  });
+  it("sanitizeExifFields drops invalid zero/negative ISO and empty/non-numeric focal length", () => {
+    expect(sanitizeExifFields({ FocalLength: "auto", ISO: 0 })).toEqual({
+      focalLength: null,
+      iso: null,
+    });
+    expect(
+      sanitizeExifFields({ FocalLength: "...", ISOSpeedRatings: -100 }),
+    ).toEqual({
+      focalLength: null,
+      iso: null,
+    });
+    expect(
+      sanitizeExifFields({ FocalLength: "35.0 mm", ISOSpeedRatings: "400" }),
+    ).toEqual({
+      focalLength: "35.0mm",
+      iso: 400,
+    });
   });
 });

@@ -11,14 +11,20 @@ export const API_WINDOW_MS = 60 * 60 * 1000;
 const LOGIN_MAX_FAILURES = 5;
 export const GLOBAL_LOGIN_MAX_FAILURES = 10;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_MEM_CACHE_SIZE = 1_000;
+const UPSTASH_PLACEHOLDERS = [
+  "your-database.upstash.io",
+  "your-upstash-token",
+  "your-redis",
+  "your-token",
+];
+type LimiterAlgorithm = ConstructorParameters<typeof Ratelimit>[0]["limiter"];
 function isUpstashConfigured(): boolean {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  return Boolean(
-    url &&
-      token &&
-      !url.includes("your-redis") &&
-      !token.includes("your-token"),
+  const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
+  if (!url || !token || !URL.canParse(url)) return false;
+  return !UPSTASH_PLACEHOLDERS.some(
+    (placeholder) => url.includes(placeholder) || token.includes(placeholder),
   );
 }
 function getRedis(): Redis | null {
@@ -32,75 +38,34 @@ function getRedis(): Redis | null {
     return null;
   }
   if (!redis) {
-    const url = process.env.UPSTASH_REDIS_REST_URL;
-    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    const url = process.env.UPSTASH_REDIS_REST_URL?.trim();
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN?.trim();
     if (!url || !token) return null;
-    redis = new Redis({
-      url,
-      token,
-    });
+    redis = new Redis({ url, token });
   }
   return redis;
 }
-let _statLimiter: Ratelimit | null = null;
-let _apiLimiter: Ratelimit | null = null;
-let _loginLimiter: Ratelimit | null = null;
-let _globalLoginLimiter: Ratelimit | null = null;
-const statEphemeralCache = new Map<string, number>();
-const apiEphemeralCache = new Map<string, number>();
-const loginEphemeralCache = new Map<string, number>();
-const globalLoginEphemeralCache = new Map<string, number>();
-function getStatLimiter(r: Redis): Ratelimit {
-  if (!_statLimiter) {
-    _statLimiter = new Ratelimit({
-      redis: r,
-      limiter: Ratelimit.slidingWindow(STAT_MAX_REQUESTS, "1 h"),
-      prefix: "rl:stat",
-      ephemeralCache: statEphemeralCache,
-    });
-  }
-  return _statLimiter;
+function retryAfterFromReset(resetMs: number, nowMs = Date.now()): number {
+  return Math.max(0, Math.ceil((resetMs - nowMs) / 1000));
 }
-function getApiLimiter(r: Redis): Ratelimit {
-  if (!_apiLimiter) {
-    _apiLimiter = new Ratelimit({
-      redis: r,
-      limiter: Ratelimit.slidingWindow(API_MAX_REQUESTS, "1 h"),
-      prefix: "rl:api",
-      ephemeralCache: apiEphemeralCache,
-    });
-  }
-  return _apiLimiter;
+function createLazyLimiter(
+  prefix: string,
+  createAlgorithm: () => LimiterAlgorithm,
+): (r: Redis) => Ratelimit {
+  let instance: Ratelimit | null = null;
+  const ephemeralCache = new Map<string, number>();
+  return (r: Redis) => {
+    if (!instance) {
+      instance = new Ratelimit({
+        redis: r,
+        limiter: createAlgorithm(),
+        prefix,
+        ephemeralCache,
+      });
+    }
+    return instance;
+  };
 }
-function getLoginLimiter(r: Redis): Ratelimit {
-  if (!_loginLimiter) {
-    _loginLimiter = new Ratelimit({
-      redis: r,
-      limiter: Ratelimit.fixedWindow(LOGIN_MAX_FAILURES, "15 m"),
-      prefix: "rl:login",
-      ephemeralCache: loginEphemeralCache,
-    });
-  }
-  return _loginLimiter;
-}
-function getGlobalLoginLimiter(r: Redis): Ratelimit {
-  if (!_globalLoginLimiter) {
-    _globalLoginLimiter = new Ratelimit({
-      redis: r,
-      limiter: Ratelimit.fixedWindow(GLOBAL_LOGIN_MAX_FAILURES, "15 m"),
-      prefix: "rl:login:global",
-      ephemeralCache: globalLoginEphemeralCache,
-    });
-  }
-  return _globalLoginLimiter;
-}
-const MAX_MEM_CACHE_SIZE = 1_000;
-const memStatStore = new Map<string, { count: number; resetAt: number }>();
-const memApiStore = new Map<string, { count: number; resetAt: number }>();
-type LoginFailureEntry =
-  | { status: "counting"; failures: number; resetAt: number }
-  | { status: "locked"; resetAt: number };
-const memLoginFailures = new Map<string, LoginFailureEntry>();
 function pruneExpiredMapEntries<T extends { resetAt: number }>(
   map: Map<string, T>,
   now: number,
@@ -119,84 +84,6 @@ function pruneExpiredMapEntries<T extends { resetAt: number }>(
     }
   }
 }
-function getInMemoryLockoutSeconds(key: string): number {
-  const now = Date.now();
-  const entry = memLoginFailures.get(key);
-  if (!entry) return 0;
-  if (now > entry.resetAt) {
-    memLoginFailures.delete(key);
-    return 0;
-  }
-  if (entry.status === "locked")
-    return Math.max(0, Math.ceil((entry.resetAt - now) / 1000));
-  return 0;
-}
-function recordInMemoryFailure(
-  key: string,
-  maxFailures: number,
-): { lockedOut: boolean; retryAfterSeconds: number } {
-  const now = Date.now();
-  const entry = memLoginFailures.get(key);
-  if (!entry || now > entry.resetAt) {
-    pruneExpiredMapEntries(memLoginFailures, now);
-    memLoginFailures.set(key, {
-      status: "counting",
-      failures: 1,
-      resetAt: now + LOGIN_WINDOW_MS,
-    });
-    return { lockedOut: false, retryAfterSeconds: 0 };
-  }
-  if (entry.status === "locked")
-    return {
-      lockedOut: true,
-      retryAfterSeconds: Math.max(0, Math.ceil((entry.resetAt - now) / 1000)),
-    };
-  const nextFailures = entry.failures + 1;
-  if (nextFailures >= maxFailures) {
-    memLoginFailures.set(key, {
-      status: "locked",
-      resetAt: now + LOGIN_WINDOW_MS,
-    });
-    return {
-      lockedOut: true,
-      retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
-    };
-  }
-  entry.failures = nextFailures;
-  return { lockedOut: false, retryAfterSeconds: 0 };
-}
-export async function checkRateLimit(
-  key: string,
-): Promise<{ limited: boolean; retryAfterSeconds: number }> {
-  const r = getRedis();
-  if (r) {
-    try {
-      const { success, reset } = await getStatLimiter(r).limit(key);
-      const retryAfterSeconds = success
-        ? 0
-        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      return { limited: !success, retryAfterSeconds };
-    } catch (err) {
-      console.warn("[RateLimit] Upstash limit() error, using fallback:", err);
-    }
-  }
-  const now = Date.now();
-  const entry = memStatStore.get(key);
-  if (!entry || now > entry.resetAt) {
-    pruneExpiredMapEntries(memStatStore, now);
-    memStatStore.set(key, { count: 1, resetAt: now + STAT_WINDOW_MS });
-    return { limited: false, retryAfterSeconds: 0 };
-  }
-  if (entry.count >= STAT_MAX_REQUESTS) {
-    const retryAfterSeconds = Math.max(
-      0,
-      Math.ceil((entry.resetAt - now) / 1000),
-    );
-    return { limited: true, retryAfterSeconds };
-  }
-  entry.count += 1;
-  return { limited: false, retryAfterSeconds: 0 };
-}
 export interface ApiRateLimitResult {
   limited: boolean;
   limit: number;
@@ -204,172 +91,221 @@ export interface ApiRateLimitResult {
   reset: number;
   retryAfterSeconds: number;
 }
+function createSlidingLimiter(config: {
+  prefix: string;
+  maxRequests: number;
+  windowMs: number;
+  windowLabel: "1 h";
+}) {
+  const getLimiter = createLazyLimiter(config.prefix, () =>
+    Ratelimit.slidingWindow(config.maxRequests, config.windowLabel),
+  );
+  const memStore = new Map<string, { count: number; resetAt: number }>();
+  async function consume(key: string): Promise<ApiRateLimitResult> {
+    const r = getRedis();
+    if (r) {
+      try {
+        const { success, limit, remaining, reset } =
+          await getLimiter(r).limit(key);
+        return {
+          limited: !success,
+          limit,
+          remaining,
+          reset,
+          retryAfterSeconds: success ? 0 : retryAfterFromReset(reset),
+        };
+      } catch (err) {
+        console.warn("[RateLimit] Upstash limit() error, using fallback:", err);
+      }
+    }
+    const now = Date.now();
+    const entry = memStore.get(key);
+    if (!entry || now > entry.resetAt) {
+      pruneExpiredMapEntries(memStore, now);
+      const reset = now + config.windowMs;
+      memStore.set(key, { count: 1, resetAt: reset });
+      return {
+        limited: false,
+        limit: config.maxRequests,
+        remaining: config.maxRequests - 1,
+        reset,
+        retryAfterSeconds: 0,
+      };
+    }
+    if (entry.count >= config.maxRequests) {
+      return {
+        limited: true,
+        limit: config.maxRequests,
+        remaining: 0,
+        reset: entry.resetAt,
+        retryAfterSeconds: retryAfterFromReset(entry.resetAt, now),
+      };
+    }
+    entry.count += 1;
+    return {
+      limited: false,
+      limit: config.maxRequests,
+      remaining: Math.max(0, config.maxRequests - entry.count),
+      reset: entry.resetAt,
+      retryAfterSeconds: 0,
+    };
+  }
+  return { consume, memStore };
+}
+type LoginFailureEntry =
+  | { status: "counting"; failures: number; resetAt: number }
+  | { status: "locked"; resetAt: number };
+const memLoginFailures = new Map<string, LoginFailureEntry>();
+function createLockoutLimiter(config: { prefix: string; maxFailures: number }) {
+  const getLimiter = createLazyLimiter(config.prefix, () =>
+    Ratelimit.fixedWindow(config.maxFailures, "15 m"),
+  );
+  async function getLockout(redisKey: string, memKey: string): Promise<number> {
+    const r = getRedis();
+    if (r) {
+      try {
+        const { remaining, reset } = await getLimiter(r).getRemaining(redisKey);
+        return remaining <= 0 ? retryAfterFromReset(reset) : 0;
+      } catch (err) {
+        console.warn(
+          "[RateLimit] Upstash getRemaining() error, using fallback:",
+          err,
+        );
+      }
+    }
+    const now = Date.now();
+    const entry = memLoginFailures.get(memKey);
+    if (!entry) return 0;
+    if (now > entry.resetAt) {
+      memLoginFailures.delete(memKey);
+      return 0;
+    }
+    return entry.status === "locked"
+      ? retryAfterFromReset(entry.resetAt, now)
+      : 0;
+  }
+  async function recordFailure(
+    redisKey: string,
+    memKey: string,
+  ): Promise<{ lockedOut: boolean; retryAfterSeconds: number }> {
+    const r = getRedis();
+    if (r) {
+      try {
+        const { success, reset } = await getLimiter(r).limit(redisKey);
+        return {
+          lockedOut: !success,
+          retryAfterSeconds: success ? 0 : retryAfterFromReset(reset),
+        };
+      } catch (err) {
+        console.warn("[RateLimit] Upstash limit() error, using fallback:", err);
+      }
+    }
+    const now = Date.now();
+    const entry = memLoginFailures.get(memKey);
+    if (!entry || now > entry.resetAt) {
+      pruneExpiredMapEntries(memLoginFailures, now);
+      memLoginFailures.set(memKey, {
+        status: "counting",
+        failures: 1,
+        resetAt: now + LOGIN_WINDOW_MS,
+      });
+      return { lockedOut: false, retryAfterSeconds: 0 };
+    }
+    if (entry.status === "locked") {
+      return {
+        lockedOut: true,
+        retryAfterSeconds: retryAfterFromReset(entry.resetAt, now),
+      };
+    }
+    const nextFailures = entry.failures + 1;
+    if (nextFailures >= config.maxFailures) {
+      memLoginFailures.set(memKey, {
+        status: "locked",
+        resetAt: now + LOGIN_WINDOW_MS,
+      });
+      return {
+        lockedOut: true,
+        retryAfterSeconds: Math.ceil(LOGIN_WINDOW_MS / 1000),
+      };
+    }
+    entry.failures = nextFailures;
+    return { lockedOut: false, retryAfterSeconds: 0 };
+  }
+  async function clearFailures(
+    redisKey: string,
+    memKey: string,
+  ): Promise<void> {
+    const r = getRedis();
+    if (r) {
+      try {
+        await getLimiter(r).resetUsedTokens(redisKey);
+      } catch (err) {
+        console.warn(
+          "[RateLimit] Upstash resetUsedTokens() error, using fallback:",
+          err,
+        );
+      }
+    }
+    memLoginFailures.delete(memKey);
+  }
+  return { getLockout, recordFailure, clearFailures };
+}
+const statLimiter = createSlidingLimiter({
+  prefix: "rl:stat",
+  maxRequests: STAT_MAX_REQUESTS,
+  windowMs: STAT_WINDOW_MS,
+  windowLabel: "1 h",
+});
+const apiLimiter = createSlidingLimiter({
+  prefix: "rl:api",
+  maxRequests: API_MAX_REQUESTS,
+  windowMs: API_WINDOW_MS,
+  windowLabel: "1 h",
+});
+const userLoginLimiter = createLockoutLimiter({
+  prefix: "rl:login",
+  maxFailures: LOGIN_MAX_FAILURES,
+});
+const globalLoginLimiter = createLockoutLimiter({
+  prefix: "rl:login:global",
+  maxFailures: GLOBAL_LOGIN_MAX_FAILURES,
+});
+export async function checkRateLimit(
+  key: string,
+): Promise<{ limited: boolean; retryAfterSeconds: number }> {
+  const { limited, retryAfterSeconds } = await statLimiter.consume(key);
+  return { limited, retryAfterSeconds };
+}
 // shortcut: IP-based sliding window rate limiter without API keys; upgrade to signed user tokens if tenant isolation is required
 export async function checkApiRateLimit(
   ip: string,
 ): Promise<ApiRateLimitResult> {
-  const key = `api:random:${ip}`;
-  const r = getRedis();
-  if (r) {
-    try {
-      const { success, limit, remaining, reset } =
-        await getApiLimiter(r).limit(key);
-      const retryAfterSeconds = success
-        ? 0
-        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      return {
-        limited: !success,
-        limit,
-        remaining,
-        reset,
-        retryAfterSeconds,
-      };
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash API limiter error, using fallback:",
-        err,
-      );
-    }
-  }
-  const now = Date.now();
-  const entry = memApiStore.get(key);
-  if (!entry || now > entry.resetAt) {
-    pruneExpiredMapEntries(memApiStore, now);
-    memApiStore.set(key, { count: 1, resetAt: now + API_WINDOW_MS });
-    return {
-      limited: false,
-      limit: API_MAX_REQUESTS,
-      remaining: API_MAX_REQUESTS - 1,
-      reset: now + API_WINDOW_MS,
-      retryAfterSeconds: 0,
-    };
-  }
-  if (entry.count >= API_MAX_REQUESTS) {
-    const retryAfterSeconds = Math.max(
-      0,
-      Math.ceil((entry.resetAt - now) / 1000),
-    );
-    return {
-      limited: true,
-      limit: API_MAX_REQUESTS,
-      remaining: 0,
-      reset: entry.resetAt,
-      retryAfterSeconds,
-    };
-  }
-  entry.count += 1;
-  return {
-    limited: false,
-    limit: API_MAX_REQUESTS,
-    remaining: Math.max(0, API_MAX_REQUESTS - entry.count),
-    reset: entry.resetAt,
-    retryAfterSeconds: 0,
-  };
+  return apiLimiter.consume(`api:random:${ip}`);
 }
 export function clearApiRateLimitForTest(ip?: string): void {
-  if (ip) memApiStore.delete(`api:random:${ip}`);
-  else memApiStore.clear();
+  if (ip) apiLimiter.memStore.delete(`api:random:${ip}`);
+  else apiLimiter.memStore.clear();
 }
 export async function getLoginLockout(key: string): Promise<number> {
-  const r = getRedis();
-  if (r) {
-    try {
-      const { remaining, reset } = await getLoginLimiter(r).getRemaining(key);
-      if (remaining <= 0) {
-        return Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      }
-      return 0;
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash getRemaining() error, using fallback:",
-        err,
-      );
-    }
-  }
-  return getInMemoryLockoutSeconds(key);
+  return userLoginLimiter.getLockout(key, key);
 }
 export async function recordLoginFailure(
   key: string,
 ): Promise<{ lockedOut: boolean; retryAfterSeconds: number }> {
-  const r = getRedis();
-  if (r) {
-    try {
-      const { success, reset } = await getLoginLimiter(r).limit(key);
-      const retryAfterSeconds = success
-        ? 0
-        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      return { lockedOut: !success, retryAfterSeconds };
-    } catch (err) {
-      console.warn("[RateLimit] Upstash limit() error, using fallback:", err);
-    }
-  }
-  return recordInMemoryFailure(key, LOGIN_MAX_FAILURES);
+  return userLoginLimiter.recordFailure(key, key);
 }
 export async function getGlobalLoginLockout(): Promise<number> {
-  const r = getRedis();
-  if (r) {
-    try {
-      const { remaining, reset } =
-        await getGlobalLoginLimiter(r).getRemaining("system");
-      if (remaining <= 0) {
-        return Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      }
-      return 0;
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash global getRemaining() error, using fallback:",
-        err,
-      );
-    }
-  }
-  return getInMemoryLockoutSeconds("login:global");
+  return globalLoginLimiter.getLockout("system", "login:global");
 }
 export async function recordGlobalLoginFailure(): Promise<{
   lockedOut: boolean;
   retryAfterSeconds: number;
 }> {
-  const r = getRedis();
-  if (r) {
-    try {
-      const { success, reset } = await getGlobalLoginLimiter(r).limit("system");
-      const retryAfterSeconds = success
-        ? 0
-        : Math.max(0, Math.ceil((reset - Date.now()) / 1000));
-      return { lockedOut: !success, retryAfterSeconds };
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash global limit() error, using fallback:",
-        err,
-      );
-    }
-  }
-  return recordInMemoryFailure("login:global", GLOBAL_LOGIN_MAX_FAILURES);
+  return globalLoginLimiter.recordFailure("system", "login:global");
 }
 export async function clearLoginFailures(key: string): Promise<void> {
-  const r = getRedis();
-  if (r) {
-    try {
-      await getLoginLimiter(r).resetUsedTokens(key);
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash resetUsedTokens() error, using fallback:",
-        err,
-      );
-    }
-  }
-  memLoginFailures.delete(key);
+  return userLoginLimiter.clearFailures(key, key);
 }
 export async function clearGlobalLoginFailures(): Promise<void> {
-  const r = getRedis();
-  if (r) {
-    try {
-      await getGlobalLoginLimiter(r).resetUsedTokens("system");
-    } catch (err) {
-      console.warn(
-        "[RateLimit] Upstash global resetUsedTokens() error, using fallback:",
-        err,
-      );
-    }
-  }
-  memLoginFailures.delete("login:global");
+  return globalLoginLimiter.clearFailures("system", "login:global");
 }

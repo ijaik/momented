@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 import { siteConfig } from "@/config/site";
 import {
   breadcrumbJsonLd,
-  faqPageJsonLd,
   homePageGalleryJsonLd,
   hubPageJsonLd,
   personJsonLd,
@@ -49,23 +48,6 @@ describe("JSON-LD & Schema Helpers", () => {
       name: "Collections",
       item: `${siteConfig.url}/collections`,
     });
-  });
-  it("faqPageJsonLd creates valid FAQPage schema", () => {
-    const faqs = [
-      {
-        question: "Is Momented free?",
-        answer: "Yes, under CC0.",
-      },
-    ];
-    const data = faqPageJsonLd(faqs);
-    expect(data["@type"]).toBe("FAQPage");
-    const mainEntity = data.mainEntity as {
-      "@type": string;
-      name: string;
-      acceptedAnswer: { "@type": string; text: string };
-    }[];
-    expect(mainEntity[0].name).toBe("Is Momented free?");
-    expect(mainEntity[0].acceptedAnswer.text).toBe("Yes, under CC0.");
   });
   it("hubPageJsonLd creates valid CollectionPage with ItemList", () => {
     const data = hubPageJsonLd({

@@ -1,5 +1,15 @@
 "use client";
 import { useCallback, useEffect, useEffectEvent, useState } from "react";
+export function isEditableEventTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el) return false;
+  return (
+    el.tagName === "INPUT" ||
+    el.tagName === "TEXTAREA" ||
+    el.tagName === "SELECT" ||
+    el.isContentEditable
+  );
+}
 export function useFullscreenMaximize() {
   const [isMaximized, setIsMaximized] = useState(false);
   const enterMaximize = useCallback(async () => {
@@ -35,14 +45,7 @@ export function useFullscreenMaximize() {
       setIsMaximized(false);
   });
   const onWindowKeyDown = useEffectEvent((e: globalThis.KeyboardEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (
-      target &&
-      (target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable)
-    )
-      return;
+    if (isEditableEventTarget(e.target)) return;
     // Note: Escape key dismissal is handled by FullscreenDialog's native <dialog>
     // and by the browser's native fullscreen event.
     if (

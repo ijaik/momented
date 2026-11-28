@@ -6,7 +6,7 @@ export interface ConfirmActionOptions {
   cancelLabel?: string;
   isDestructive?: boolean;
 }
-export type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error";
 export interface ToastItem {
   id: string;
   type: ToastType;
@@ -44,10 +44,6 @@ function emitToast(type: ToastType, message: string): string {
 }
 export const notifySuccess = (message: string) => emitToast("success", message);
 export const notifyError = (message: string) => emitToast("error", message);
-export const toast = {
-  success: notifySuccess,
-  error: notifyError,
-};
 export function confirmAction(options: ConfirmActionOptions): Promise<boolean> {
   return new Promise<boolean>((resolve) => {
     if (confirmHandler) confirmHandler(options, resolve);

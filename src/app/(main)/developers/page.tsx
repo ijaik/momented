@@ -64,7 +64,7 @@ echo "New wallpaper downloaded to $WALLPAPER_DIR/daily-wallpaper.jpg"`;
     "title": "Evening Horizon",
     "description": "Quiet sunlight breaking through evening clouds.",
     "image": {
-      "url": "https://res.cloudinary.com/momented/image/upload/v12345/photo.jpg",
+      "url": "https://res.cloudinary.com/momented/image/upload/f_auto,c_limit,w_1920,q_auto/v12345/photo.jpg",
       "wallpaper_url": "https://res.cloudinary.com/momented/image/upload/f_auto,c_limit,w_1920,q_auto/v12345/photo.jpg",
       "thumbnail_url": "https://res.cloudinary.com/momented/image/upload/f_auto,c_limit,w_640,q_auto/v12345/photo.jpg",
       "raw_url": "https://res.cloudinary.com/momented/image/upload/v12345/photo.jpg",

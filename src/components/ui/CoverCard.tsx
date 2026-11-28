@@ -1,16 +1,17 @@
 import { ArrowUpRight, Layers } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getPhotoAlt } from "@/lib/utils/photo";
 
 interface CoverCardPhoto {
-  id: string | number;
+  id: string;
   cloudinary_url: string;
 }
 interface CoverCardItem {
   id: string | number;
   title: string;
   description?: string | null;
-  cover_photo_id?: string | number | null;
+  cover_photo_id?: string | null;
   photos?: CoverCardPhoto[];
   cloudinary_url?: string;
 }
@@ -55,13 +56,7 @@ export default function CoverCard({
           <>
             <Image
               src={coverImage}
-              alt={
-                item.description &&
-                item.title &&
-                item.description !== item.title
-                  ? `${item.title} — ${item.description}`
-                  : item.title || item.description || "A Momented photograph"
-              }
+              alt={getPhotoAlt(item)}
               fill
               preload={preload}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 600px"

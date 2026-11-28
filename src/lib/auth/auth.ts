@@ -39,6 +39,12 @@ export async function createAdminSession(options?: {
     Date.now() + SESSION_COOKIE_MAX_AGE * 1000,
   ).toISOString();
   const db = getAdminDb();
+  try {
+    await db
+      .from("admin_sessions")
+      .delete()
+      .lt("expires_at", new Date().toISOString());
+  } catch {}
   const { data, error } = await db
     .from("admin_sessions")
     .insert({

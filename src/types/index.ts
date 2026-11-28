@@ -30,14 +30,6 @@ export interface CalendarReference {
   id: number;
   title: string;
 }
-export interface BaseCollection {
-  id: string | number;
-  title: string;
-  description?: string | null;
-  cover_photo_id?: string | null;
-  created_at?: string | null;
-  photos?: Pick<Photo, "id" | "cloudinary_url">[];
-}
 export interface SeriesSlidePhoto extends Photo {
   position: number;
 }

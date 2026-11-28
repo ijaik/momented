@@ -10,8 +10,8 @@ interface CollectionHubItem {
   id: string | number;
   title: string;
   description?: string | null;
-  cover_photo_id?: string | number | null;
-  photos?: { id: string | number; cloudinary_url: string }[];
+  cover_photo_id?: string | null;
+  photos?: { id: string; cloudinary_url: string }[];
 }
 interface CollectionHubViewProps {
   activeTab: "curated" | "rules" | "calendar";

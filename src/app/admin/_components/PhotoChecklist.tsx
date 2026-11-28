@@ -1,26 +1,25 @@
 "use client";
 import Image from "next/image";
-import { useReducer } from "react";
-export interface ChecklistPhoto {
-  id: string | number;
-  cloudinary_url: string;
-  title?: string;
-}
+import { useId, useReducer } from "react";
+import type { ChecklistPhoto } from "@/types/admin";
+
+export type { ChecklistPhoto };
+
 interface PhotoChecklistProps {
   photos: ChecklistPhoto[];
   linkedPhotos?: ChecklistPhoto[];
-  initialCoverId?: string | number | null;
+  initialCoverId?: string | null;
 }
 interface ChecklistState {
-  selectedIds: (string | number)[];
-  coverId: string | number | null;
+  selectedIds: string[];
+  coverId: string | null;
 }
 type ChecklistAction =
-  | { type: "TOGGLE"; photoId: string | number; checked: boolean }
-  | { type: "SET_COVER"; photoId: string | number };
+  | { type: "TOGGLE"; photoId: string; checked: boolean }
+  | { type: "SET_COVER"; photoId: string };
 function createInitialChecklistState(
   linkedPhotos: ChecklistPhoto[],
-  initialCoverId: string | number | null,
+  initialCoverId: string | null,
 ): ChecklistState {
   const selectedIds = linkedPhotos.map((p) => p.id);
   const coverId =
@@ -61,16 +60,17 @@ export default function PhotoChecklist({
   linkedPhotos = NO_LINKED_PHOTOS,
   initialCoverId = null,
 }: PhotoChecklistProps) {
+  const instanceId = useId();
   const [state, dispatch] = useReducer(checklistReducer, undefined, () =>
     createInitialChecklistState(linkedPhotos, initialCoverId),
   );
   return (
     <div className="flex flex-col gap-3">
       <input
-        id="cover_photo_id"
+        id={`${instanceId}-cover`}
         type="hidden"
         name="cover_photo_id"
-        value={state.coverId !== null ? String(state.coverId) : ""}
+        value={state.coverId ?? ""}
       />
       <fieldset>
         <legend className="mb-2 text-sm font-medium text-ink">
@@ -81,6 +81,7 @@ export default function PhotoChecklist({
             {photos.map((p) => {
               const isChecked = state.selectedIds.includes(p.id);
               const isCover = state.coverId === p.id;
+              const checkboxId = `${instanceId}-photo-${p.id}`;
               return (
                 <div
                   key={p.id}
@@ -92,7 +93,7 @@ export default function PhotoChecklist({
                 >
                   <div className="relative">
                     <label
-                      htmlFor={`photo-checkbox-${p.id}`}
+                      htmlFor={checkboxId}
                       className="group relative block aspect-square cursor-pointer overflow-hidden rounded-lg bg-soft"
                     >
                       <Image
@@ -111,7 +112,7 @@ export default function PhotoChecklist({
                         }`}
                       />
                       <input
-                        id={`photo-checkbox-${p.id}`}
+                        id={checkboxId}
                         type="checkbox"
                         name="photo_ids"
                         value={p.id}

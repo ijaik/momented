@@ -7,7 +7,7 @@ import { incrementShare } from "@/actions/download";
 const ShareDialog = dynamic(() => import("./ShareDialog"), { ssr: false });
 export interface ShareButtonProps {
   title?: string;
-  photoId?: string | number;
+  photoId?: string;
   imageUrl?: string;
   shareCount?: number;
   variant?: "default" | "compact";
@@ -22,8 +22,16 @@ export default function ShareButton({
   className,
 }: ShareButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmed, setConfirmed] = useState<{
+    photoId: string;
+    count: number;
+  } | null>(null);
+  const baseCount =
+    photoId && confirmed?.photoId === photoId
+      ? Math.max(shareCount, confirmed.count)
+      : shareCount;
   const [optimisticCount, setOptimisticCount] = useOptimistic(
-    shareCount,
+    baseCount,
     (current: number) => current + 1,
   );
   const [, startTransition] = useTransition();
@@ -37,7 +45,10 @@ export default function ShareButton({
       setOptimisticCount(1);
       if (photoId)
         try {
-          await incrementShare(photoId);
+          const nextCount = await incrementShare(photoId);
+          if (typeof nextCount === "number") {
+            setConfirmed({ photoId, count: nextCount });
+          }
         } catch (err) {
           console.error("Failed to track share:", err);
         }

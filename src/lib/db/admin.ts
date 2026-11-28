@@ -1,10 +1,13 @@
 import "server-only";
-import type { CalendarItem } from "@/app/admin/_components/CalendarManager";
-import type { BaseItem } from "@/app/admin/_components/ItemManager";
-import type { PhotoItem } from "@/app/admin/_components/PhotoManager";
-import type { SeriesAdminItem } from "@/app/admin/_components/SeriesManager";
 import { verifyAdminSession } from "@/lib/auth/auth";
 import { getAdminDb } from "@/lib/db/supabase-admin";
+import { extractSortedSeriesPhotos } from "@/lib/utils/series";
+import type {
+  BaseItem,
+  CalendarItem,
+  PhotoItem,
+  SeriesAdminItem,
+} from "@/types/admin";
 export async function getAdminPhotos(): Promise<PhotoItem[]> {
   await verifyAdminSession();
   const db = getAdminDb();
@@ -13,7 +16,8 @@ export async function getAdminPhotos(): Promise<PhotoItem[]> {
     .select(
       "id, title, description, cloudinary_url, cloudinary_public_id, downloads, shares, collections!photo_collections(id, title), rules:rule_collections!photo_rule_collections(id, title)",
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
     id: row.id,
@@ -38,13 +42,14 @@ async function fetchAdminBaseItems(
     .select(
       `id, title, description, cover_photo_id, photos!${junctionTable}(id, cloudinary_url, title)`,
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => ({
     id: row.id,
     title: row.title,
-    description: (row as { description: string | null }).description,
-    cover_photo_id: (row as { cover_photo_id: string | null }).cover_photo_id,
+    description: row.description,
+    cover_photo_id: row.cover_photo_id,
     photos: (
       (row.photos ?? []) as {
         id: string;
@@ -52,7 +57,7 @@ async function fetchAdminBaseItems(
         title: string | null;
       }[]
     ).map((p) => ({
-      id: String(p.id),
+      id: p.id,
       cloudinary_url: p.cloudinary_url,
       title: p.title ?? undefined,
     })),
@@ -81,7 +86,7 @@ export async function getAdminCalendarCollections(): Promise<CalendarItem[]> {
     cover_photo_id: row.cover_photo_id,
     photos: (
       (row.photos ?? []) as {
-        id: string | number;
+        id: string;
         cloudinary_url: string;
         title: string | null;
       }[]
@@ -101,22 +106,15 @@ export async function getAdminSeries(): Promise<SeriesAdminItem[]> {
       "id, title, description, cover_photo_id, created_at, series_photos(position, photos(id, title, cloudinary_url))",
     )
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .order("position", { referencedTable: "series_photos", ascending: true });
   if (error) throw new Error(error.message);
-  return (data || []).map((s) => {
-    const rawPhotos = s.series_photos || [];
-    const photos = rawPhotos
-      .map((sp) => sp.photos)
-      .filter((p): p is { id: string; title: string; cloudinary_url: string } =>
-        Boolean(p),
-      );
-    return {
-      id: s.id,
-      title: s.title,
-      description: s.description,
-      cover_photo_id: s.cover_photo_id,
-      created_at: s.created_at,
-      photos,
-    };
-  });
+  return (data ?? []).map((s) => ({
+    id: s.id,
+    title: s.title,
+    description: s.description,
+    cover_photo_id: s.cover_photo_id,
+    created_at: s.created_at,
+    photos: extractSortedSeriesPhotos(s.series_photos),
+  }));
 }

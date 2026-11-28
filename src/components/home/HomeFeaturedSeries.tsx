@@ -90,7 +90,7 @@ export default function HomeFeaturedSeries({
                       />
                     </div>
                     <span className="block mt-1.5 text-center font-mono text-[10px] text-muted">
-                      0{idx + 1}
+                      {String(idx + 1).padStart(2, "0")}
                     </span>
                   </Link>
                 ))}

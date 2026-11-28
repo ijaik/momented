@@ -26,6 +26,11 @@ import {
   notifySuccess,
 } from "@/components/ui/notifications";
 import { uploadPhotoToCloudinary } from "@/lib/cloudinary/uploadClient";
+import type {
+  PhotoOption,
+  QueuedSlideFile,
+  SeriesAdminItem,
+} from "@/types/admin";
 import {
   FieldLabel,
   FormInput,
@@ -35,11 +40,6 @@ import {
 import SeriesCardList from "./series/SeriesCardList";
 import SeriesSlideList from "./series/SeriesSlideList";
 import SeriesUploadQueue from "./series/SeriesUploadQueue";
-import type {
-  PhotoOption,
-  QueuedSlideFile,
-  SeriesAdminItem,
-} from "./series/types";
 
 export type { PhotoOption, QueuedSlideFile, SeriesAdminItem };
 
@@ -50,6 +50,13 @@ interface SeriesManagerProps {
 function revokePreviews(items: QueuedSlideFile[]) {
   for (const item of items)
     if (item.preview.startsWith("blob:")) URL.revokeObjectURL(item.preview);
+}
+function swapItems<T>(items: T[], index: number, direction: -1 | 1): T[] {
+  const target = index + direction;
+  if (target < 0 || target >= items.length) return items;
+  const copy = [...items];
+  [copy[index], copy[target]] = [copy[target], copy[index]];
+  return copy;
 }
 type UploadPhase =
   | { status: "idle" }
@@ -162,13 +169,14 @@ function seriesEditorReducer(
     case "MOVE_LIBRARY_PHOTO": {
       if (state.mode !== "create-library" && state.mode !== "edit")
         return state;
-      const target = action.index + action.direction;
-      if (target < 0 || target >= state.orderedPhotoIds.length) return state;
-      const copy = [...state.orderedPhotoIds];
-      const temp = copy[action.index];
-      copy[action.index] = copy[target];
-      copy[target] = temp;
-      return { ...state, orderedPhotoIds: copy };
+      const next = swapItems(
+        state.orderedPhotoIds,
+        action.index,
+        action.direction,
+      );
+      return next === state.orderedPhotoIds
+        ? state
+        : { ...state, orderedPhotoIds: next };
     }
     case "SET_COVER_PHOTO": {
       if (state.mode !== "create-library" && state.mode !== "edit")
@@ -184,13 +192,10 @@ function seriesEditorReducer(
     case "MOVE_QUEUED_FILE": {
       if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")
         return state;
-      const target = action.index + action.direction;
-      if (target < 0 || target >= state.queuedFiles.length) return state;
-      const copy = [...state.queuedFiles];
-      const temp = copy[action.index];
-      copy[action.index] = copy[target];
-      copy[target] = temp;
-      return { ...state, queuedFiles: copy };
+      const next = swapItems(state.queuedFiles, action.index, action.direction);
+      return next === state.queuedFiles
+        ? state
+        : { ...state, queuedFiles: next };
     }
     case "REMOVE_QUEUED_FILE": {
       if (state.mode !== "create-upload" || state.uploadPhase.status !== "idle")

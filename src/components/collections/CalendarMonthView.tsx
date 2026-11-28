@@ -76,6 +76,11 @@ export default function CalendarMonthView({
       }
       window.history.replaceState(null, "", url.toString());
       window.dispatchEvent(new Event("popstate"));
+      document.getElementById(`${tabListId}-tab-${key}`)?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+        behavior: "smooth",
+      });
     }
   };
   const onTabKeyDown = (

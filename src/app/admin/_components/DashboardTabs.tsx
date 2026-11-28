@@ -40,6 +40,16 @@ export default function DashboardTabs({
   series,
 }: DashboardTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("photos");
+  const selectTab = (tab: TabType, moveFocus = false) => {
+    setActiveTab(tab);
+    const tabEl = document.getElementById(`tab-${tab}`);
+    if (moveFocus) tabEl?.focus({ preventScroll: true });
+    tabEl?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: "smooth",
+    });
+  };
   const onTabKeyDown = (e: KeyboardEvent<HTMLButtonElement>, tab: TabType) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (dir === 0) return;
@@ -47,8 +57,7 @@ export default function DashboardTabs({
     const currentIndex = TAB_ORDER.indexOf(tab);
     const next =
       TAB_ORDER[(currentIndex + dir + TAB_ORDER.length) % TAB_ORDER.length];
-    setActiveTab(next);
-    document.getElementById(`tab-${next}`)?.focus({ preventScroll: true });
+    selectTab(next, true);
   };
   return (
     <main className="mx-auto w-full max-w-360 px-5 py-12 sm:px-8 lg:px-12 md:py-16">
@@ -100,7 +109,7 @@ export default function DashboardTabs({
                 aria-selected={isActive}
                 aria-controls={`panel-${tab}`}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => selectTab(tab)}
                 onKeyDown={(e) => onTabKeyDown(e, tab)}
                 className={`rounded-full px-4 py-2 text-xs font-medium uppercase tracking-wider transition-colors duration-150 ease-out whitespace-nowrap cursor-pointer ${
                   isActive

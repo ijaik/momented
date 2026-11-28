@@ -3,7 +3,7 @@ import { updateTag } from "next/cache";
 import { siteConfig } from "@/config/site";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
-import cloudinary from "@/lib/cloudinary/cloudinary";
+import { buildSignedDownloadUrl } from "@/lib/cloudinary/cloudinary";
 import { getAdminDb } from "@/lib/db/supabase-admin";
 import {
   assertValidUUID,
@@ -20,12 +20,11 @@ export async function getDownloadUrlAction({
   cloudinaryUrl,
   fileName,
 }: {
-  photoId: string | number;
+  photoId: string;
   cloudinaryUrl: string;
   fileName?: string;
 }): Promise<{ downloadUrl: string; downloadCount?: number }> {
-  const idStr = String(photoId);
-  assertValidUUID(idStr, "photo ID");
+  assertValidUUID(photoId, "photo ID");
   const cloudName = siteConfig.cloudinary.cloudName;
   if (
     !cloudinaryUrl ||
@@ -35,8 +34,8 @@ export async function getDownloadUrlAction({
     throw new Error("Invalid Cloudinary URL");
   let updatedCount: number | undefined;
   try {
-    updatedCount = await incrementDownload(idStr);
-    updateTag(`photo-${idStr}`);
+    updatedCount = await incrementDownload(photoId);
+    updateTag(`photo-${photoId}`);
   } catch (err) {
     console.warn("Could not increment download count:", err);
   }
@@ -45,18 +44,14 @@ export async function getDownloadUrlAction({
     const { data: photo } = await db
       .from("photos")
       .select("cloudinary_public_id")
-      .eq("id", idStr)
+      .eq("id", photoId)
       .maybeSingle();
     const publicId = photo?.cloudinary_public_id;
     if (publicId && CLOUDINARY_PUBLIC_ID_PATTERN.test(publicId)) {
-      const cleanBaseName = (fileName || `momented-${idStr}`)
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[^a-zA-Z0-9_-]/g, "_");
-      const signedUrl = cloudinary.url(publicId, {
-        sign_url: true,
-        flags: cleanBaseName ? `attachment:${cleanBaseName}` : "attachment",
-        secure: true,
-      });
+      const signedUrl = buildSignedDownloadUrl(
+        publicId,
+        fileName || `momented-${photoId}`,
+      );
       return { downloadUrl: signedUrl, downloadCount: updatedCount };
     }
   } catch (err) {
@@ -78,25 +73,22 @@ async function incrementDownload(photoId: string): Promise<number> {
   }
   return Number(data);
 }
-export async function incrementShare(
-  photoId: string | number,
-): Promise<number | null> {
-  const idStr = String(photoId);
-  assertValidUUID(idStr, "photo ID");
+export async function incrementShare(photoId: string): Promise<number | null> {
+  assertValidUUID(photoId, "photo ID");
   if (await isStatRateLimited("share")) {
-    console.warn("Share stat rate limited for photo:", idStr);
+    console.warn("Share stat rate limited for photo:", photoId);
     return null;
   }
   try {
     const db = getAdminDb();
     const { data, error } = await db.rpc("increment_shares", {
-      row_id: idStr,
+      row_id: photoId,
     });
     if (error) {
       console.warn("Increment shares database error:", error.message || error);
       return null;
     }
-    updateTag(`photo-${idStr}`);
+    updateTag(`photo-${photoId}`);
     return Number(data);
   } catch (err) {
     console.warn("Failed to increment share count:", err);

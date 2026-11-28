@@ -10,6 +10,7 @@ import {
   SESSION_COOKIE,
   SESSION_COOKIE_MAX_AGE,
   SESSION_COOKIE_OPTIONS,
+  verifyAdminSession,
 } from "@/lib/auth/auth";
 import {
   clearGlobalLoginFailures,
@@ -96,6 +97,7 @@ export async function logoutAction(): Promise<void> {
   redirect("/admin/login");
 }
 export async function logoutAllAction(): Promise<void> {
+  await verifyAdminSession();
   await invalidateAllAdminSessions();
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_OPTIONS);
